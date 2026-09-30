@@ -1,0 +1,346 @@
+// Money is stored as integer cents. Status/role fields are strings validated in the app
+// (see src/lib/constants.ts) so new statuses don't need a migration.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  passwordHash    String
+  // Bumped on password change/reset; sessions carrying an older version are rejected.
+  sessionVersion  Int      @default(0)
+  role            String   @default("BUYER") // BUYER | AUTHOR | ADMIN
+  status          String   @default("ACTIVE") // ACTIVE | PENDING | SUSPENDED
+  bio             String?
+  location        String?
+  avatarUrl       String?
+  // Author directory fields. Tag lists are stored as ",a,b," so one tag can be matched with contains ",a,".
+  headline        String?
+  topics          String   @default("")
+  grades          String   @default("")
+  languages       String   @default("")
+  identities      String   @default("")
+  websiteUrl      String?
+  videoUrl        String?
+  // Buyer organisation (schools, libraries, businesses…); shown to authors on requests and reviews.
+  orgType         String? // SCHOOL | LIBRARY | BUSINESS | NONPROFIT | INDIVIDUAL
+  orgName         String?
+  // Cached from visible reviews (see lib/reviews.ts) so the directory can sort by rating.
+  ratingAvg       Float    @default(0)
+  ratingCount     Int      @default(0)
+  // Stripe Connect: authors are paid automatically into this account.
+  stripeAccountId String?  @unique
+  payoutsReady    Boolean  @default(false) // onboarding done + transfers capability active
+  createdAt       DateTime @default(now())
+
+  books           Book[]
+  packages        VisitPackage[]
+  cartItems       CartItem[]
+  orders          Order[]
+  soldItems       OrderItem[]          @relation("SoldItems")
+  bookingsMade    Booking[]            @relation("BuyerBookings")
+  bookingsHosted  Booking[]            @relation("AuthorBookings")
+  availability    AvailableDate[]
+  convosAsBuyer   Conversation[]       @relation("BuyerConversations")
+  convosAsAuthor  Conversation[]       @relation("AuthorConversations")
+  messages        Message[]
+  resetTokens     PasswordResetToken[]
+  reviewsWritten  Review[]             @relation("ReviewsWritten")
+  reviewsReceived Review[]             @relation("ReviewsReceived")
+  issues          Issue[]
+  referralsMade   Referral[]           @relation("ReferralsMade")
+  referredBy      Referral[]           @relation("ReferredUser")
+  referralPayouts ReferralPayout[]
+}
+
+model Book {
+  id          String   @id @default(cuid())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  category    String // see CATEGORIES
+  price       Int
+  stock       Int      @default(0)
+  coverUrl    String?
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED | ARCHIVED
+  reviewNote  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([status, category])
+}
+
+model VisitPackage {
+  id           String   @id @default(cuid())
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  title        String
+  description  String
+  format       String // IN_PERSON | VIRTUAL | HYBRID
+  durationMins Int
+  fee          Int
+  region       String? // where the author will travel, e.g. "Lagos & Port Harcourt"
+  status       String   @default("PENDING") // PENDING | APPROVED | REJECTED | ARCHIVED
+  reviewNote   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings Booking[]
+
+  @@index([status])
+}
+
+model CartItem {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  qty    Int    @default(1)
+
+  @@unique([userId, bookId])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  number          Int         @unique @default(autoincrement()) // O-2201…; sequence start set in the init migration
+  buyerId         String
+  buyer           User        @relation(fields: [buyerId], references: [id])
+  total           Int
+  shippingAddress String
+  status          String      @default("PENDING") // PENDING (awaiting payment) | PAID | CANCELLED
+  stripeSessionId String?     @unique
+  paymentRef      String? // Stripe PaymentIntent id
+  chargeId        String? // source_transaction for author transfers
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+}
+
+// Each line is fulfilled and paid out to its own author, so status and transfer live on the line.
+model OrderItem {
+  id            String    @id @default(cuid())
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId        String
+  book          Book      @relation(fields: [bookId], references: [id])
+  authorId      String
+  author        User      @relation("SoldItems", fields: [authorId], references: [id])
+  title         String
+  unitPrice     Int
+  qty           Int
+  commissionPct Int // platform cut at time of sale
+  status        String    @default("PENDING") // PENDING | PAID | SHIPPED | DELIVERED | REFUNDED | CANCELLED
+  // Author's share is held until the buyer confirms receipt or releaseAt passes.
+  releaseAt     DateTime?
+  transferId    String? // Stripe transfer of the author's share
+  transferError String?
+  review        Review?
+  issues        Issue[]
+
+  @@index([authorId, status])
+}
+
+model Booking {
+  id              String       @id @default(cuid())
+  number          Int          @unique @default(autoincrement()) // B-1041…; sequence start set in the init migration
+  buyerId         String
+  buyer           User         @relation("BuyerBookings", fields: [buyerId], references: [id])
+  authorId        String
+  author          User         @relation("AuthorBookings", fields: [authorId], references: [id])
+  packageId       String
+  package         VisitPackage @relation(fields: [packageId], references: [id])
+  eventDate       DateTime
+  organisation    String
+  venue           String
+  audienceSize    Int
+  message         String?
+  fee             Int
+  commissionPct   Int
+  // PENDING -> ACCEPTED (awaiting payment) -> CONFIRMED (paid) -> COMPLETED
+  //         -> DECLINED / CANCELLED
+  status          String       @default("PENDING")
+  authorNote      String?
+  stripeSessionId String?      @unique
+  paymentRef      String?
+  chargeId        String?
+  // Author's share is held until the buyer confirms the visit or releaseAt passes.
+  releaseAt       DateTime?
+  transferId      String?
+  transferError   String?
+  // Optional contract attached by either side (stored privately; see /api/contracts).
+  contractKey     String?
+  contractName    String?
+  contractById    String?
+  review          Review?
+  issues          Issue[]
+  createdAt       DateTime     @default(now())
+
+  @@index([authorId, status])
+  @@index([buyerId])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+// A day an author has marked as open for bookings (stored as UTC midnight).
+model AvailableDate {
+  id       String   @id @default(cuid())
+  authorId String
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  date     DateTime
+
+  @@unique([authorId, date])
+  @@index([date])
+}
+
+// One private thread per buyer–author pair.
+model Conversation {
+  id               String    @id @default(cuid())
+  buyerId          String
+  buyer            User      @relation("BuyerConversations", fields: [buyerId], references: [id], onDelete: Cascade)
+  authorId         String
+  author           User      @relation("AuthorConversations", fields: [authorId], references: [id], onDelete: Cascade)
+  lastMessageAt    DateTime  @default(now())
+  buyerLastReadAt  DateTime  @default(now())
+  authorLastReadAt DateTime  @default(now())
+  messages         Message[]
+
+  @@unique([buyerId, authorId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  body           String
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// Messages from the public contact form, read by admins.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String
+  body      String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Single-use password reset link. Only a SHA-256 hash of the token is stored.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+// A buyer's rating of an author after a completed visit or a delivered book.
+model Review {
+  id          String     @id @default(cuid())
+  authorId    String
+  author      User       @relation("ReviewsReceived", fields: [authorId], references: [id], onDelete: Cascade)
+  buyerId     String
+  buyer       User       @relation("ReviewsWritten", fields: [buyerId], references: [id], onDelete: Cascade)
+  bookingId   String?    @unique
+  booking     Booking?   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  orderItemId String?    @unique
+  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  rating      Int // 1–5
+  body        String
+  authorReply String?
+  hidden      Boolean    @default(false) // moderated by an admin
+  createdAt   DateTime   @default(now())
+
+  @@index([authorId, hidden, createdAt])
+}
+
+// "Report a problem" during the payout hold. An open issue pauses automatic release.
+model Issue {
+  id             String     @id @default(cuid())
+  buyerId        String
+  buyer          User       @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  bookingId      String?
+  booking        Booking?   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  orderItemId    String?
+  orderItem      OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  reason         String // NOT_RECEIVED | NOT_AS_DESCRIBED | DAMAGED | NO_SHOW | OTHER
+  details        String
+  status         String     @default("OPEN") // OPEN | REFUNDED | REJECTED
+  resolutionNote String?
+  createdAt      DateTime   @default(now())
+  resolvedAt     DateTime?
+
+  @@index([status])
+}
+
+// Referral program (mirrors bookanauthor.com): a referrer submits an author's details; once an
+// admin verifies it, the referrer earns a % of that author's released sales for a set window.
+model Referral {
+  id             String            @id @default(cuid())
+  referrerId     String
+  referrer       User              @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+  referredEmail  String            @unique // first completed referral form wins
+  referredName   String
+  referredUserId String?
+  referredUser   User?             @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: SetNull)
+  status         String            @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNote      String?
+  pct            Float // reward % snapshotted when submitted
+  expiresAt      DateTime // attribution window ends
+  createdAt      DateTime          @default(now())
+  reviewedAt     DateTime?
+  earnings       ReferralEarning[]
+
+  @@index([referrerId])
+}
+
+// One row per released sale by a referred author (unique per sale, so it's never counted twice).
+model ReferralEarning {
+  id         String          @id @default(cuid())
+  referralId String
+  referral   Referral        @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  sourceKind String // item | booking
+  sourceId   String
+  saleAmount Int
+  amount     Int
+  payoutId   String?
+  payout     ReferralPayout? @relation(fields: [payoutId], references: [id])
+  createdAt  DateTime        @default(now())
+
+  @@unique([sourceKind, sourceId])
+}
+
+model ReferralPayout {
+  id         String            @id @default(cuid())
+  referrerId String
+  referrer   User              @relation(fields: [referrerId], references: [id])
+  amount     Int
+  method     String // STRIPE | MANUAL
+  transferId String?
+  createdAt  DateTime          @default(now())
+  earnings   ReferralEarning[]
+}

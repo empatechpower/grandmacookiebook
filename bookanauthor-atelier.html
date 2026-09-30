@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atelier — Book authors. Buy books. Host talks.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,720&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f4efe6;
+      --paper-2: #ebe4d6;
+      --ink: #1b1612;
+      --ink-soft: #4a4038;
+      --mute: #7a7066;
+      --line: #ddd4c4;
+      --terracotta: #c24d1d;
+      --terracotta-d: #9a3812;
+      --sage: #3d5a48;
+      --sage-l: #5c7a66;
+      --gold: #c9a227;
+      --card: #fffaf3;
+      --danger: #b42318;
+      --ok: #2f6b45;
+      --shadow: 0 18px 50px rgba(27,22,18,.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Outfit, system-ui, sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    h1,h2,h3,.serif { font-family: Fraunces, Georgia, serif; }
+    button, input, select, textarea { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrap { width: min(1180px, calc(100% - 36px)); margin-inline: auto; }
+
+    /* Top bar */
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      background: rgba(244,239,230,.9);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px; gap: 16px;
+    }
+    .mark {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .mark-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--ink);
+      color: var(--paper);
+      display: grid; place-items: center;
+      font-family: Fraunces, serif; font-weight: 720; font-size: 1.15rem;
+    }
+    .mark b { font-family: Fraunces, serif; font-size: 1.2rem; font-weight: 650; letter-spacing: -.02em; }
+    .mark small { display: block; color: var(--mute); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; }
+    .nav { display: flex; gap: 22px; font-size: .92rem; font-weight: 500; color: var(--ink-soft); }
+    .nav a:hover { color: var(--ink); }
+    .actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 0; cursor: pointer; border-radius: 999px;
+      padding: 10px 16px; font-weight: 600; font-size: .9rem;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--ink); }
+    .btn-line { background: transparent; border: 1px solid var(--ink); color: var(--ink); }
+    .btn-terra { background: var(--terracotta); color: #fff; }
+    .btn-terra:hover { background: var(--terracotta-d); }
+    .btn-ink { background: var(--ink); color: var(--paper); }
+    .btn-sage { background: var(--sage); color: #fff; }
+    .chip-role {
+      font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
+      padding: 5px 10px; border-radius: 999px; background: var(--paper-2); color: var(--ink-soft);
+    }
+    .chip-role.admin { background: #1b1612; color: #f4efe6; }
+    .chip-role.author { background: #efe0c8; color: #6b4a12; }
+    .chip-role.buyer { background: #dce8df; color: #2d4a38; }
+
+    /* Views */
+    .view { display: none; }
+    .view.on { display: block; }
+
+    /* Hero */
+    .hero { padding: 56px 0 28px; }
+    .hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; gap: 8px; align-items: center;
+      font-size: .75rem; letter-spacing: .14em; text-transform: uppercase;
+      color: var(--terracotta); font-weight: 600; margin-bottom: 14px;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5.2vw, 4.4rem);
+      line-height: 1.02; letter-spacing: -.04em; font-weight: 650;
+    }
+    .hero h1 em { font-style: italic; color: var(--terracotta); }
+    .hero p.lede { margin-top: 18px; font-size: 1.08rem; color: var(--ink-soft); max-width: 46ch; }
+    .hero-cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+    .roles-preview { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 36px; }
+    .rp {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
+    }
+    .rp strong { display: block; font-size: .92rem; }
+    .rp span { font-size: .78rem; color: var(--mute); }
+    .poster {
+      background: var(--ink); color: var(--paper); border-radius: 28px;
+      padding: 28px; min-height: 460px; position: relative; overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .poster::after {
+      content: ""; position: absolute; right: -40px; bottom: -40px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle, var(--terracotta), transparent 70%);
+      opacity: .55;
+    }
+    .poster-kicker { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; opacity: .7; }
+    .poster h3 { font-size: 1.8rem; margin: 10px 0 18px; letter-spacing: -.03em; }
+    .event-card {
+      background: rgba(255,250,243,.08); border: 1px solid rgba(244,239,230,.12);
+      border-radius: 16px; padding: 14px; margin-bottom: 10px;
+    }
+    .event-card b { display: block; }
+    .event-card small { opacity: .7; }
+
+    /* Sections */
+    section.pad { padding: 56px 0; }
+    .sec-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 24px; }
+    .sec-head h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); letter-spacing: -.03em; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .filter {
+      border: 1px solid var(--line); background: transparent; border-radius: 999px;
+      padding: 7px 12px; cursor: pointer; color: var(--ink-soft);
+    }
+    .filter.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+      overflow: hidden; box-shadow: 0 8px 24px rgba(27,22,18,.04);
+    }
+    .card .cover { height: 180px; background: #d9cbb6; object-fit: cover; width: 100%; }
+    .card .body { padding: 14px 16px 16px; }
+    .meta { font-size: .75rem; color: var(--mute); text-transform: uppercase; letter-spacing: .06em; }
+    .card h3 { font-size: 1.05rem; margin: 4px 0 6px; }
+    .price { font-weight: 700; }
+    .row-btns { display: flex; gap: 8px; margin-top: 12px; }
+
+    /* Auth / dashboards */
+    .auth-shell {
+      min-height: calc(100vh - 72px);
+      display: grid; grid-template-columns: 1fr 1fr;
+    }
+    .auth-art {
+      background: var(--ink); color: var(--paper); padding: 64px 48px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .auth-form { padding: 64px 48px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .8rem; margin-bottom: 6px; color: var(--ink-soft); }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: #fff;
+    }
+    .role-pick { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .role-opt {
+      border: 1px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; background: #fff;
+      text-align: left;
+    }
+    .role-opt.on { border-color: var(--ink); background: #f7f0e4; }
+    .role-opt b { display: block; font-size: .88rem; }
+    .role-opt span { font-size: .72rem; color: var(--mute); }
+
+    .dash { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 72px); }
+    .side {
+      border-right: 1px solid var(--line); padding: 24px 16px;
+      background: #efe8da;
+    }
+    .side a, .side button.linkish {
+      display: block; width: 100%; text-align: left;
+      padding: 10px 12px; border-radius: 10px; border: 0; background: transparent;
+      color: var(--ink-soft); cursor: pointer; font-weight: 500;
+    }
+    .side a.on, .side button.linkish.on, .side a:hover, .side button.linkish:hover {
+      background: var(--ink); color: var(--paper);
+    }
+    .main { padding: 28px 28px 60px; }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+    .kpi span { font-size: .75rem; color: var(--mute); text-transform: uppercase; letter-spacing: .08em; }
+    .kpi b { display: block; font-family: Fraunces, serif; font-size: 1.7rem; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 16px; overflow: hidden; }
+    th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: .9rem; }
+    th { background: #efe8da; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+    .badge { font-size: .72rem; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
+    .b-ok { background: #dceee3; color: #215c36; }
+    .b-wait { background: #f3e6c4; color: #7a5a10; }
+    .b-off { background: #eadfdf; color: #7a2e28; }
+
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; background: var(--ink); color: var(--paper);
+      padding: 12px 16px; border-radius: 12px; display: none; z-index: 80;
+    }
+    footer.site { border-top: 1px solid var(--line); padding: 36px 0 24px; color: var(--mute); font-size: .88rem; }
+    .foot { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+    @media (max-width: 960px) {
+      .hero-grid, .auth-shell, .dash, .grid-4, .grid-3, .roles-preview { grid-template-columns: 1fr; }
+      .nav { display: none; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .auth-art { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="mark" onclick="go('home')">
+        <div class="mark-icon">A</div>
+        <div>
+          <b>Atelier</b>
+          <small>Literary marketplace</small>
+        </div>
+      </div>
+      <nav class="nav" id="publicNav">
+        <a href="#" onclick="go('home');return false;">Home</a>
+        <a href="#" onclick="go('market');return false;">Books</a>
+        <a href="#" onclick="go('visits');return false;">Visits & talks</a>
+        <a href="#" onclick="go('how');return false;">How it works</a>
+      </nav>
+      <div class="actions" id="authActions">
+        <button class="btn btn-ghost" onclick="go('login')">Log in</button>
+        <button class="btn btn-terra" onclick="go('signup')">Join Atelier</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div id="view-home" class="view on">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow">Three roles · one marketplace</div>
+          <h1>Books to own.<br>Voices to <em>invite</em>.</h1>
+          <p class="lede">Atelier connects readers with authors who sell their work and appear in person. Super admins keep the catalog trusted. Buyers book a talk or take a title home the same afternoon.</p>
+          <div class="hero-cta">
+            <button class="btn btn-terra" onclick="preRole('buyer');go('signup')">I want to buy or book</button>
+            <button class="btn btn-line" onclick="preRole('author');go('signup')">I am an author</button>
+          </div>
+          <div class="roles-preview">
+            <div class="rp"><strong>Buyer</strong><span>Purchase books. Book a visit or keynote.</span></div>
+            <div class="rp"><strong>Author</strong><span>List titles. Offer school or stage visits.</span></div>
+            <div class="rp"><strong>Super admin</strong><span>Approve listings. Oversee users and payouts.</span></div>
+          </div>
+        </div>
+        <aside class="poster">
+          <div class="poster-kicker">This week on stage</div>
+          <h3>Live visits you can book tonight</h3>
+          <div class="event-card"><b>SEL assembly — Jeanette Gil</b><small>Virtual · 45 min · $420</small></div>
+          <div class="event-card"><b>STEM night — Mike Crowder</b><small>In person · Port Harcourt · $780</small></div>
+          <div class="event-card"><b>Corporate keynote — Joy at work</b><small>On-site · 60 min · $1,800</small></div>
+          <button class="btn btn-terra" style="margin-top:12px" onclick="go('visits')">See all visits</button>
+        </aside>
+      </div>
+    </section>
+
+    <section class="pad">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>Books from the authors themselves</h2>
+          <button class="btn btn-ghost" onclick="go('market')">Shop catalog →</button>
+        </div>
+        <div class="grid-4" id="homeBooks"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- MARKET -->
+  <div id="view-market" class="view">
+    <section class="pad">
+      <div class="wrap">
+        <div class="sec-head"><div><div class="eyebrow">Catalog</div><h2>Buy the book</h2></div></div>
+        <div class="filters">
+          <button class="filter active" onclick="filterBooks('all', this)">All</button>
+          <button class="filter" onclick="filterBooks('children', this)">Children</button>
+          <button class="filter" onclick="filterBooks('stem', this)">STEM</button>
+          <button class="filter" onclick="filterBooks('sel', this)">SEL</button>
+        </div>
+        <div class="grid-4" id="bookGrid"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- VISITS -->
+  <div id="view-visits" class="view">
+    <section class="pad">
+      <div class="wrap">
+        <div class="sec-head"><div><div class="eyebrow">Appearances</div><h2>Book a visit or speech</h2></div></div>
+        <div class="grid-3" id="visitGrid"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- HOW -->
+  <div id="view-how" class="view">
+    <section class="pad">
+      <div class="wrap">
+        <div class="eyebrow">Roles</div>
+        <h2 style="margin-bottom:24px">How Atelier is structured</h2>
+        <div class="grid-3">
+          <article class="card"><div class="body">
+            <div class="meta">Buyer</div>
+            <h3>Read and host</h3>
+            <p>Create a free account. Buy print or classroom sets. Request an in-person or virtual visit. Pay in one checkout. Track orders and bookings.</p>
+          </div></article>
+          <article class="card"><div class="body">
+            <div class="meta">Author</div>
+            <h3>Sell and appear</h3>
+            <p>List books with price and stock. Publish visit packages (format, duration, travel radius, fee). Accept or decline requests. Withdraw earnings after admin clearance.</p>
+          </div></article>
+          <article class="card"><div class="body">
+            <div class="meta">Super admin</div>
+            <h3>Trust layer</h3>
+            <p>Approve new authors and listings. Suspend abuse. View every order and booking. Adjust fees. The marketplace does not go live without this desk.</p>
+          </div></article>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- AUTH -->
+  <div id="view-login" class="view">
+    <div class="auth-shell">
+      <div class="auth-art">
+        <div>
+          <div class="eyebrow" style="color:#e8b089">Welcome back</div>
+          <h2 style="font-size:2.6rem;letter-spacing:-.03em">Your desk is waiting.</h2>
+        </div>
+        <p>Demo accounts — password anything:<br>buyer@atelier.test · author@atelier.test · admin@atelier.test</p>
+      </div>
+      <div class="auth-form">
+        <h2>Log in</h2>
+        <p style="color:var(--mute);margin:8px 0 22px">Use a demo email or any address plus a role.</p>
+        <div class="field"><label>Email</label><input id="loginEmail" value="buyer@atelier.test" /></div>
+        <div class="field"><label>Password</label><input type="password" value="atelier" /></div>
+        <button class="btn btn-ink" onclick="login()">Enter Atelier</button>
+        <p style="margin-top:16px;font-size:.9rem">No account? <a href="#" onclick="go('signup');return false;" style="color:var(--terracotta)">Join</a></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-signup" class="view">
+    <div class="auth-shell">
+      <div class="auth-art">
+        <div>
+          <div class="eyebrow" style="color:#e8b089">New member</div>
+          <h2 style="font-size:2.6rem">Pick the desk that fits you.</h2>
+        </div>
+        <p>Authors can sell books and offer visits. Buyers only purchase and book. Super admin is invited internally in production.</p>
+      </div>
+      <div class="auth-form">
+        <h2>Create account</h2>
+        <div class="field"><label>Full name</label><input id="suName" placeholder="Adaeze Okonkwo" /></div>
+        <div class="field"><label>Email</label><input id="suEmail" placeholder="you@email.com" /></div>
+        <div class="field"><label>Role</label>
+          <div class="role-pick">
+            <button type="button" class="role-opt on" id="opt-buyer" onclick="pickRole('buyer')"><b>Buyer</b><span>Shop & book</span></button>
+            <button type="button" class="role-opt" id="opt-author" onclick="pickRole('author')"><b>Author</b><span>Sell & speak</span></button>
+            <button type="button" class="role-opt" id="opt-admin" onclick="pickRole('admin')"><b>Admin</b><span>Govern</span></button>
+          </div>
+        </div>
+        <button class="btn btn-terra" onclick="signup()">Create workspace</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARDS -->
+  <div id="view-dash" class="view">
+    <div class="dash">
+      <aside class="side" id="sideNav"></aside>
+      <main class="main" id="dashMain"></main>
+    </div>
+  </div>
+
+  <footer class="site">
+    <div class="wrap foot">
+      <div>Atelier — a redesign study. Not the official Book an Author product.</div>
+      <div>Buyer · Author · Super admin</div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const books = [
+      { id: 1, title: "Balu the Paw Traveler", author: "Miriam Bejerano", price: 18, tag: "children", img: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&h=400&fit=crop" },
+      { id: 2, title: "The Empathy Effect", author: "Jayme Branagh", price: 16, tag: "sel", img: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop" },
+      { id: 3, title: "Night Sky Notes", author: "Allie Davis", price: 21, tag: "stem", img: "https://images.unsplash.com/photo-1456513080800-7d93dbe9f26e?w=600&h=400&fit=crop" },
+      { id: 4, title: "Joyful Path", author: "Meena Julapalli", price: 19, tag: "sel", img: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=600&h=400&fit=crop" },
+      { id: 5, title: "Word Play Lab", author: "Mike Crowder", price: 14, tag: "stem", img: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=600&h=400&fit=crop" },
+      { id: 6, title: "Horse Country Tales", author: "Susan Friedland", price: 17, tag: "children", img: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&h=400&fit=crop" },
+      { id: 7, title: "Family Table", author: "FA Khan", price: 20, tag: "sel", img: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&h=400&fit=crop" },
+      { id: 8, title: "Nature Sketchbook", author: "Audrey Sauble", price: 22, tag: "stem", img: "https://images.unsplash.com/photo-1476275468102-8900ce69d857?w=600&h=400&fit=crop" }
+    ];
+    const visits = [
+      { id: 1, title: "Classroom SEL visit", author: "Jeanette Gil", format: "Virtual or on-site", mins: 45, fee: 420 },
+      { id: 2, title: "STEM family night", author: "Mike Crowder", format: "In person", mins: 60, fee: 780 },
+      { id: 3, title: "Corporate keynote: Joy", author: "Meena Julapalli", format: "On-site", mins: 60, fee: 1800 },
+      { id: 4, title: "Library animal tales", author: "Susan Friedland", format: "In person", mins: 40, fee: 390 },
+      { id: 5, title: "Astronomy assembly", author: "Allie Davis", format: "Virtual", mins: 50, fee: 510 },
+      { id: 6, title: "Empathy workshop", author: "Jayme Branagh", format: "Hybrid", mins: 75, fee: 640 }
+    ];
+
+    let session = null;
+    let chosenRole = "buyer";
+    let bookFilter = "all";
+    let cart = [];
+    let bookings = [
+      { id: "B-1041", who: "St. Cloud Elementary", item: "SEL visit — Jeanette Gil", status: "Confirmed", amount: 420 },
+      { id: "B-1042", who: "Oxbridge Preschool", item: "Virtual reading", status: "Pending", amount: 280 }
+    ];
+    let orders = [
+      { id: "O-2201", who: "Ada Buyer", item: "Night Sky Notes × 24", status: "Paid", amount: 504 },
+      { id: "O-2202", who: "Q300 PTA", item: "Empathy Effect × 40", status: "Shipped", amount: 640 }
+    ];
+    let authors = [
+      { name: "Jeanette Gil", status: "Approved", books: 3, visits: 2 },
+      { name: "Mike Crowder", status: "Approved", books: 5, visits: 1 },
+      { name: "New Voice Press", status: "Review", books: 1, visits: 0 }
+    ];
+
+    function toast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg; t.style.display = "block";
+      setTimeout(() => t.style.display = "none", 2200);
+    }
+
+    function go(name) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("on"));
+      document.getElementById("view-" + name).classList.add("on");
+      window.scrollTo(0,0);
+      if (name === "dash") renderDash();
+    }
+
+    function bookCard(b) {
+      return `<article class="card">
+        <img class="cover" src="${b.img}" alt="${b.title}">
+        <div class="body">
+          <div class="meta">${b.tag} · ${b.author}</div>
+          <h3>${b.title}</h3>
+          <div class="price">$${b.price}</div>
+          <div class="row-btns">
+            <button class="btn btn-terra" onclick="buyBook(${b.id})">Buy</button>
+            <button class="btn btn-ghost" onclick="go('visits')">Book author</button>
+          </div>
+        </div>
+      </article>`;
+    }
+    function visitCard(v) {
+      return `<article class="card"><div class="body">
+        <div class="meta">${v.format} · ${v.mins} min</div>
+        <h3>${v.title}</h3>
+        <p>${v.author}</p>
+        <div class="price" style="margin-top:8px">$${v.fee}</div>
+        <div class="row-btns">
+          <button class="btn btn-ink" onclick="bookVisit(${v.id})">Request booking</button>
+        </div>
+      </div></article>`;
+    }
+    function renderCatalogs() {
+      document.getElementById("homeBooks").innerHTML = books.slice(0,4).map(bookCard).join("");
+      const list = bookFilter === "all" ? books : books.filter(b => b.tag === bookFilter);
+      document.getElementById("bookGrid").innerHTML = list.map(bookCard).join("");
+      document.getElementById("visitGrid").innerHTML = visits.map(visitCard).join("");
+    }
+    function filterBooks(tag, el) {
+      bookFilter = tag;
+      document.querySelectorAll(".filter").forEach(f => f.classList.remove("active"));
+      el.classList.add("active");
+      renderCatalogs();
+    }
+    function requireUser(action) {
+      if (!session) { toast("Log in as a buyer or author first"); go("login"); return false; }
+      return true;
+    }
+    function buyBook(id) {
+      if (!requireUser()) return;
+      if (session.role === "admin") { toast("Admins moderate — use a buyer account to purchase"); return; }
+      const b = books.find(x => x.id === id);
+      cart.push(b);
+      orders.unshift({ id: "O-" + (2200 + orders.length + 1), who: session.name, item: b.title + " × 1", status: "Paid", amount: b.price });
+      toast("Purchased “" + b.title + "”");
+      if (session.role === "buyer") go("dash");
+    }
+    function bookVisit(id) {
+      if (!requireUser()) return;
+      if (session.role === "admin") { toast("Admins approve bookings from the control desk"); return; }
+      const v = visits.find(x => x.id === id);
+      bookings.unshift({ id: "B-" + (1040 + bookings.length + 1), who: session.name, item: v.title + " — " + v.author, status: "Pending", amount: v.fee });
+      toast("Visit requested. Author + admin will confirm.");
+      go("dash");
+    }
+
+    function pickRole(r) {
+      chosenRole = r;
+      ["buyer","author","admin"].forEach(x => document.getElementById("opt-"+x).classList.toggle("on", x===r));
+    }
+    function preRole(r) { chosenRole = r; }
+
+    function setSession(user) {
+      session = user;
+      const actions = document.getElementById("authActions");
+      const label = user.role === "admin" ? "Super admin" : user.role === "author" ? "Author" : "Buyer";
+      const cls = user.role === "admin" ? "admin" : user.role === "author" ? "author" : "buyer";
+      actions.innerHTML = `
+        <span class="chip-role ${cls}">${label}</span>
+        <button class="btn btn-ghost" onclick="go('dash')">${user.name.split(" ")[0]} desk</button>
+        <button class="btn btn-line" onclick="logout()">Log out</button>`;
+    }
+    function logout() {
+      session = null;
+      document.getElementById("authActions").innerHTML = `
+        <button class="btn btn-ghost" onclick="go('login')">Log in</button>
+        <button class="btn btn-terra" onclick="go('signup')">Join Atelier</button>`;
+      go("home");
+    }
+    function login() {
+      const email = (document.getElementById("loginEmail").value || "").toLowerCase();
+      let role = "buyer", name = "Ada Buyer";
+      if (email.includes("admin")) { role = "admin"; name = "Amaka Nwosu"; }
+      else if (email.includes("author")) { role = "author"; name = "Chike Okoro"; }
+      setSession({ email, role, name });
+      go("dash");
+    }
+    function signup() {
+      const name = document.getElementById("suName").value || "New member";
+      const email = document.getElementById("suEmail").value || "new@atelier.test";
+      setSession({ email, role: chosenRole, name });
+      toast("Workspace ready as " + chosenRole);
+      go("dash");
+    }
+
+    function sideLink(id, label) {
+      return `<button class="linkish" onclick="dashPanel('${id}')">${label}</button>`;
+    }
+    function renderDash() {
+      if (!session) { go("login"); return; }
+      const s = document.getElementById("sideNav");
+      if (session.role === "admin") {
+        s.innerHTML = `<p style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:0 12px 12px">Control</p>
+          ${sideLink("overview","Overview")}
+          ${sideLink("users","Users & authors")}
+          ${sideLink("listings","Listings review")}
+          ${sideLink("commerce","Orders & bookings")}
+          ${sideLink("fees","Fees & payouts")}`;
+      } else if (session.role === "author") {
+        s.innerHTML = `<p style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:0 12px 12px">Studio</p>
+          ${sideLink("overview","Overview")}
+          ${sideLink("mybooks","My books")}
+          ${sideLink("myvisits","Visit packages")}
+          ${sideLink("requests","Booking requests")}
+          ${sideLink("earnings","Earnings")}`;
+      } else {
+        s.innerHTML = `<p style="font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:0 12px 12px">Library</p>
+          ${sideLink("overview","Overview")}
+          ${sideLink("shop","Buy books")}
+          ${sideLink("booktalk","Book a talk")}
+          ${sideLink("myorders","Orders")}
+          ${sideLink("mybookings","My bookings")}`;
+      }
+      dashPanel("overview");
+    }
+
+    function table(rows, heads) {
+      return `<table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    function dashPanel(id) {
+      const m = document.getElementById("dashMain");
+      const r = session.role;
+
+      if (id === "shop") { go("market"); return; }
+      if (id === "booktalk") { go("visits"); return; }
+
+      if (id === "overview" && r === "buyer") {
+        m.innerHTML = `<h2>Hello, ${session.name}</h2>
+          <p style="color:var(--mute);margin:6px 0 20px">Buy a title or invite an author to your school, office, or hall.</p>
+          <div class="kpis">
+            <div class="kpi"><span>Orders</span><b>${orders.filter(o=>o.who===session.name).length || orders.length}</b></div>
+            <div class="kpi"><span>Bookings</span><b>${bookings.filter(o=>o.who===session.name).length || 1}</b></div>
+            <div class="kpi"><span>Cart</span><b>${cart.length}</b></div>
+            <div class="kpi"><span>Role</span><b>Buyer</b></div>
+          </div>
+          <div class="row-btns"><button class="btn btn-terra" onclick="go('market')">Shop books</button>
+          <button class="btn btn-ink" onclick="go('visits')">Book a visit</button></div>`;
+      }
+      if (id === "overview" && r === "author") {
+        m.innerHTML = `<h2>Studio</h2>
+          <p style="color:var(--mute);margin:6px 0 20px">You sell books and you take the work on the road.</p>
+          <div class="kpis">
+            <div class="kpi"><span>Titles live</span><b>4</b></div>
+            <div class="kpi"><span>Visit packages</span><b>2</b></div>
+            <div class="kpi"><span>Pending requests</span><b>${bookings.filter(b=>b.status==="Pending").length}</b></div>
+            <div class="kpi"><span>Month earnings</span><b>$2,140</b></div>
+          </div>
+          <div class="grid-2">
+            <div class="card"><div class="body"><h3>New book</h3>
+              <div class="field"><label>Title</label><input id="nbTitle" placeholder="Working title"></div>
+              <div class="field"><label>Price USD</label><input id="nbPrice" type="number" value="18"></div>
+              <button class="btn btn-terra" onclick="addBook()">Submit for review</button>
+            </div></div>
+            <div class="card"><div class="body"><h3>New visit package</h3>
+              <div class="field"><label>Name</label><input id="nvTitle" placeholder="Keynote / classroom hour"></div>
+              <div class="field"><label>Fee USD</label><input id="nvFee" type="number" value="500"></div>
+              <button class="btn btn-ink" onclick="addVisit()">Publish package</button>
+            </div></div>
+          </div>`;
+      }
+      if (id === "overview" && r === "admin") {
+        m.innerHTML = `<h2>Super admin</h2>
+          <p style="color:var(--mute);margin:6px 0 20px">Govern who sells, what is listed, and which bookings clear.</p>
+          <div class="kpis">
+            <div class="kpi"><span>Authors</span><b>${authors.length}</b></div>
+            <div class="kpi"><span>Open reviews</span><b>1</b></div>
+            <div class="kpi"><span>GMV (demo)</span><b>$12.4k</b></div>
+            <div class="kpi"><span>Pending bookings</span><b>${bookings.filter(b=>b.status==="Pending").length}</b></div>
+          </div>`;
+      }
+      if (id === "mybooks") {
+        m.innerHTML = `<h2>My books</h2><p style="margin:8px 0 16px;color:var(--mute)">Listed titles sell directly to buyers.</p>` +
+          table(books.slice(0,4).map(b=>`<tr><td>${b.title}</td><td>$${b.price}</td><td><span class="badge b-ok">Live</span></td></tr>`).join(""), ["Title","Price","Status"]);
+      }
+      if (id === "myvisits") {
+        m.innerHTML = `<h2>Visit packages</h2>` +
+          table(visits.slice(0,3).map(v=>`<tr><td>${v.title}</td><td>${v.format}</td><td>$${v.fee}</td></tr>`).join(""), ["Package","Format","Fee"]);
+      }
+      if (id === "requests" || id === "mybookings" || id === "commerce") {
+        const canModerate = r === "admin" || r === "author";
+        m.innerHTML = `<h2>${id==="commerce"?"Commerce":"Bookings"}</h2>` +
+          table(bookings.map(b=>`<tr><td>${b.id}</td><td>${b.who}</td><td>${b.item}</td><td>$${b.amount}</td><td><span class="badge ${b.status==="Confirmed"?"b-ok":"b-wait"}">${b.status}</span></td>
+            <td>${canModerate && b.status==="Pending"?`<button class="btn btn-sage" onclick="confirmBooking('${b.id}')">Confirm</button>`:""}</td></tr>`).join(""),
+            ["ID","Who","Item","Amount","Status",""]);
+        if (id === "commerce") {
+          m.innerHTML += `<h2 style="margin-top:28px">Orders</h2>` +
+            table(orders.map(o=>`<tr><td>${o.id}</td><td>${o.who}</td><td>${o.item}</td><td>$${o.amount}</td><td><span class="badge b-ok">${o.status}</span></td></tr>`).join(""),
+            ["ID","Buyer","Item","Amount","Status"]);
+        }
+      }
+      if (id === "myorders") {
+        m.innerHTML = `<h2>Orders</h2>` +
+          table(orders.map(o=>`<tr><td>${o.id}</td><td>${o.item}</td><td>$${o.amount}</td><td><span class="badge b-ok">${o.status}</span></td></tr>`).join(""),
+          ["ID","Item","Amount","Status"]);
+      }
+      if (id === "earnings") {
+        m.innerHTML = `<h2>Earnings</h2>
+          <div class="kpis"><div class="kpi"><span>Available</span><b>$1,620</b></div>
+          <div class="kpi"><span>In clearance</span><b>$520</b></div>
+          <div class="kpi"><span>Platform fee</span><b>12%</b></div>
+          <div class="kpi"><span>Next payout</span><b>Fri</b></div></div>
+          <button class="btn btn-terra" onclick="toast('Payout requested — admin will release')">Request payout</button>`;
+      }
+      if (id === "users") {
+        m.innerHTML = `<h2>Users & authors</h2>` +
+          table(authors.map((a,i)=>`<tr><td>${a.name}</td><td>${a.books} books</td><td>${a.visits} visits</td>
+            <td><span class="badge ${a.status==="Approved"?"b-ok":"b-wait"}">${a.status}</span></td>
+            <td>${a.status!=="Approved"?`<button class="btn btn-sage" onclick="approveAuthor(${i})">Approve</button>`:""}</td></tr>`).join(""),
+            ["Name","Books","Visits","Status",""]);
+      }
+      if (id === "listings") {
+        m.innerHTML = `<h2>Listings review</h2>
+          <p style="color:var(--mute);margin:8px 0 16px">Nothing goes public until this desk says so.</p>` +
+          table(`<tr><td>New Voice Press</td><td>Book · First Light</td><td><span class="badge b-wait">Review</span></td>
+            <td><button class="btn btn-sage" onclick="toast('Listing approved')">Approve</button>
+            <button class="btn btn-line" onclick="toast('Listing declined')">Decline</button></td></tr>`,
+            ["Creator","Listing","Status",""]);
+      }
+      if (id === "fees") {
+        m.innerHTML = `<h2>Fees & payouts</h2>
+          <div class="card"><div class="body">
+            <div class="field"><label>Book commission %</label><input value="12"></div>
+            <div class="field"><label>Visit commission %</label><input value="15"></div>
+            <button class="btn btn-ink" onclick="toast('Fee schedule saved')">Save schedule</button>
+          </div></div>`;
+      }
+    }
+    function confirmBooking(id) {
+      const b = bookings.find(x => x.id === id);
+      if (b) b.status = "Confirmed";
+      toast("Booking confirmed");
+      dashPanel(session.role === "admin" ? "commerce" : "requests");
+    }
+    function approveAuthor(i) {
+      authors[i].status = "Approved";
+      toast(authors[i].name + " approved");
+      dashPanel("users");
+    }
+    function addBook() {
+      const title = document.getElementById("nbTitle").value || "Untitled manuscript";
+      books.unshift({ id: Date.now(), title, author: session.name, price: Number(document.getElementById("nbPrice").value||18), tag: "sel", img: books[0].img });
+      toast("Book sent to admin review, then catalog");
+      renderCatalogs();
+    }
+    function addVisit() {
+      const title = document.getElementById("nvTitle").value || "Author visit";
+      visits.unshift({ id: Date.now(), title, author: session.name, format: "Flexible", mins: 45, fee: Number(document.getElementById("nvFee").value||500) });
+      toast("Visit package listed");
+      renderCatalogs();
+    }
+
+    renderCatalogs();
+  </script>
+</body>
+</html>

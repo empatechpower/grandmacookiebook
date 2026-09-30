@@ -1,0 +1,101 @@
+"use server";
+import bcrypt from "bcryptjs";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
+import { done, fail, str, int } from "@/lib/actions";
+import { saveSettings } from "@/lib/settings";
+import { releaseBooking, releaseDue, releaseItem } from "@/lib/fulfillment";
+import { cancelBooking, refundItem } from "@/lib/refunds";
+import * as notify from "@/lib/notify";
+
+export async function setUserStatus(fd: FormData) {
+  const admin = await requireUser("ADMIN");
+  const id = str(fd, "id");
+  const status = str(fd, "status");
+  if (!["ACTIVE", "SUSPENDED"].includes(status)) return fail("Invalid status");
+  if (id === admin.id) return fail("You can't change your own status");
+  const before = await db.user.findUnique({ where: { id }, select: { status: true } });
+  const u = await db.user.update({ where: { id }, data: { status } });
+  if (u.role === "AUTHOR" && before?.status === "PENDING" && status === "ACTIVE") await notify.authorApproved(u);
+  await done(status === "SUSPENDED" ? `${u.name} suspended` : `${u.name} is active`);
+}
+
+export async function reviewListing(fd: FormData) {
+  await requireUser("ADMIN");
+  const kind = str(fd, "kind");
+  const id = str(fd, "id");
+  const approve = str(fd, "decision") === "approve";
+  const note = str(fd, "note") || null;
+  if (!approve && !note) return fail("Add a note so the author knows what to fix");
+  const data = { status: approve ? "APPROVED" : "REJECTED", reviewNote: note };
+  const include = { author: { select: { name: true, email: true } } };
+  const listing =
+    kind === "book" ? await db.book.update({ where: { id }, data, include }) : await db.visitPackage.update({ where: { id }, data, include });
+  await notify.listingReviewed({ kind: kind === "book" ? "book" : "package", title: listing.title, approved: approve, note, author: listing.author });
+  await done(approve ? "Listing approved — now live" : "Listing sent back to the author");
+}
+
+export async function adminCancelBooking(fd: FormData) {
+  await requireUser("ADMIN");
+  const r = await cancelBooking(str(fd, "id"));
+  if (!r.ok) return fail(r.error);
+  await done(r.warning ?? (r.refunded ? "Booking cancelled and refunded" : "Booking cancelled"));
+}
+
+export async function refundOrderItem(fd: FormData) {
+  await requireUser("ADMIN");
+  const r = await refundItem(str(fd, "id"));
+  if (!r.ok) return fail(r.error);
+  await done(r.warning ?? "Line refunded");
+}
+
+/** Releases a held payment early, or re-attempts a failed transfer. */
+export async function retryTransfer(fd: FormData) {
+  await requireUser("ADMIN");
+  const id = str(fd, "id");
+  const isBooking = str(fd, "kind") === "booking";
+  if (isBooking) await releaseBooking(id);
+  else await releaseItem(id);
+  const row = isBooking
+    ? await db.booking.findUnique({ where: { id }, select: { transferId: true, transferError: true } })
+    : await db.orderItem.findUnique({ where: { id }, select: { transferId: true, transferError: true } });
+  await done(row?.transferId ? "Released — transfer sent to author" : `Transfer failed again: ${row?.transferError ?? "unknown error"}`);
+}
+
+/** Runs the daily release job on demand (same as the cron). */
+export async function releaseDueNow() {
+  await requireUser("ADMIN");
+  const r = await releaseDue();
+  await done(r.items + r.bookings ? `Released ${r.items} order line(s) and ${r.bookings} booking(s)` : "Nothing due for release");
+}
+
+export async function saveFees(fd: FormData) {
+  await requireUser("ADMIN");
+  const book = int(fd, "bookCommissionPct");
+  const visit = int(fd, "visitCommissionPct");
+  const referralPct = Number(fd.get("referralPct") ?? 0);
+  const referralMonths = int(fd, "referralMonths");
+  if ([book, visit].some((n) => n < 0 || n > 50)) return fail("Commission must be between 0 and 50%");
+  if (!(referralPct >= 0 && referralPct <= 10)) return fail("Referral reward must be between 0 and 10%");
+  if (referralMonths < 1 || referralMonths > 60) return fail("Referral window must be 1–60 months");
+  await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths });
+  await done("Fee schedule saved — applies to new orders and bookings");
+}
+
+const InviteSchema = z.object({
+  name: z.string().trim().min(2, "Name is required"),
+  email: z.string().trim().toLowerCase().email("Enter a valid email"),
+  password: z.string().min(8, "Temporary password must be at least 8 characters"),
+});
+
+export async function inviteAdmin(fd: FormData) {
+  await requireUser("ADMIN");
+  const p = InviteSchema.safeParse(Object.fromEntries(fd));
+  if (!p.success) return fail(p.error.issues[0].message);
+  if (await db.user.findUnique({ where: { email: p.data.email } })) return fail("That email is already registered");
+  await db.user.create({
+    data: { name: p.data.name, email: p.data.email, role: "ADMIN", passwordHash: await bcrypt.hash(p.data.password, 10) },
+  });
+  await done(`${p.data.name} added as super admin`);
+}

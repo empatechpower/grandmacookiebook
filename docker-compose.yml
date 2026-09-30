@@ -1,0 +1,15 @@
+# Local Postgres for development: `npm run db:up`
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: atelier
+      POSTGRES_PASSWORD: atelier
+      POSTGRES_DB: atelier
+    ports:
+      - "5432:5432"
+    volumes:
+      - atelier-db:/var/lib/postgresql/data
+volumes:
+  atelier-db:
