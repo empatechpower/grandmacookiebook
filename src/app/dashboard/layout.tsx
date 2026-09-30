@@ -3,6 +3,7 @@ import { SideNav } from "@/components/SideNav";
 import { unreadCount } from "@/lib/messages";
 import { db } from "@/lib/db";
 
+// Entries whose href starts with "#" are group headings.
 const NAV: Record<string, { label: string; links: [string, string][] }> = {
   BUYER: {
     label: "Library",
@@ -10,9 +11,12 @@ const NAV: Record<string, { label: string; links: [string, string][] }> = {
       ["/dashboard/buyer", "Overview"],
       ["/authors", "Find an author"],
       ["/books", "Buy books"],
-      ["/dashboard/messages", "Messages"],
-      ["/dashboard/buyer/orders", "Orders"],
+      ["#activity", "Activity"],
       ["/dashboard/buyer/bookings", "My bookings"],
+      ["/dashboard/buyer/requests", "Requests & bids"],
+      ["/dashboard/buyer/orders", "Orders"],
+      ["/dashboard/messages", "Messages"],
+      ["#account", "Account"],
       ["/dashboard/buyer/profile", "Profile"],
     ],
   },
@@ -20,12 +24,16 @@ const NAV: Record<string, { label: string; links: [string, string][] }> = {
     label: "Studio",
     links: [
       ["/dashboard/author", "Overview"],
+      ["#listings", "Listings"],
       ["/dashboard/author/books", "My books"],
       ["/dashboard/author/visits", "Visit packages"],
-      ["/dashboard/author/requests", "Booking requests"],
       ["/dashboard/author/availability", "Availability"],
-      ["/dashboard/messages", "Messages"],
+      ["#work", "Bookings & sales"],
+      ["/dashboard/author/requests", "Booking requests"],
+      ["/dashboard/author/opportunities", "Opportunities"],
       ["/dashboard/author/orders", "Book orders"],
+      ["/dashboard/messages", "Messages"],
+      ["#growth", "Money & growth"],
       ["/dashboard/author/payouts", "Payouts"],
       ["/dashboard/author/reviews", "Reviews"],
       ["/dashboard/author/referrals", "Referrals"],
@@ -36,14 +44,19 @@ const NAV: Record<string, { label: string; links: [string, string][] }> = {
     label: "Control",
     links: [
       ["/dashboard/admin", "Overview"],
+      ["#marketplace", "Marketplace"],
       ["/dashboard/admin/users", "Users & authors"],
       ["/dashboard/admin/listings", "Listings review"],
       ["/dashboard/admin/orders", "Orders"],
       ["/dashboard/admin/bookings", "Bookings"],
       ["/dashboard/admin/issues", "Problem reports"],
       ["/dashboard/admin/reviews", "Reviews"],
-      ["/dashboard/admin/referrals", "Referrals"],
+      ["#content", "Content"],
+      ["/dashboard/admin/collections", "Collections"],
+      ["/dashboard/admin/articles", "News & events"],
       ["/dashboard/admin/inbox", "Contact inbox"],
+      ["#money", "Money & settings"],
+      ["/dashboard/admin/referrals", "Referrals"],
       ["/dashboard/admin/settings", "Fees & admins"],
     ],
   },

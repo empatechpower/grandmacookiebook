@@ -30,7 +30,7 @@ export async function authorApproved(author: { name: string; email: string; payo
   const base = await appUrl();
   sendEmail({
     to: author.email,
-    subject: "Your Atelier author account is approved",
+    subject: "Your Grandma Cookie Book author account is approved",
     lines: [
       `Hi ${first(author.name)}, your author account has been approved.`,
       author.payoutsReady
@@ -101,7 +101,7 @@ export async function bookingResponded(bookingId: string) {
       ? [
           `${b.author.name} accepted “${b.package.title}” on ${fmtDate(b.eventDate)}.`,
           `Final fee: ${money(b.fee)}.${b.authorNote ? ` Note from the author: “${b.authorNote}”` : ""}`,
-          "Pay to confirm the date. Your payment is held by Atelier and only released to the author after the visit.",
+          "Pay to confirm the date. Your payment is held by Grandma Cookie Book and only released to the author after the visit.",
         ]
       : [
           `${b.author.name} declined “${b.package.title}” on ${fmtDate(b.eventDate)}.${b.authorNote ? ` Their note: “${b.authorNote}”` : ""}`,
@@ -136,20 +136,28 @@ export async function bookingPaid(bookingId: string) {
   ]);
 }
 
-export async function bookingCancelled(bookingId: string, refunded: boolean) {
+export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "refunded" | "late") {
   const b = await bookingWithPeople(bookingId);
   const base = await appUrl();
+  const buyerLine = {
+    unpaid: "",
+    refunded: ` A refund of ${money(b.fee)} is on its way to your card.`,
+    late: ` Because it was cancelled within the late-cancellation window, the fee isn't refunded and has been paid to ${b.author.name}.`,
+  }[outcome];
   sendEmail([
     {
       to: b.author.email,
       subject: `Booking cancelled: ${b.organisation} on ${fmtDate(b.eventDate)}`,
-      lines: [`B-${b.number} (“${b.package.title}”) has been cancelled. The date is open again on your calendar.`],
+      lines: [
+        `B-${b.number} (“${b.package.title}”) has been cancelled. The date is open again on your calendar.`,
+        ...(outcome === "late" ? [`It was a late cancellation, so your fee of ${money(net(b.fee, b.commissionPct))} has been released to you.`] : []),
+      ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     },
     {
       to: b.buyer.email,
       subject: `Booking cancelled: ${b.package.title}`,
-      lines: [`B-${b.number} with ${b.author.name} has been cancelled.${refunded ? ` A refund of ${money(b.fee)} is on its way to your card.` : ""}`],
+      lines: [`B-${b.number} with ${b.author.name} has been cancelled.${buyerLine}`],
       cta: { label: "View bookings", url: `${base}/dashboard/buyer/bookings` },
     },
   ]);
@@ -254,7 +262,7 @@ export async function itemRefunded(itemId: string) {
     {
       to: i.author.email,
       subject: `Order line refunded: ${i.title} (O-${i.order.number})`,
-      lines: [`Atelier refunded the buyer for ${i.title} × ${i.qty}.${i.transferId ? " Your share has been reversed from your Stripe balance." : " No payout had been released for it yet."} Contact us if you have questions.`],
+      lines: [`Grandma Cookie Book refunded the buyer for ${i.title} × ${i.qty}.${i.transferId ? " Your share has been reversed from your Stripe balance." : " No payout had been released for it yet."} Contact us if you have questions.`],
       cta: { label: "View orders", url: `${base}/dashboard/author/orders` },
     },
   ]);
@@ -265,7 +273,7 @@ export async function itemRefunded(itemId: string) {
 export async function passwordResetLink(user: { name: string; email: string }, url: string, ttlMinutes: number) {
   sendEmail({
     to: user.email,
-    subject: "Reset your Atelier password",
+    subject: "Reset your Grandma Cookie Book password",
     lines: [
       `Hi ${first(user.name)}, we received a request to reset your password.`,
       `This link works once and expires in ${ttlMinutes} minutes. If you didn't ask for it, you can ignore this email — your password won't change.`,
@@ -277,7 +285,7 @@ export async function passwordResetLink(user: { name: string; email: string }, u
 export async function passwordChanged(user: { name: string; email: string }) {
   sendEmail({
     to: user.email,
-    subject: "Your Atelier password was changed",
+    subject: "Your Grandma Cookie Book password was changed",
     lines: [
       `Hi ${first(user.name)}, the password for your account was just changed and other devices were signed out.`,
       "If this wasn't you, reset your password straight away and contact us.",
@@ -347,7 +355,7 @@ export async function issueResolved(issueId: string) {
   });
   const author = i.booking?.author ?? i.orderItem!.author;
   const refunded = i.status === "REFUNDED";
-  const note = i.resolutionNote ? [`Note from Atelier: ${i.resolutionNote}`] : [];
+  const note = i.resolutionNote ? [`Note from Grandma Cookie Book: ${i.resolutionNote}`] : [];
   sendEmail([
     {
       to: i.buyer.email,
@@ -386,9 +394,9 @@ export async function referralSubmitted(referralId: string) {
   }));
   sendEmail({
     to: r.referredEmail,
-    subject: `${r.referrer.name} invited you to sell and speak on Atelier`,
+    subject: `${r.referrer.name} invited you to sell and speak on Grandma Cookie Book`,
     lines: [
-      `Hi ${first(r.referredName)}, ${r.referrer.name} thinks your books and talks would be a great fit for Atelier — a marketplace where schools, libraries and businesses buy books and book author visits.`,
+      `Hi ${first(r.referredName)}, ${r.referrer.name} thinks your books and talks would be a great fit for Grandma Cookie Book — a marketplace where schools, libraries and businesses buy books and book author visits.`,
       "Joining is free. You set your own prices and get paid through Stripe.",
     ],
     cta: { label: "Create your author account", url: `${base}/signup?role=AUTHOR&email=${encodeURIComponent(r.referredEmail)}` },
@@ -419,5 +427,63 @@ export async function referralPaid(referrerId: string, amount: number, method: s
         : `${money(amount)} in referral rewards is being sent to you. We'll be in touch if we need payment details.`,
     ],
     cta: { label: "View referrals", url: `${await appUrl()}/dashboard/author/referrals` },
+  });
+}
+
+// ---------- Requests for proposals ----------
+
+export async function rfpPosted(rfpId: string) {
+  const r = await db.rfp.findUniqueOrThrow({ where: { id: rfpId }, include: { buyer: true } });
+  // Invite authors who could plausibly bid: bookable, with a live package in the right format,
+  // and matching the topic/grade when the buyer specified one.
+  const authors = await db.user.findMany({
+    where: {
+      role: "AUTHOR",
+      status: "ACTIVE",
+      payoutsReady: true,
+      packages: { some: { status: "APPROVED", ...(r.format !== "ANY" ? { format: { in: [r.format, "HYBRID"] } } : {}) } },
+      ...(r.topic ? { topics: { contains: `,${r.topic},` } } : {}),
+      ...(r.grade ? { grades: { contains: `,${r.grade},` } } : {}),
+    },
+    select: { email: true, name: true },
+    take: 200,
+  });
+  const url = `${await appUrl()}/dashboard/author/opportunities/${r.id}`;
+  sendEmail(
+    authors.map((a) => ({
+      to: a.email,
+      subject: `New request: ${r.title}`,
+      lines: [
+        `Hi ${first(a.name)}, ${r.buyer.orgName || r.buyer.name} is looking for an author: “${r.title}”.`,
+        `Date: ${fmtDate(r.eventDate)} · Audience: ${r.audience}${r.budgetMax ? ` · Budget up to ${money(r.budgetMax)}` : ""}`,
+        `Bids close ${fmtDate(r.deadline)}.`,
+      ],
+      cta: { label: "View and bid", url },
+    })),
+  );
+  return authors.length;
+}
+
+export async function bidReceived(bidId: string) {
+  const b = await db.bid.findUniqueOrThrow({ where: { id: bidId }, include: { author: true, rfp: { include: { buyer: true } } } });
+  sendEmail({
+    to: b.rfp.buyer.email,
+    subject: `New bid from ${b.author.name}: ${money(b.fee)}`,
+    lines: [`${b.author.name} bid ${money(b.fee)} on “${b.rfp.title}”.`, `“${b.message}”`],
+    cta: { label: "Compare bids", url: `${await appUrl()}/dashboard/buyer/requests/${b.rfpId}` },
+  });
+}
+
+export async function bidDecided(bidId: string) {
+  const b = await db.bid.findUniqueOrThrow({ where: { id: bidId }, include: { author: true, rfp: { include: { buyer: true } } } });
+  const won = b.status === "ACCEPTED";
+  const base = await appUrl();
+  sendEmail({
+    to: b.author.email,
+    subject: won ? `You won “${b.rfp.title}”` : `Update on “${b.rfp.title}”`,
+    lines: won
+      ? [`${b.rfp.buyer.orgName || b.rfp.buyer.name} accepted your bid of ${money(b.fee)} for ${fmtDate(b.rfp.eventDate)}. It's now a booking; they'll pay to confirm it.`]
+      : [`${b.rfp.buyer.orgName || b.rfp.buyer.name} chose another author for “${b.rfp.title}”. Thanks for bidding — keep an eye on new requests.`],
+    cta: won ? { label: "View booking", url: `${base}/dashboard/author/requests` } : { label: "See open requests", url: `${base}/dashboard/author/opportunities` },
   });
 }

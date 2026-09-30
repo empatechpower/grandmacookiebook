@@ -13,6 +13,7 @@ export const CATEGORIES = [
   { value: "sel", label: "SEL" },
   { value: "fiction", label: "Fiction" },
   { value: "nonfiction", label: "Non-fiction" },
+  { value: "gifts", label: "Gift sets & merchandise" },
 ] as const;
 
 export const FORMATS = [
@@ -26,7 +27,7 @@ export const formatLabel = (v: string) => FORMATS.find((f) => f.value === v)?.la
 
 // Badge colour per status, using the design's b-ok / b-wait / b-off classes.
 export function statusBadge(status: string) {
-  if (["APPROVED", "ACTIVE", "CONFIRMED", "COMPLETED", "PAID", "SHIPPED", "DELIVERED"].includes(status)) return "b-ok";
+  if (["APPROVED", "ACTIVE", "CONFIRMED", "COMPLETED", "PAID", "SHIPPED", "DELIVERED", "OPEN", "AWARDED"].includes(status)) return "b-ok";
   if (["PENDING", "ACCEPTED", "REQUESTED"].includes(status)) return "b-wait";
   return "b-off";
 }

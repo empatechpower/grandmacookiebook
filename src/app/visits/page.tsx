@@ -3,7 +3,7 @@ import { VisitCard } from "@/components/Cards";
 import { livePackages } from "@/lib/catalog";
 import { FORMATS } from "@/lib/constants";
 
-export const metadata = { title: "Book a visit or speech — Atelier" };
+export const metadata = { title: "Book a visit or speech" };
 
 export default async function Visits({ searchParams }: { searchParams: Promise<{ format?: string; q?: string }> }) {
   const { format, q } = await searchParams;

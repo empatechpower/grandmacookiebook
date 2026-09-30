@@ -42,7 +42,13 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 Add to cart
               </SubmitButton>
             </form>
-            <p className="muted" style={{ fontSize: ".85rem" }}>Ordering a classroom set? Set the quantity — the author ships directly.</p>
+            {book.bulkMinQty && book.bulkPrice ? (
+              <div className="alert alert-ok" style={{ margin: 0 }}>
+                <b>Classroom sets:</b> {money(book.bulkPrice)} per copy when you order {book.bulkMinQty} or more.
+              </div>
+            ) : (
+              <p className="muted" style={{ fontSize: ".85rem" }}>Ordering a classroom set? Set the quantity — the author ships directly.</p>
+            )}
           </div>
           {book.author._count.packages > 0 && (
             <Link className="btn btn-line" href={`/authors/${book.author.id}`}>

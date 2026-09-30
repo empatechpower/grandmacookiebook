@@ -1,6 +1,6 @@
 import { ForgotForm } from "@/components/PasswordForms";
 
-export const metadata = { title: "Reset password — Atelier" };
+export const metadata = { title: "Reset password" };
 
 export default function Forgot() {
   return (

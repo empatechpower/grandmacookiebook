@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { currentUser, dashboardPath } from "@/lib/auth";
 import { SignupForm } from "@/components/AuthForms";
 
-export const metadata = { title: "Join — Atelier" };
+export const metadata = { title: "Join" };
 
 export default async function Signup({ searchParams }: { searchParams: Promise<{ role?: string; email?: string }> }) {
   const user = await currentUser();

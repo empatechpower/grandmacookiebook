@@ -2,11 +2,12 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
+import { hasBulkPrice, unitPriceFor } from "@/lib/pricing";
 import { checkout, updateCartItem } from "@/app/actions/shop";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Table } from "@/components/ui";
 
-export const metadata = { title: "Cart — Atelier" };
+export const metadata = { title: "Cart" };
 
 export default async function Cart() {
   const user = await requireUser("BUYER");
@@ -14,7 +15,7 @@ export default async function Cart() {
     where: { userId: user.id },
     include: { book: { include: { author: { select: { name: true } } } } },
   });
-  const total = items.reduce((s, i) => s + i.book.price * i.qty, 0);
+  const total = items.reduce((s, i) => s + unitPriceFor(i.book, i.qty) * i.qty, 0);
 
   return (
     <section className="pad">
@@ -40,7 +41,13 @@ export default async function Cart() {
                     <div className="muted" style={{ fontSize: ".8rem" }}>{i.book.author.name}</div>
                     {i.book.status !== "APPROVED" && <div className="badge b-off">No longer available</div>}
                   </td>
-                  <td>{money(i.book.price)}</td>
+                  <td>
+                    {money(unitPriceFor(i.book, i.qty))}
+                    {unitPriceFor(i.book, i.qty) < i.book.price && <div className="badge b-ok">Classroom price</div>}
+                    {hasBulkPrice(i.book) && unitPriceFor(i.book, i.qty) === i.book.price && (
+                      <div className="muted" style={{ fontSize: ".75rem" }}>{money(i.book.bulkPrice!)} each for {i.book.bulkMinQty}+</div>
+                    )}
+                  </td>
                   <td>
                     <form action={updateCartItem} className="inline-form">
                       <input type="hidden" name="id" value={i.id} />
@@ -48,7 +55,7 @@ export default async function Cart() {
                       <SubmitButton className="btn btn-ghost btn-sm" pendingText="…">Update</SubmitButton>
                     </form>
                   </td>
-                  <td>{money(i.book.price * i.qty)}</td>
+                  <td>{money(unitPriceFor(i.book, i.qty) * i.qty)}</td>
                 </tr>
               ))}
             </Table>

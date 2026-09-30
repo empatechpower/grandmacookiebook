@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ResetForm } from "@/components/PasswordForms";
 
-export const metadata = { title: "Choose a new password — Atelier" };
+export const metadata = { title: "Choose a new password" };
 
 export default async function Reset({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
   const { token } = await searchParams;

@@ -4,7 +4,7 @@ import { submitContact } from "@/app/actions/contact";
 import { CONTACT_TOPICS } from "@/lib/constants";
 import { SubmitButton } from "@/components/SubmitButton";
 
-export const metadata = { title: "Contact us — Atelier" };
+export const metadata = { title: "Contact us" };
 
 export default async function Contact({ searchParams }: { searchParams: Promise<{ sent?: string }> }) {
   const [{ sent }, user] = await Promise.all([searchParams, currentUser()]);

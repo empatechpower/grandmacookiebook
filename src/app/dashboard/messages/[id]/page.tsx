@@ -59,7 +59,7 @@ export default async function Thread({ params, searchParams }: { params: Promise
       </div>
       <Composer conversationId={convo.id} draft={(await searchParams).draft} />
       <p className="muted" style={{ fontSize: ".75rem", marginTop: 8 }}>
-        Keep payments on Atelier — bookings paid outside the platform aren’t covered.
+        Keep payments on Grandma Cookie Book — bookings paid outside the platform aren’t covered.
       </p>
     </>
   );

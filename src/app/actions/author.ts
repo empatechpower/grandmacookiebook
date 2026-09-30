@@ -22,7 +22,10 @@ const BookSchema = z.object({
   price: z.number().int().min(100, "Price must be at least 1.00"),
   stock: z.number().int().min(0),
   coverUrl: url,
-});
+  bulkMinQty: z.number().int().min(2, "Classroom-set minimum must be at least 2 copies").nullable(),
+  bulkPrice: z.number().int().min(100).nullable(),
+}).refine((d) => (d.bulkMinQty === null) === (d.bulkPrice === null), { message: "Set both the classroom-set quantity and price, or neither" })
+  .refine((d) => d.bulkPrice === null || d.bulkPrice < d.price, { message: "Classroom-set price must be lower than the regular price" });
 
 export async function saveBook(fd: FormData) {
   const user = await requireUser("AUTHOR");
@@ -34,6 +37,8 @@ export async function saveBook(fd: FormData) {
     price: toCents(fd.get("price")),
     stock: Math.trunc(Number(fd.get("stock") || 0)),
     coverUrl: str(fd, "coverUrl"),
+    bulkMinQty: str(fd, "bulkMinQty") ? Math.trunc(Number(fd.get("bulkMinQty"))) : null,
+    bulkPrice: str(fd, "bulkPrice") ? toCents(fd.get("bulkPrice")) : null,
   });
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const data = { ...parsed.data, coverUrl: parsed.data.coverUrl || null };

@@ -5,11 +5,23 @@ import { parseTags } from "@/lib/tags";
 import type { DirectoryAuthor } from "@/lib/directory";
 import { Stars } from "./Stars";
 
+// Warm, on-brand backgrounds for authors without a photo, picked by name so each keeps its colour.
+const PH = ["#e7d8c0,#d9cbb6", "#f0d5c4,#e2b79d", "#d7e3d8,#b9cdbd", "#efe0c8,#dcc39a", "#e6d6e3,#cdb7c9", "#dde2ec,#bfc8da"];
+export const placeholderBg = (seed: string) => {
+  let h = 0;
+  for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return `linear-gradient(135deg, ${PH[h % PH.length]})`;
+};
+
 export function AuthorPhoto({ name, url, size = "card" }: { name: string; url: string | null; size?: "card" | "lg" }) {
   const cls = size === "lg" ? "author-photo lg" : "author-photo";
   // eslint-disable-next-line @next/next/no-img-element
   if (url) return <img className={cls} src={url} alt={name} />;
-  return <div className={`${cls} ph`}>{name.split(" ").map((p) => p[0]).slice(0, 2).join("")}</div>;
+  return (
+    <div className={`${cls} ph`} style={{ background: placeholderBg(name) }} role="img" aria-label={name}>
+      {name.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+    </div>
+  );
 }
 
 export function AuthorCard({ a }: { a: DirectoryAuthor }) {

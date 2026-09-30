@@ -9,6 +9,11 @@ async function main() {
   await db.booking.deleteMany();
   await db.orderItem.deleteMany();
   await db.order.deleteMany();
+  await db.bid.deleteMany();
+  await db.rfp.deleteMany();
+  await db.collectionItem.deleteMany();
+  await db.collection.deleteMany();
+  await db.article.deleteMany();
   await db.referralEarning.deleteMany();
   await db.referralPayout.deleteMany();
   await db.referral.deleteMany();
@@ -242,12 +247,84 @@ async function main() {
     data: { referrerId: a["Chike Okoro"], referredEmail: "tolu.ade@example.com", referredName: "Tolu Ade", pct: 2, expiresAt: inAYear },
   });
 
+  // Classroom-set pricing and a gift set.
+  await db.book.update({ where: { id: bookIds["The Empathy Effect"] }, data: { bulkMinQty: 25, bulkPrice: 1300 } });
+  await db.book.create({
+    data: {
+      title: "Cookie Jar Story Set", authorId: a["Miriam Bejerano"], price: 3500, category: "gifts", stock: 20, status: "APPROVED",
+      coverUrl: img("photo-1589998059171-988d887df646"),
+      description: "A gift box with a signed picture book, a recipe card for grandma's travel cookies and a bookmark.",
+    },
+  });
+
+  // Curated collections.
+  const col = async (slug: string, title: string, kind: string, subtitle: string, description: string, featured: boolean, items: [string, string, string?][]) => {
+    const c = await db.collection.create({ data: { slug, title, kind, subtitle, description, featured, published: true } });
+    let pos = 0;
+    for (const [type, key, note] of items) {
+      await db.collectionItem.create({
+        data: { collectionId: c.id, position: ++pos, note: note ?? null, ...(type === "author" ? { authorId: a[key] } : { bookId: bookIds[key] }) },
+      });
+    }
+  };
+  await col("featured-author-catalog", "2027 Featured Author Catalog", "CATALOG", "Authors schools book again and again",
+    "Our hand-picked authors for the new school year — engaging, reliable and loved by students.", true, [
+      ["author", "Jeanette Gil", "Perfect for K–2 SEL assemblies."],
+      ["author", "Mike Crowder", "Families still talk about his STEM nights."],
+      ["author", "Allie Davis", "Flawless virtual assemblies for big groups."],
+      ["author", "Chike Okoro"],
+    ]);
+  await col("educators-favorites-october", "Educator's Monthly Favorites: October", "FAVORITES", "Curated by our educator panel · October",
+    "Each month a panel of teachers and librarians picks the books they're reaching for. This month: kindness, curiosity and the night sky.", true, [
+      ["book", "The Empathy Effect", "Great for circle time discussions."],
+      ["book", "Night Sky Notes", "Pairs with a stargazing homework night."],
+      ["book", "Horse Country Tales"],
+      ["book", "Balu the Paw Traveler"],
+    ]);
+  await col("black-history-month", "Black History Month picks", "THEME", "Voices to celebrate in February",
+    "Authors and books to celebrate Black history, culture and storytelling all year round.", false, [
+      ["author", "Chike Okoro", "Historical fiction with a gift for Q&A."],
+      ["book", "The Harmattan Letters"],
+    ]);
+
+  // Newsroom, resources and an upcoming event.
+  const art = (slug: string, kind: string, title: string, summary: string, body: string, extra: object = {}) =>
+    db.article.create({ data: { slug, kind, title, summary, body, published: true, publishedAt: new Date(), ...extra } });
+  await art("grandma-cookie-book-launches", "NEWS", "Grandma Cookie Book launches for schools and authors",
+    "A new marketplace to book author visits and buy books directly from the people who write them.",
+    "Today we're opening Grandma Cookie Book to schools, libraries, businesses and authors.\n\n## What you can do\n\n- Find vetted authors by topic, grade, budget and date\n- Post a request and receive proposals\n- Buy signed books and classroom sets\n\nQuestions? Visit our contact page.");
+  await art("author-visit-checklist", "RESOURCE", "Planning a great author visit: a checklist",
+    "Everything to prepare before, during and after an author visit — from AV to book orders.",
+    "## Four weeks before\n\n- Confirm the date, audience and schedule with the author in Messages\n- Share your visitor and safeguarding requirements\n- Pre-order signed books so they arrive in time\n\n## On the day\n\n- Test the microphone and projector\n- Have a named contact meet the author\n\n## Afterwards\n\n- Confirm the visit on your bookings page so the author is paid\n- Leave a review to help other schools");
+  await art("lexile-level-showcase-template", "RESOURCE", "Template: showcase your book's Lexile level",
+    "Help teachers see at a glance where your book fits — a simple template for your listing description.",
+    "Teachers search by reading level. Add a short block like this to your book description:\n\n- Lexile measure: (e.g. 620L)\n- Grade band: (e.g. 2–4)\n- Themes: (e.g. friendship, courage)\n\nYou can get an official Lexile measure from MetaMetrics.");
+  const nextMarch = new Date(Date.UTC(new Date().getUTCFullYear() + 1, 2, 2));
+  await art("literacy-week", "EVENT", "Literacy Week: free author sessions", "Five days of free virtual author sessions, activities and resources for classrooms and families.",
+    "Join us for a week of free virtual sessions with authors from the marketplace.\n\n## What's included\n\n- Daily live readings and Q&A\n- Printable classroom activities\n- Discounts on classroom sets\n\nRegistration is free for schools and libraries.",
+    { eventStart: nextMarch, eventEnd: new Date(nextMarch.getTime() + 4 * 86400000) });
+
+  // An open request for proposals with one bid.
+  const rfp = await db.rfp.create({
+    data: {
+      buyerId: school.id, title: "Author assembly for Reading Week", format: "ANY", audience: "Grades 3–5 assembly", audienceSize: 220,
+      description: "We'd love an energetic author to kick off Reading Week with an assembly and a short Q&A. Themes around kindness or curiosity are a bonus.",
+      eventDate: soon(40), deadline: soon(20), grade: "g35", budgetMax: 70000, location: "Port Harcourt",
+    },
+  });
+  const jPkg = await db.visitPackage.findFirstOrThrow({ where: { authorId: a["Jeanette Gil"] } });
+  await db.bid.create({
+    data: { rfpId: rfp.id, authorId: a["Jeanette Gil"], packageId: jPkg.id, fee: 52000,
+      message: "I'd open with an interactive reading of my kindness picture book, then a feelings-chart activity the whole hall can join in. 45 minutes plus Q&A." },
+  });
+
   await db.setting.createMany({
     data: [
       { key: "bookCommissionPct", value: "5" },
       { key: "visitCommissionPct", value: "15" },
       { key: "referralPct", value: "2" },
       { key: "referralMonths", value: "12" },
+      { key: "cancelNoticeDays", value: "7" },
     ],
   });
 

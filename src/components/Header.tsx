@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 import { currentUser, dashboardPath } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
@@ -14,18 +15,36 @@ export async function Header() {
     <header className="topbar">
       <div className="wrap topbar-inner">
         <Link className="mark" href="/">
-          <div className="mark-icon">A</div>
+          <div className="mark-icon">{BRAND.mark}</div>
           <div>
-            <b>Atelier</b>
-            <small>Literary marketplace</small>
+            <b>{BRAND.name}</b>
+            <small>{BRAND.tagline}</small>
           </div>
         </Link>
-        <nav className="nav">
-          <Link href="/">Home</Link>
-          <Link href="/authors">Authors</Link>
+        <nav className="nav" aria-label="Main">
+          <Link href="/authors">Find authors</Link>
           <Link href="/books">Books</Link>
-          <Link href="/visits">Visits &amp; talks</Link>
-          <Link href="/how-it-works">How it works</Link>
+          <Link href="/visits">Talks</Link>
+          <div className="dd">
+            <button type="button" className="dd-btn" aria-haspopup="true">Solutions ▾</button>
+            <div className="dd-menu">
+              <Link href="/for-schools">For schools & libraries</Link>
+              <Link href="/for-business">For business</Link>
+              <Link href="/for-authors">For authors</Link>
+              <Link href="/book-fairs">Book fairs</Link>
+              <Link href="/how-it-works">How it works</Link>
+            </div>
+          </div>
+          <div className="dd">
+            <button type="button" className="dd-btn" aria-haspopup="true">Resources ▾</button>
+            <div className="dd-menu">
+              <Link href="/collections">Collections</Link>
+              <Link href="/events">Events</Link>
+              <Link href="/resources">Resources</Link>
+              <Link href="/news">Newsroom</Link>
+              <Link href="/book-bank">Book bank</Link>
+            </div>
+          </div>
           <Link href="/pricing">Pricing</Link>
         </nav>
         <div className="actions">
@@ -50,7 +69,7 @@ export async function Header() {
                 Log in
               </Link>
               <Link className="btn btn-terra" href="/signup">
-                Join Atelier
+                Join free
               </Link>
             </>
           )}

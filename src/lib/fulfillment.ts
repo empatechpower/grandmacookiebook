@@ -76,7 +76,7 @@ export async function releaseItem(itemId: string) {
 
 export async function releaseBooking(bookingId: string) {
   const b = await db.booking.findUnique({ where: { id: bookingId }, include: { author: true } });
-  if (!b || b.transferId || !["CONFIRMED", "COMPLETED"].includes(b.status) || !b.chargeId) return;
+  if (!b || b.transferId || !["CONFIRMED", "COMPLETED", "LATE_CANCELLED"].includes(b.status) || !b.chargeId) return;
   try {
     if (!b.author.stripeAccountId) throw new Error("Author has no connected Stripe account");
     const transferId = await transferToAuthor({

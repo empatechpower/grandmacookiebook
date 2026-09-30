@@ -19,7 +19,7 @@ export async function submitReferral(fd: FormData) {
   if (!p.success) return fail(p.error.issues[0].message);
   const { name, email } = p.data;
   if (email === user.email) return fail("You can't refer yourself");
-  if (await db.user.findUnique({ where: { email } })) return fail("That person already has an Atelier account");
+  if (await db.user.findUnique({ where: { email } })) return fail("That person already has a Grandma Cookie Book account");
   if (await db.referral.findUnique({ where: { referredEmail: email } })) return fail("Someone has already referred this person");
   const { referralPct, referralMonths } = await getSettings();
   const expiresAt = new Date();

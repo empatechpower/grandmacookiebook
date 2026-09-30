@@ -49,6 +49,16 @@ export function BookForm({ book }: { book?: Book }) {
           <div className="hint">JPEG, PNG or WebP, up to 5 MB.</div>
         </div>
       </div>
+      <div className="field-row">
+        <div className="field">
+          <label htmlFor="bulkMinQty">Classroom-set price from (copies)</label>
+          <input id="bulkMinQty" name="bulkMinQty" type="number" min={2} defaultValue={book?.bulkMinQty ?? ""} placeholder="e.g. 25" />
+        </div>
+        <div className="field">
+          <label htmlFor="bulkPrice">Classroom-set price per copy (USD)</label>
+          <input id="bulkPrice" name="bulkPrice" type="number" step="0.01" min="1" defaultValue={dollars(book?.bulkPrice ?? undefined)} placeholder="Optional" />
+        </div>
+      </div>
       <div className="field">
         <label htmlFor="coverUrl">…or cover image URL</label>
         <div className="row" style={{ alignItems: "center" }}>

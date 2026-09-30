@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
 import { cancelBooking, confirmVisit, payBooking } from "@/app/actions/shop";
-import { todayKey, dayKey } from "@/lib/dates";
+import { todayKey, dayKey, isLateCancellation } from "@/lib/dates";
+import { getSettings } from "@/lib/settings";
 import { openConversation } from "@/app/actions/messages";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -11,6 +12,7 @@ import { ContractCell } from "@/components/ContractCell";
 
 export default async function BuyerBookings() {
   const user = await requireUser("BUYER");
+  const { cancelNoticeDays } = await getSettings();
   const bookings = await db.booking.findMany({
     where: { buyerId: user.id },
     include: {
@@ -25,7 +27,7 @@ export default async function BuyerBookings() {
     <>
       <PageHead
         title="My bookings"
-        sub="You pay only after the author accepts. Payment is held until you confirm the visit happened (or 14 days after the event). Need to cancel a paid booking? Contact us."
+        sub={`You pay only after the author accepts. Payment is held until you confirm the visit happened (or 14 days after the event). Cancel a paid booking at least ${cancelNoticeDays} days before the event for a full refund.`}
         action={<Link className="btn btn-ink" href="/visits">Book a visit</Link>}
       />
       <Table heads={["ID", "Visit", "Date", "Venue", "Fee", "Status", ""]} empty="No bookings yet.">
@@ -73,10 +75,21 @@ export default async function BuyerBookings() {
                   <input type="hidden" name="with" value={b.author.id} />
                   <SubmitButton className="btn btn-ghost btn-sm">Message</SubmitButton>
                 </form>
-                {["PENDING", "ACCEPTED"].includes(b.status) && (
+                {(["PENDING", "ACCEPTED"].includes(b.status) || (b.status === "CONFIRMED" && !b.transferId && !b.issues.length)) && (
                   <form action={cancelBooking}>
                     <input type="hidden" name="id" value={b.id} />
-                    <SubmitButton className="btn btn-danger btn-sm" confirm="Cancel this booking request?">Cancel</SubmitButton>
+                    <SubmitButton
+                      className="btn btn-danger btn-sm"
+                      confirm={
+                        b.status !== "CONFIRMED"
+                          ? "Cancel this booking request?"
+                          : isLateCancellation(b.eventDate, cancelNoticeDays)
+                            ? `This is less than ${cancelNoticeDays} days before the event, so the ${money(b.fee)} fee won't be refunded and will be paid to the author. Cancel anyway?`
+                            : `Cancel and get a full refund of ${money(b.fee)}?`
+                      }
+                    >
+                      Cancel
+                    </SubmitButton>
                   </form>
                 )}
               </div>

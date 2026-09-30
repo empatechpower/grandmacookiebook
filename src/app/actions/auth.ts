@@ -60,7 +60,7 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
     await linkReferredUser(user);
     await authorSignedUp(user);
   }
-  await flash(role === "AUTHOR" ? "Studio created — an admin will review your account" : "Welcome to Atelier");
+  await flash(role === "AUTHOR" ? "Studio created — an admin will review your account" : "Welcome to Grandma Cookie Book");
   redirect(dashboardPath(role));
 }
 

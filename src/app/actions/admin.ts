@@ -79,7 +79,9 @@ export async function saveFees(fd: FormData) {
   if ([book, visit].some((n) => n < 0 || n > 50)) return fail("Commission must be between 0 and 50%");
   if (!(referralPct >= 0 && referralPct <= 10)) return fail("Referral reward must be between 0 and 10%");
   if (referralMonths < 1 || referralMonths > 60) return fail("Referral window must be 1–60 months");
-  await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths });
+  const cancelNoticeDays = int(fd, "cancelNoticeDays");
+  if (cancelNoticeDays < 0 || cancelNoticeDays > 60) return fail("Cancellation notice must be 0–60 days");
+  await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths, cancelNoticeDays });
   await done("Fee schedule saved — applies to new orders and bookings");
 }
 

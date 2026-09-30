@@ -1,4 +1,4 @@
-# Atelier — book authors, buy books, host talks
+# Grandma Cookie Book — buy books, book authors, host talks
 
 A marketplace with three roles:
 
@@ -66,6 +66,16 @@ Held payments are released by a daily job, `GET /api/cron/release-payouts` with 
 
 **Report a problem (money-back guarantee).** While payment is still held, buyers can report a problem on an order line or booking. That pauses the automatic release and alerts admins and the author. In Admin → Problem reports, the admin either **refunds the buyer** (from the held money) or **releases payment to the author**; both sides are emailed the outcome.
 
+**Requests for proposals (RFPs).** Buyers post an event request (date, audience, format, topic/grade, budget, bid deadline) at Dashboard → Requests & bids. Matching authors are emailed and bid from Studio → Opportunities, attaching one of their visit packages and a fee (editable until decided). Accepting a bid creates an *accepted* booking at the bid price, declines the others and marks the request awarded; the buyer then pays as usual.
+
+**Cancellations.** Buyers can cancel unpaid requests freely. Paid bookings cancelled at least `cancelNoticeDays` (default 7, in Admin → Fees) before the event are refunded in full; later cancellations aren't refunded and the author is paid straight away (status `LATE_CANCELLED`), matching the reference site's "guaranteed payment for last-minute cancellations".
+
+**Classroom-set pricing.** Books can have a bulk price per copy from a minimum quantity; the cart and checkout apply it automatically. There's also a *Gift sets & merchandise* category.
+
+**Content (admin-edited).** *Collections* (Admin → Collections) are curated lists of authors and books with curator notes — the Featured Author Catalog, Educator's Monthly Favorites, themed months; featured ones show on the home page (use them for sponsored placements too). *Articles* (Admin → News & events) power `/news`, `/resources` and `/events`, with simple formatting (blank-line paragraphs, `## ` headings, `- ` bullets).
+
+**Marketing pages.** `/for-schools`, `/for-business`, `/for-authors`, `/book-fairs` (request form) and `/book-bank` (Disaster Relief Book Bank request/donate forms). Form submissions land in the admin Contact inbox.
+
 **Referral program** (modelled on bookanauthor.com/referral). Authors submit a referral form (name + email) under Studio → Referrals; the referred person gets an invitation email with a sign-up link. The first form submitted for an email wins, and an admin verifies each referral (Admin → Referrals). The referrer then earns **2% of every sale** the referred author makes for **12 months** from the referral date (both adjustable in Admin → Fees). Only authors with an active account and a live listing earn. A reward accrues when a sale's payment is released (refunded sales don't count) and is paid quarterly, by Stripe transfer to the referrer's connected account or recorded as a manual payout. The reference site pays via Zelle; this uses Stripe. The quarterly job is `GET /api/cron/referral-payouts`.
 
 **Organisations.** Buyers choose who they book for (school, library, business, nonprofit, individual) and an organisation name at sign-up or in their profile. It prefills booking forms and is shown to authors and on reviews.
@@ -113,6 +123,7 @@ src/app/dashboard/        buyer/, author/, admin/ desks
 ## Before production
 
 - **Stripe** — add live keys and webhook endpoints (see Stripe setup), and confirm supported countries.
+- **Brand** — the name lives in `src/lib/brand.ts`; footer social links come from `SOCIAL_*` variables.
 - **Legal pages** — set `LEGAL_COMPANY_NAME`, `LEGAL_ADDRESS`, `LEGAL_JURISDICTION`, `SUPPORT_EMAIL`, and have a lawyer review `/terms` and `/privacy`. They're templates written to match how this platform works, not legal advice.
 - **Cron** — set `CRON_SECRET` and schedule `/api/cron/release-payouts` daily (or held payouts only release when buyers confirm) and `/api/cron/referral-payouts` quarterly. `vercel.json` already does both on Vercel.
 - **Referral economics** — the 2% reward is paid from the platform's commission. On book sales (5% commission) that's 40% of the platform's cut, so confirm the rate with the client.

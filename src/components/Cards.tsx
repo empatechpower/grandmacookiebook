@@ -13,6 +13,8 @@ type BookCardData = {
   coverUrl: string | null;
   stock: number;
   author: { id: string; name: string };
+  bulkMinQty?: number | null;
+  bulkPrice?: number | null;
 };
 
 export function BookCard({ b }: { b: BookCardData }) {
@@ -28,7 +30,12 @@ export function BookCard({ b }: { b: BookCardData }) {
         <h3>
           <Link href={`/books/${b.id}`}>{b.title}</Link>
         </h3>
-        <div className="price">{money(b.price)}</div>
+        <div className="price">
+          {money(b.price)}
+          {b.bulkMinQty && b.bulkPrice ? (
+            <span className="chip" style={{ marginLeft: 8, fontWeight: 500 }}>{money(b.bulkPrice)} for {b.bulkMinQty}+</span>
+          ) : null}
+        </div>
         <div className="row-btns">
           <form action={addToCart}>
             <input type="hidden" name="bookId" value={b.id} />

@@ -33,7 +33,7 @@ export default async function Report({ searchParams }: { searchParams: Promise<{
     <>
       <PageHead title="Report a problem" sub={summary} />
       <div className="alert alert-info" style={{ maxWidth: 620 }}>
-        Your payment is still held by Atelier. Reporting pauses it — the author isn’t paid until our team reviews this. If we can’t resolve it, you’ll get a full refund.
+        Your payment is still held by Grandma Cookie Book. Reporting pauses it — the author isn’t paid until our team reviews this. If we can’t resolve it, you’ll get a full refund.
       </div>
       <form action={reportIssue} className="panel" style={{ maxWidth: 620 }}>
         <input type="hidden" name="kind" value={kind} />

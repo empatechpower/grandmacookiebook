@@ -7,6 +7,10 @@ export const todayKey = () => dayKey(new Date());
 export const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
 
 /** "2026-10" for the month containing d. */
+/** Cancelling less than `noticeDays` whole days before the event counts as late. */
+export const isLateCancellation = (eventDate: Date, noticeDays: number, now = new Date()) =>
+  eventDate.getTime() - fromDayKey(dayKey(now)).getTime() < noticeDays * 86400000;
+
 export const monthKey = (d: Date) => d.toISOString().slice(0, 7);
 
 // UTC because event and availability dates are stored as UTC midnight.

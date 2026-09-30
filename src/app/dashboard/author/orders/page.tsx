@@ -26,7 +26,7 @@ export default async function AuthorOrders() {
             <td>{money(net(i.unitPrice * i.qty, i.commissionPct))}</td>
             <td>
               <Badge status={i.status} />
-              {i.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while Atelier reviews it">Problem reported</span></div>}
+              {i.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while Grandma Cookie Book reviews it">Problem reported</span></div>}
             </td>
             <td>
               {i.status === "PAID" && (

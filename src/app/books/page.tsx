@@ -3,7 +3,7 @@ import { BookCard } from "@/components/Cards";
 import { liveBooks } from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/constants";
 
-export const metadata = { title: "Buy the book — Atelier" };
+export const metadata = { title: "Buy the book" };
 
 export default async function Books({ searchParams }: { searchParams: Promise<{ cat?: string; q?: string }> }) {
   const { cat, q } = await searchParams;

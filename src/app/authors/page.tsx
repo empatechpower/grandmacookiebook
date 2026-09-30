@@ -6,7 +6,7 @@ import { todayKey } from "@/lib/dates";
 import { AuthorCard } from "@/components/AuthorCard";
 import { FiltersDisclosure } from "@/components/FiltersDisclosure";
 
-export const metadata = { title: "Find an author — Atelier" };
+export const metadata = { title: "Find an author" };
 
 function Select({ name, label, value, opts, any = "Any" }: { name: string; label: string; value?: string; opts: { value: string; label: string }[]; any?: string }) {
   return (

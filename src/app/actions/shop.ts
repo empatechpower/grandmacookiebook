@@ -7,8 +7,11 @@ import { done, fail, str, int } from "@/lib/actions";
 import { getSettings } from "@/lib/settings";
 import { createCheckoutSession, demoMode, demoPayment } from "@/lib/payments";
 import { fulfillBooking, fulfillOrder, releaseBooking, releaseItem } from "@/lib/fulfillment";
+import { cancelBooking as cancelPaidBooking } from "@/lib/refunds";
+import { isLateCancellation } from "@/lib/dates";
 import * as notify from "@/lib/notify";
 import { liveWhere } from "@/lib/catalog";
+import { unitPriceFor } from "@/lib/pricing";
 import { fromDayKey, isDayKey, todayKey } from "@/lib/dates";
 
 async function requireBuyer(action: string) {
@@ -62,7 +65,7 @@ export async function checkout(fd: FormData) {
     if (c.book.status !== "APPROVED") return fail(`“${c.book.title}” is no longer available — remove it to continue`, "/cart");
     if (c.book.stock < c.qty) return fail(`Only ${c.book.stock} left of “${c.book.title}”`, "/cart");
   }
-  const total = cart.reduce((s, c) => s + c.book.price * c.qty, 0);
+  const total = cart.reduce((s, c) => s + unitPriceFor(c.book, c.qty) * c.qty, 0);
   const { bookCommissionPct } = await getSettings();
 
   // Create the order unpaid and reserve stock. Payment (webhook or return page) marks it PAID and
@@ -84,7 +87,7 @@ export async function checkout(fd: FormData) {
             bookId: c.bookId,
             authorId: c.book.authorId,
             title: c.book.title,
-            unitPrice: c.book.price,
+            unitPrice: unitPriceFor(c.book, c.qty),
             qty: c.qty,
             commissionPct: bookCommissionPct,
           })),
@@ -103,7 +106,7 @@ export async function checkout(fd: FormData) {
     kind: "order",
     id: order.id,
     email: user.email,
-    lines: cart.map((c) => ({ name: c.book.title, unitAmount: c.book.price, qty: c.qty })),
+    lines: cart.map((c) => ({ name: c.book.title, unitAmount: unitPriceFor(c.book, c.qty), qty: c.qty })),
     cancelPath: "/cart",
   });
   await db.order.update({ where: { id: order.id }, data: { stripeSessionId: session.sessionId } });
@@ -198,14 +201,32 @@ export async function payBooking(fd: FormData) {
   redirect(session.url);
 }
 
+/**
+ * Buyer cancellation. Unpaid requests just close. Paid bookings follow the cancellation
+ * policy: with enough notice the buyer is refunded in full; inside the notice window the
+ * author is paid anyway (guaranteed payment for last-minute cancellations).
+ */
 export async function cancelBooking(fd: FormData) {
   const user = await requireUser("BUYER");
-  // Unpaid requests only; paid bookings are cancelled/refunded by an admin.
   const id = str(fd, "id");
-  const r = await db.booking.updateMany({
-    where: { id, buyerId: user.id, status: { in: ["PENDING", "ACCEPTED"] } },
-    data: { status: "CANCELLED" },
-  });
-  if (r.count) await notify.bookingCancelled(id, false);
-  await done(r.count ? "Booking cancelled" : "This booking can no longer be cancelled here — contact support");
+  const b = await db.booking.findFirst({ where: { id, buyerId: user.id }, include: { issues: { where: { status: "OPEN" } } } });
+  if (!b) return fail("Booking not found");
+
+  if (["PENDING", "ACCEPTED"].includes(b.status)) {
+    await db.booking.update({ where: { id }, data: { status: "CANCELLED" } });
+    await notify.bookingCancelled(id, "unpaid");
+    return done("Booking cancelled");
+  }
+  if (b.status !== "CONFIRMED" || b.transferId) return fail("This booking can no longer be cancelled here — please contact us");
+  if (b.issues.length) return fail("You have an open problem report on this booking — our team will resolve it");
+
+  if (isLateCancellation(b.eventDate, (await getSettings()).cancelNoticeDays)) {
+    await db.booking.update({ where: { id }, data: { status: "LATE_CANCELLED" } });
+    await releaseBooking(id);
+    await notify.bookingCancelled(id, "late");
+    return done("Booking cancelled. As it was within the late-cancellation window, the fee isn't refunded.");
+  }
+  const r = await cancelPaidBooking(id);
+  if (!r.ok) return fail(r.error);
+  await done("Booking cancelled — you'll be refunded in full");
 }

@@ -45,6 +45,6 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: false; err
     : null;
   await db.booking.update({ where: { id: b.id }, data: { status: "CANCELLED" } });
   await voidReferralEarning("booking", b.id);
-  await notify.bookingCancelled(b.id, !!b.paymentRef);
+  await notify.bookingCancelled(b.id, b.paymentRef ? "refunded" : "unpaid");
   return { ok: true, warning, refunded: !!b.paymentRef };
 }

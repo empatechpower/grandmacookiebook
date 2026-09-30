@@ -14,6 +14,8 @@ import { SubmitButton } from "@/components/SubmitButton";
 import { fmtDate } from "@/components/ui";
 import { Stars } from "@/components/Stars";
 import { orgTypeLabel } from "@/lib/constants";
+import { searchAuthors } from "@/lib/directory";
+import { AuthorCard } from "@/components/AuthorCard";
 
 export default async function AuthorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,6 +39,8 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
       take: 20,
     }),
   ]);
+  const firstTopic = parseTags(author.topics)[0];
+  const similar = firstTopic ? (await searchAuthors({ topic: firstTopic, sort: "rating" })).filter((a) => a.id !== author.id).slice(0, 4) : [];
   const ref = { id: author.id, name: author.name };
   const first = author.name.split(" ")[0];
   const tagRow = (label: string, values: string[], cls = "chip") =>
@@ -125,6 +129,13 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
           </div>
         ) : (
           <div className="empty">No reviews yet.</div>
+        )}
+
+        {similar.length > 0 && (
+          <>
+            <h2 className="h2-sm">Similar authors</h2>
+            <div className="grid-4">{similar.map((a) => <AuthorCard key={a.id} a={a} />)}</div>
+          </>
         )}
 
         <p style={{ marginTop: 28 }}>
