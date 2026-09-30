@@ -28,6 +28,15 @@ npm run dev                 # http://localhost:3000
 Demo accounts (password `atelier123`): `buyer@atelier.test`, `author@atelier.test`, `admin@atelier.test`.
 `npm run db:reset` wipes and reloads the demo data. After changing `prisma/schema.prisma`, run `npm run db:migrate` to create a migration; production applies them with `npm run db:deploy`.
 
+## Deploy (Vercel)
+
+1. Import the GitHub repo in Vercel (root `./`, preset Next.js). `vercel.json` sets the build command (`prisma migrate deploy && next build`) and the cron jobs.
+2. Add a Postgres database: the **Neon** integration sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED` automatically. With another host, set both (the unpooled/direct URL is used for migrations).
+3. Add `SESSION_SECRET` and `CRON_SECRET` (long random strings), plus Stripe, Resend, `S3_*` and `LEGAL_*` variables when ready (see `.env.example`).
+4. Deploy. For a client preview, load demo data once: `DATABASE_URL="<url>" DATABASE_URL_UNPOOLED="<url>" npm run setup`.
+
+Vercel's Hobby plan is non-commercial only. The live marketplace needs Pro.
+
 ## Key flows
 
 **Listing approval.** Author signs up → account `PENDING`. Their books/packages are `PENDING` too. Nothing is public until the admin approves the author **and** each listing **and** the author has finished Stripe onboarding (so there's always somewhere to send their money). Editing a live listing's content sends it back for review; price/stock edits go live immediately. Suspending an author hides all their listings and signs them out.
