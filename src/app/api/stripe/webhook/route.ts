@@ -4,20 +4,28 @@ import { accountIsReady, readPaidSession, stripe } from "@/lib/payments";
 import { expireOrder, fulfillBooking, fulfillOrder } from "@/lib/fulfillment";
 
 /**
- * Stripe webhook — the source of truth for payments.
- * Subscribe to: checkout.session.completed, checkout.session.async_payment_succeeded,
- * checkout.session.expired, account.updated (the last one on "Connected accounts").
+ * Stripe webhook — the source of truth for payments. Stripe needs two endpoints at this URL:
+ *  - "Your account" events (STRIPE_WEBHOOK_SECRET): checkout.session.completed,
+ *    checkout.session.async_payment_succeeded, checkout.session.expired
+ *  - "Connected accounts" events (STRIPE_CONNECT_WEBHOOK_SECRET): account.updated
+ * Each endpoint has its own signing secret, so a request is accepted if either verifies.
  */
 export async function POST(req: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!stripe || !secret) return new Response("Stripe not configured", { status: 503 });
+  const secrets = [process.env.STRIPE_WEBHOOK_SECRET, process.env.STRIPE_CONNECT_WEBHOOK_SECRET].filter(Boolean) as string[];
+  if (!stripe || !secrets.length) return new Response("Stripe not configured", { status: 503 });
 
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(await req.text(), req.headers.get("stripe-signature") ?? "", secret);
-  } catch {
-    return new Response("Invalid signature", { status: 400 });
+  const body = await req.text();
+  const signature = req.headers.get("stripe-signature") ?? "";
+  let event: Stripe.Event | null = null;
+  for (const secret of secrets) {
+    try {
+      event = stripe.webhooks.constructEvent(body, signature, secret);
+      break;
+    } catch {
+      // try the next endpoint's secret
+    }
   }
+  if (!event) return new Response("Invalid signature", { status: 400 });
 
   switch (event.type) {
     case "checkout.session.completed":
