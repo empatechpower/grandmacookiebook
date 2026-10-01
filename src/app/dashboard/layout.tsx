@@ -1,5 +1,9 @@
 import { requireUser } from "@/lib/auth";
+import Link from "next/link";
 import { SideNav } from "@/components/SideNav";
+import { BRAND } from "@/lib/brand";
+import { ROLE_LABEL, type Role } from "@/lib/constants";
+import { logout } from "@/app/actions/auth";
 import { unreadCount } from "@/lib/messages";
 import { db } from "@/lib/db";
 
@@ -69,9 +73,40 @@ export default async function DashLayout({ children }: { children: React.ReactNo
       ? await Promise.all([db.contactMessage.count({ where: { handled: false } }), db.issue.count({ where: { status: "OPEN" } })])
       : [0, 0];
   const pendingReferrals = user.role === "ADMIN" ? await db.referral.count({ where: { status: "PENDING" } }) : 0;
+  const cartCount =
+    user.role === "BUYER" ? (await db.cartItem.aggregate({ where: { userId: user.id }, _sum: { qty: true } }))._sum.qty ?? 0 : 0;
+  const chip = { ADMIN: "admin", AUTHOR: "author", BUYER: "buyer" }[user.role];
   return (
     <div className="dash">
-      <SideNav label={nav.label} links={nav.links} counts={{ "/dashboard/messages": unread, "/dashboard/admin/inbox": openContacts, "/dashboard/admin/issues": openIssues, "/dashboard/admin/referrals": pendingReferrals }} />
+      <aside className="side">
+        <Link className="mark side-brand" href="/">
+          <div className="mark-icon">{BRAND.mark}</div>
+          <b>{BRAND.name}</b>
+        </Link>
+        <div className="side-user">
+          <div className="avatar" aria-hidden>{user.name.split(" ").map((p) => p[0]).slice(0, 2).join("")}</div>
+          <div style={{ minWidth: 0 }}>
+            <b>{user.name}</b>
+            <span className={`chip-role ${chip}`}>{ROLE_LABEL[user.role as Role]}</span>
+          </div>
+        </div>
+        <SideNav
+          label={nav.label}
+          links={nav.links}
+          counts={{ "/dashboard/messages": unread, "/dashboard/admin/inbox": openContacts, "/dashboard/admin/issues": openIssues, "/dashboard/admin/referrals": pendingReferrals }}
+        />
+        <div className="side-foot">
+          {user.role === "BUYER" && (
+            <Link href="/cart">
+              Cart{cartCount ? <span className="nav-count">{cartCount}</span> : null}
+            </Link>
+          )}
+          <Link href="/">← Back to website</Link>
+          <form action={logout}>
+            <button className="side-logout">Log out</button>
+          </form>
+        </div>
+      </aside>
       <div className="main">{children}</div>
     </div>
   );

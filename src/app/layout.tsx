@@ -4,6 +4,7 @@ import { BRAND } from "@/lib/brand";
 import { cookies } from "next/headers";
 import { Header } from "@/components/Header";
 import { Toast } from "@/components/Toast";
+import { SiteChrome } from "@/components/SiteChrome";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,37 +36,42 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body>
-        <Header />
-        <main className="page">{children}</main>
-        <footer className="site">
-          <div className="wrap">
-            <div className="foot-grid">
-              <div className="foot-brand">
-                <b className="serif">{BRAND.name}</b>
-                <p>The marketplace for books and author visits — connecting schools, libraries and businesses with vetted authors.</p>
-                {SOCIALS.length > 0 && (
-                  <div className="foot-links" style={{ marginTop: 10 }}>
-                    {SOCIALS.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label}</a>)}
-                  </div>
-                )}
+        <SiteChrome
+          header={<Header />}
+          footer={
+  <footer className="site">
+            <div className="wrap">
+              <div className="foot-grid">
+                <div className="foot-brand">
+                  <b className="serif">{BRAND.name}</b>
+                  <p>The marketplace for books and author visits — connecting schools, libraries and businesses with vetted authors.</p>
+                  {SOCIALS.length > 0 && (
+                    <div className="foot-links" style={{ marginTop: 10 }}>
+                      {SOCIALS.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label}</a>)}
+                    </div>
+                  )}
+                </div>
+                {FOOTER.map(([heading, links]) => (
+                  <nav key={heading} aria-label={heading}>
+                    <h4>{heading}</h4>
+                    {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+                  </nav>
+                ))}
               </div>
-              {FOOTER.map(([heading, links]) => (
-                <nav key={heading} aria-label={heading}>
-                  <h4>{heading}</h4>
-                  {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
-                </nav>
-              ))}
-            </div>
-            <div className="foot">
-              <div>© {new Date().getFullYear()} {BRAND.name}</div>
-              <div className="foot-links">
-                <Link href="/privacy">Privacy</Link>
-                <Link href="/terms">Terms</Link>
-                <Link href="/contact">Contact</Link>
+              <div className="foot">
+                <div>© {new Date().getFullYear()} {BRAND.name}</div>
+                <div className="foot-links">
+                  <Link href="/privacy">Privacy</Link>
+                  <Link href="/terms">Terms</Link>
+                  <Link href="/contact">Contact</Link>
+                </div>
               </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+          }
+        >
+          {children}
+        </SiteChrome>
         <Toast flash={flash} />
       </body>
     </html>
