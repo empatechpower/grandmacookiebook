@@ -9,8 +9,6 @@ const NAV: Record<string, { label: string; links: [string, string][] }> = {
     label: "Library",
     links: [
       ["/dashboard/buyer", "Overview"],
-      ["/authors", "Find an author"],
-      ["/books", "Buy books"],
       ["#activity", "Activity"],
       ["/dashboard/buyer/bookings", "My bookings"],
       ["/dashboard/buyer/requests", "Requests & bids"],
