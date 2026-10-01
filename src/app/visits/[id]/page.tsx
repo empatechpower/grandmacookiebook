@@ -58,7 +58,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
             <form action={requestBooking}>
               <input type="hidden" name="packageId" value={v.id} />
               <div className="field">
-                <label htmlFor="organisation">School / organisation</label>
+                <label htmlFor="organisation">School / organization</label>
                 <input id="organisation" name="organisation" required placeholder="St. Cloud Elementary" defaultValue={user?.orgName ?? undefined} />
               </div>
               {dates.length > 0 ? (
@@ -87,7 +87,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="field">
                 <label htmlFor="venue">{v.format === "VIRTUAL" ? "Platform / link" : "Venue address"}</label>
-                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "12 Aba Road, Port Harcourt"} />
+                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "125 Maple Ave, Atlanta, GA"} />
               </div>
               <div className="field">
                 <label htmlFor="message">Anything the author should know?</label>

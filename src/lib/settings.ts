@@ -6,7 +6,7 @@ export const DEFAULT_SETTINGS = {
   visitCommissionPct: 15,
   referralPct: 2,
   referralMonths: 12,
-  // Paid bookings cancelled by the buyer less than this many days before the event are not
+  // Paid bookings canceled by the buyer less than this many days before the event are not
   // refunded and the author is paid ("guaranteed payment for last-minute cancellations").
   cancelNoticeDays: 7,
 };

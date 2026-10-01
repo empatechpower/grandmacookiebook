@@ -10,7 +10,7 @@ export default async function ForBusiness() {
   return (
     <>
       <Hero
-        eyebrow="For business & organisations"
+        eyebrow="For business & organizations"
         title={<>Authors who <em>inspire</em> your people.</>}
         lede="Book authors for keynotes, professional development, book clubs and employee resource group events — in person or virtual. Gift signed books to your team."
         ctas={[["Find a speaker", "/authors?grade=adult"], ["Post a request", "/dashboard/buyer/requests/new"]]}

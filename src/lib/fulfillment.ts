@@ -45,7 +45,7 @@ export async function fulfillBooking(bookingId: string, payment: PaidPayment, se
     return notify.bookingPaid(bookingId);
   }
 
-  // Paid, but the booking was cancelled while the buyer was on the Stripe page, or was
+  // Paid, but the booking was canceled while the buyer was on the Stripe page, or was
   // already paid in another tab: give this payment back. (A redelivery of the same payment is a no-op.)
   const b = await db.booking.findUnique({ where: { id: bookingId } });
   if (b && b.paymentRef !== payment.paymentIntentId) {

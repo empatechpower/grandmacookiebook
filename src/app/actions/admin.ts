@@ -40,7 +40,7 @@ export async function adminCancelBooking(fd: FormData) {
   await requireUser("ADMIN");
   const r = await cancelBooking(str(fd, "id"));
   if (!r.ok) return fail(r.error);
-  await done(r.warning ?? (r.refunded ? "Booking cancelled and refunded" : "Booking cancelled"));
+  await done(r.warning ?? (r.refunded ? "Booking canceled and refunded" : "Booking canceled"));
 }
 
 export async function refundOrderItem(fd: FormData) {

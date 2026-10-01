@@ -45,8 +45,8 @@ export default async function BookFairs({ searchParams }: { searchParams: Promis
                 submit="Request a book fair"
                 defaults={{ name: user?.name, email: user?.email }}
                 fields={[
-                  { name: "org", label: "School / organisation", required: true },
-                  { name: "dates", label: "Preferred dates", placeholder: "e.g. week of 12 Nov", required: true },
+                  { name: "org", label: "School / organization", required: true },
+                  { name: "dates", label: "Preferred dates", placeholder: "e.g. week of Nov 12", required: true },
                   { name: "format", label: "Format", type: "select", options: ["In person", "Virtual", "Both"] },
                   { name: "grades", label: "Grades", placeholder: "e.g. K–5" },
                   { name: "students", label: "Number of students", type: "number" },

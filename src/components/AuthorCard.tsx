@@ -5,7 +5,7 @@ import { parseTags } from "@/lib/tags";
 import type { DirectoryAuthor } from "@/lib/directory";
 import { Stars } from "./Stars";
 
-// Warm, on-brand backgrounds for authors without a photo, picked by name so each keeps its colour.
+// Warm, on-brand backgrounds for authors without a photo, picked by name so each keeps its color.
 const PH = ["#e7d8c0,#d9cbb6", "#f0d5c4,#e2b79d", "#d7e3d8,#b9cdbd", "#efe0c8,#dcc39a", "#e6d6e3,#cdb7c9", "#dde2ec,#bfc8da"];
 export const placeholderBg = (seed: string) => {
   let h = 0;

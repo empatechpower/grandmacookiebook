@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "postinstall": "prisma generate",
     "db:up": "docker compose up -d db",
     "setup": "prisma migrate deploy && prisma db seed",
@@ -14,7 +14,10 @@
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:local": "node scripts/local-db.mjs"
+    "db:local": "node scripts/local-db.mjs",
+    "test": "npm run test:integration",
+    "test:integration": "tsx --conditions=react-server --test --test-concurrency=1 tests/integration/*.test.ts",
+    "test:e2e": "bash scripts/e2e.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -36,6 +39,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "embedded-postgres": "^17.10.0-beta.17",
+    "playwright-core": "^1.63.0",
     "prisma": "^6.19.3",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"

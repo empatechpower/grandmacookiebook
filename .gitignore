@@ -7,3 +7,4 @@ next-env.d.ts
 *.tsbuildinfo
 uploads
 .postgres
+tests/e2e/.artifacts

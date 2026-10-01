@@ -66,4 +66,4 @@ export const AuthorLink = ({ id, name }: { id: string; name: string }) => (
 
 export { fmtDate } from "@/lib/dates";
 export const fmtDateTime = (d: Date) =>
-  d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  d.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });

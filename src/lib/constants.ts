@@ -25,7 +25,7 @@ export const FORMATS = [
 export const categoryLabel = (v: string) => CATEGORIES.find((c) => c.value === v)?.label ?? v;
 export const formatLabel = (v: string) => FORMATS.find((f) => f.value === v)?.label ?? v;
 
-// Badge colour per status, using the design's b-ok / b-wait / b-off classes.
+// Badge color per status, using the design's b-ok / b-wait / b-off classes.
 export function statusBadge(status: string) {
   if (["APPROVED", "ACTIVE", "CONFIRMED", "COMPLETED", "PAID", "SHIPPED", "DELIVERED", "OPEN", "AWARDED"].includes(status)) return "b-ok";
   if (["PENDING", "ACCEPTED", "REQUESTED"].includes(status)) return "b-wait";
@@ -69,11 +69,11 @@ export const LANGUAGES: Opt[] = [
   { value: "french", label: "French" },
   { value: "portuguese", label: "Portuguese" },
   { value: "arabic", label: "Arabic" },
-  { value: "mandarin", label: "Mandarin" },
-  { value: "yoruba", label: "Yoruba" },
-  { value: "igbo", label: "Igbo" },
-  { value: "hausa", label: "Hausa" },
-  { value: "swahili", label: "Swahili" },
+  { value: "mandarin", label: "Chinese (Mandarin)" },
+  { value: "vietnamese", label: "Vietnamese" },
+  { value: "tagalog", label: "Tagalog" },
+  { value: "korean", label: "Korean" },
+  { value: "asl", label: "American Sign Language" },
 ];
 
 export const IDENTITIES: Opt[] = [

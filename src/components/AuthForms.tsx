@@ -46,7 +46,7 @@ export function SignupForm({ initialRole, initialEmail }: { initialRole: string;
       {state?.error && <div className="alert alert-err">{state.error}</div>}
       <div className="field">
         <label htmlFor="name">Full name</label>
-        <input id="name" name="name" required placeholder="Adaeze Okonkwo" autoComplete="name" />
+        <input id="name" name="name" required placeholder="Jordan Taylor" autoComplete="name" />
       </div>
       <div className="field">
         <label htmlFor="email">Email</label>
@@ -81,7 +81,7 @@ export function SignupForm({ initialRole, initialEmail }: { initialRole: string;
             </select>
           </div>
           <div className="field">
-            <label htmlFor="orgName">Organisation name <span className="muted">(optional)</span></label>
+            <label htmlFor="orgName">Organization name <span className="muted">(optional)</span></label>
             <input id="orgName" name="orgName" placeholder="St. Cloud Elementary" />
           </div>
         </div>

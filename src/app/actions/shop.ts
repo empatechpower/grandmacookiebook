@@ -154,7 +154,7 @@ export async function requestBooking(fd: FormData) {
   const venue = str(fd, "venue");
   const audienceSize = int(fd, "audienceSize");
   if (isNaN(eventDate.getTime()) || key <= todayKey()) return fail("Pick an event date from tomorrow onwards");
-  if (!organisation || !venue) return fail("Organisation and venue are required");
+  if (!organisation || !venue) return fail("Organization and venue are required");
   // If the author publishes availability, the date must be one of their open days and not already taken.
   const openDays = await db.availableDate.count({ where: { authorId: pkg.authorId, date: { gte: fromDayKey(todayKey()) } } });
   if (openDays) {
@@ -215,18 +215,18 @@ export async function cancelBooking(fd: FormData) {
   if (["PENDING", "ACCEPTED"].includes(b.status)) {
     await db.booking.update({ where: { id }, data: { status: "CANCELLED" } });
     await notify.bookingCancelled(id, "unpaid");
-    return done("Booking cancelled");
+    return done("Booking canceled");
   }
-  if (b.status !== "CONFIRMED" || b.transferId) return fail("This booking can no longer be cancelled here — please contact us");
+  if (b.status !== "CONFIRMED" || b.transferId) return fail("This booking can no longer be canceled here — please contact us");
   if (b.issues.length) return fail("You have an open problem report on this booking — our team will resolve it");
 
   if (isLateCancellation(b.eventDate, (await getSettings()).cancelNoticeDays)) {
     await db.booking.update({ where: { id }, data: { status: "LATE_CANCELLED" } });
     await releaseBooking(id);
     await notify.bookingCancelled(id, "late");
-    return done("Booking cancelled. As it was within the late-cancellation window, the fee isn't refunded.");
+    return done("Booking canceled. As it was within the late-cancellation window, the fee isn't refunded.");
   }
   const r = await cancelPaidBooking(id);
   if (!r.ok) return fail(r.error);
-  await done("Booking cancelled — you'll be refunded in full");
+  await done("Booking canceled — you'll be refunded in full");
 }

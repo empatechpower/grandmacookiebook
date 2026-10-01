@@ -6,7 +6,7 @@ import { fillMonth, toggleDay } from "@/app/actions/availability";
 import { PageHead } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
-const DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default async function Availability({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const user = await requireUser("AUTHOR");
@@ -32,8 +32,8 @@ export default async function Availability({ searchParams }: { searchParams: Pro
 
   const days: Date[] = [];
   for (let d = new Date(start); d < end; d = new Date(d.getTime() + 86400000)) days.push(d);
-  const lead = (start.getUTCDay() + 6) % 7; // Monday-first grid
-  const title = start.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  const lead = start.getUTCDay(); // Sunday-first grid (US)
+  const title = start.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
   return (
     <>

@@ -57,7 +57,7 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
             </select>
           </div>
           <div className="field">
-            <label htmlFor="orgName">Organisation name</label>
+            <label htmlFor="orgName">Organization name</label>
             <input id="orgName" name="orgName" defaultValue={user.orgName ?? ""} placeholder="Shown to authors on your requests" />
           </div>
         </div>

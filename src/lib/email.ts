@@ -40,7 +40,7 @@ async function deliver(email: Email) {
  */
 export function sendEmail(email: Email | Email[]) {
   const list = Array.isArray(email) ? email : [email];
-  after(async () => {
+  const send = async () => {
     for (const e of list) {
       try {
         await deliver(e);
@@ -48,5 +48,11 @@ export function sendEmail(email: Email | Email[]) {
         console.error(`[email] failed to=${e.to} subject="${e.subject}":`, err);
       }
     }
-  });
+  };
+  try {
+    after(send);
+  } catch {
+    // Outside a request (scripts, tests): send in the background without blocking.
+    void send();
+  }
 }

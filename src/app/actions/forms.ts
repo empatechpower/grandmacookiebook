@@ -13,7 +13,7 @@ const FORMS = {
     topic: "Book fair request",
     back: "/book-fairs",
     fields: [
-      ["org", "School / organisation"],
+      ["org", "School / organization"],
       ["dates", "Preferred dates"],
       ["format", "Format"],
       ["grades", "Grades"],
@@ -26,7 +26,7 @@ const FORMS = {
     topic: "Book bank: request books",
     back: "/book-bank",
     fields: [
-      ["org", "School / organisation"],
+      ["org", "School / organization"],
       ["location", "Location"],
       ["disaster", "What happened"],
       ["need", "Books needed (ages, quantities)"],
@@ -37,7 +37,7 @@ const FORMS = {
     topic: "Book bank: donate books",
     back: "/book-bank",
     fields: [
-      ["org", "Author / publisher / organisation"],
+      ["org", "Author / publisher / organization"],
       ["books", "Books to donate (titles, quantities, ages)"],
       ["location", "Shipping from"],
     ],

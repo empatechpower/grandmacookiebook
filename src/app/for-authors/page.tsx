@@ -17,7 +17,7 @@ export default async function ForAuthors() {
           <aside className="poster">
             <div className="poster-kicker">You keep</div>
             <h3>{100 - s.bookCommissionPct}% of book sales · {100 - s.visitCommissionPct}% of bookings</h3>
-            {[["No listing fees", "Free to join and list"], ["Paid through Stripe", "Straight to your bank"], ["Guaranteed for late cancellations", `Cancelled within ${s.cancelNoticeDays} days? You're still paid`], ["Referral rewards", `${s.referralPct}% of referred authors' sales`]].map(([b, t]) => (
+            {[["No listing fees", "Free to join and list"], ["Paid through Stripe", "Straight to your bank"], ["Guaranteed for late cancellations", `Canceled within ${s.cancelNoticeDays} days? You're still paid`], ["Referral rewards", `${s.referralPct}% of referred authors' sales`]].map(([b, t]) => (
               <div key={b} className="event-card"><b>{b}</b><small>{t}</small></div>
             ))}
           </aside>

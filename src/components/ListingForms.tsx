@@ -109,7 +109,7 @@ export function PackageForm({ pkg }: { pkg?: VisitPackage }) {
         </div>
         <div className="field">
           <label htmlFor="region">Travel region</label>
-          <input id="region" name="region" defaultValue={pkg?.region ?? ""} placeholder="e.g. Lagos & Port Harcourt, or Anywhere" />
+          <input id="region" name="region" defaultValue={pkg?.region ?? ""} placeholder="e.g. Atlanta metro, Georgia, or Anywhere" />
         </div>
       </div>
       <div className="row">

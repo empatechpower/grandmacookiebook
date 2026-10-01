@@ -46,7 +46,7 @@ export default async function Opportunity({ params }: { params: Promise<{ id: st
             {bid && <Badge status={bid.status} />}
           </div>
           {bid?.status === "ACCEPTED" && <div className="alert alert-ok">Accepted! It’s now a booking — see <Link href="/dashboard/author/requests" style={{ textDecoration: "underline" }}>Booking requests</Link>.</div>}
-          {bid?.status === "DECLINED" && <div className="alert alert-info">The organiser chose another proposal this time.</div>}
+          {bid?.status === "DECLINED" && <div className="alert alert-info">The organizer chose another proposal this time.</div>}
           {packages.length === 0 && <div className="alert alert-info">You need a live visit package to bid. <Link href="/dashboard/author/visits/new" style={{ textDecoration: "underline" }}>Create one</Link>.</div>}
           {canBid ? (
             <form action={submitBid}>

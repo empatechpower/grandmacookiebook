@@ -70,7 +70,7 @@ export async function submitBid(fd: FormData) {
   const fee = toCents(fd.get("fee"));
   const message = str(fd, "message").slice(0, 3000);
   if (fee < 100) return fail("Enter your fee");
-  if (message.length < 20) return fail("Tell the organiser what you'd do (20+ characters)");
+  if (message.length < 20) return fail("Tell the organizer what you'd do (20+ characters)");
   const existing = await db.bid.findUnique({ where: { rfpId_authorId: { rfpId: rfp.id, authorId: user.id } } });
   if (existing && existing.status !== "PENDING" && existing.status !== "WITHDRAWN") return fail("This bid has already been decided");
   const bid = await db.bid.upsert({
@@ -79,7 +79,7 @@ export async function submitBid(fd: FormData) {
     create: { rfpId: rfp.id, authorId: user.id, packageId: pkg.id, fee, message },
   });
   if (!existing || existing.status === "WITHDRAWN") await notify.bidReceived(bid.id);
-  await done(existing && existing.status === "PENDING" ? "Bid updated" : "Bid sent — the organiser has been notified");
+  await done(existing && existing.status === "PENDING" ? "Bid updated" : "Bid sent — the organizer has been notified");
 }
 
 export async function withdrawBid(fd: FormData) {

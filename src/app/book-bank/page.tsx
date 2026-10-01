@@ -25,7 +25,7 @@ export default async function BookBank({ searchParams }: { searchParams: Promise
               submit="Request books"
               defaults={defaults}
               fields={[
-                { name: "org", label: "School / library / organisation", required: true },
+                { name: "org", label: "School / library / organization", required: true },
                 { name: "location", label: "Location", required: true },
                 { name: "disaster", label: "What happened?", type: "textarea", required: true },
                 { name: "need", label: "What do you need? (ages, approx. quantities)", type: "textarea", required: true },
@@ -41,7 +41,7 @@ export default async function BookBank({ searchParams }: { searchParams: Promise
               submit="Offer books"
               defaults={defaults}
               fields={[
-                { name: "org", label: "Author / publisher / organisation", required: true },
+                { name: "org", label: "Author / publisher / organization", required: true },
                 { name: "books", label: "Books you can donate (titles, quantities, ages)", type: "textarea", required: true },
                 { name: "location", label: "Shipping from" },
               ]}

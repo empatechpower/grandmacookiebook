@@ -13,5 +13,5 @@ export const isLateCancellation = (eventDate: Date, noticeDays: number, now = ne
 
 export const monthKey = (d: Date) => d.toISOString().slice(0, 7);
 
-// UTC because event and availability dates are stored as UTC midnight.
-export const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+// US format ("Sep 30, 2026"). UTC because event and availability dates are stored as UTC midnight.
+export const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });

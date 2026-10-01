@@ -33,7 +33,7 @@ export async function refundItem(itemId: string): Promise<{ ok: false; error: st
 export async function cancelBooking(bookingId: string): Promise<{ ok: false; error: string } | { ok: true; warning: string | null; refunded: boolean }> {
   const b = await db.booking.findUnique({ where: { id: bookingId } });
   if (!b || ["CANCELLED", "DECLINED"].includes(b.status) || (b.status === "COMPLETED" && b.transferId))
-    return { ok: false, error: "This booking can't be cancelled" };
+    return { ok: false, error: "This booking can't be canceled" };
   const warning = b.paymentRef
     ? await refundWithClawback({
         paymentIntentId: b.paymentRef,

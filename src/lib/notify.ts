@@ -142,22 +142,22 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
   const buyerLine = {
     unpaid: "",
     refunded: ` A refund of ${money(b.fee)} is on its way to your card.`,
-    late: ` Because it was cancelled within the late-cancellation window, the fee isn't refunded and has been paid to ${b.author.name}.`,
+    late: ` Because it was canceled within the late-cancellation window, the fee isn't refunded and has been paid to ${b.author.name}.`,
   }[outcome];
   sendEmail([
     {
       to: b.author.email,
-      subject: `Booking cancelled: ${b.organisation} on ${fmtDate(b.eventDate)}`,
+      subject: `Booking canceled: ${b.organisation} on ${fmtDate(b.eventDate)}`,
       lines: [
-        `B-${b.number} (“${b.package.title}”) has been cancelled. The date is open again on your calendar.`,
+        `B-${b.number} (“${b.package.title}”) has been canceled. The date is open again on your calendar.`,
         ...(outcome === "late" ? [`It was a late cancellation, so your fee of ${money(net(b.fee, b.commissionPct))} has been released to you.`] : []),
       ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     },
     {
       to: b.buyer.email,
-      subject: `Booking cancelled: ${b.package.title}`,
-      lines: [`B-${b.number} with ${b.author.name} has been cancelled.${buyerLine}`],
+      subject: `Booking canceled: ${b.package.title}`,
+      lines: [`B-${b.number} with ${b.author.name} has been canceled.${buyerLine}`],
       cta: { label: "View bookings", url: `${base}/dashboard/buyer/bookings` },
     },
   ]);

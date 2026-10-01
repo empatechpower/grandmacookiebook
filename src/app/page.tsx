@@ -93,7 +93,7 @@ export default async function Home() {
             [authorCount, "Vetted authors"],
             [bookCount, "Books in the catalog"],
             [visitCount, "Visits booked"],
-            [orgCount, "Schools & organisations"],
+            [orgCount, "Schools & organizations"],
           ] as [number, string][]).map(([n, label]) => (
             <div key={label}>
               <b>{n}</b>

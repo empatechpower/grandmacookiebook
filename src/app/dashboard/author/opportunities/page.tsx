@@ -23,7 +23,7 @@ export default async function Opportunities() {
   const sorted = [...open].sort((a, b) => Number(matches(b)) - Number(matches(a)));
   return (
     <>
-      <PageHead title="Opportunities" sub="Schools and organisations post what they need. Send a proposal with your fee — if they accept, it becomes a booking." />
+      <PageHead title="Opportunities" sub="Schools and organizations post what they need. Send a proposal with your fee — if they accept, it becomes a booking." />
       {(user.status !== "ACTIVE" || !user.payoutsReady) && (
         <div className="alert alert-info">You can browse requests now; bidding opens once your account is approved and Stripe is connected.</div>
       )}

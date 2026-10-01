@@ -36,9 +36,9 @@ export default async function Review({ searchParams }: { searchParams: Promise<{
           </div>
         </fieldset>
         <div className="field">
-          <label htmlFor="body">What should other {booking ? "schools and organisers" : "readers"} know?</label>
+          <label htmlFor="body">What should other {booking ? "schools and organizers" : "readers"} know?</label>
           <textarea id="body" name="body" required minLength={10} maxLength={2000} placeholder={booking ? "How did the students respond? Was the author easy to work with?" : "How was the book and the delivery?"} />
-          <div className="hint">Shown publicly on the author’s profile with your {user.orgName ? "organisation" : "first"} name.</div>
+          <div className="hint">Shown publicly on the author’s profile with your {user.orgName ? "organization" : "first"} name.</div>
         </div>
         <SubmitButton className="btn btn-terra">Post review</SubmitButton>
       </form>
