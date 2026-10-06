@@ -20,7 +20,7 @@ const day = (n) => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
 // Brand + public pages
 const anon = await ctx();
 await anon.goto(B);
-ok((await anon.title()).includes("Grandma Cookie Book") && (await anon.locator(".mark b").innerText()) === "Grandma Cookie Book", "brand renamed in title and header");
+ok((await anon.title()).includes("South Texas Book & Author") && (await anon.locator(".mark b").innerText()) === "South Texas Book & Author", "brand renamed in title and header");
 ok(!(await text(anon)).includes("Atelier"), "no leftover 'Atelier' on home");
 ok((await anon.locator(".stats b").count()) === 4 && (await anon.locator(".quote").count()) > 0 && (await anon.locator(".collection-card").count()) === 2, "home shows stats, testimonials, featured collections");
 for (const path of ["/for-schools", "/for-business", "/for-authors", "/book-fairs", "/book-bank", "/collections", "/news", "/resources", "/events", "/events/literacy-week", "/resources/author-visit-checklist", "/collections/featured-author-catalog"]) {

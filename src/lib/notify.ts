@@ -31,7 +31,7 @@ export async function authorApproved(author: { name: string; email: string; payo
   const base = await appUrl();
   sendEmail({
     to: author.email,
-    subject: "Your Grandma Cookie Book author account is approved",
+    subject: "Your South Texas Book & Author author account is approved",
     lines: [
       `Hi ${first(author.name)}, your author account has been approved.`,
       author.payoutsReady
@@ -108,7 +108,7 @@ export async function bookingResponded(bookingId: string) {
       ? [
           `${b.author.name} accepted “${b.package.title}” on ${fmtWhen(b)}.`,
           `Final fee: ${money(b.fee)}.${b.authorNote ? ` Note from the author: “${b.authorNote}”` : ""}`,
-          "Pay to confirm the date. Your payment is held by Grandma Cookie Book and only released to the author after the visit.",
+          "Pay to confirm the date. Your payment is held by South Texas Book & Author and only released to the author after the visit.",
         ]
       : [
           `${b.author.name} declined “${b.package.title}” on ${fmtWhen(b)}.${b.authorNote ? ` Their note: “${b.authorNote}”` : ""}`,
@@ -291,7 +291,7 @@ export async function itemRefunded(itemId: string) {
     {
       to: i.author.email,
       subject: `Order line refunded: ${i.title} (O-${i.order.number})`,
-      lines: [`Grandma Cookie Book refunded the buyer for ${i.title} × ${i.qty}.${i.transferId ? " Your share has been reversed from your Stripe balance." : " No payout had been released for it yet."} Contact us if you have questions.`],
+      lines: [`South Texas Book & Author refunded the buyer for ${i.title} × ${i.qty}.${i.transferId ? " Your share has been reversed from your Stripe balance." : " No payout had been released for it yet."} Contact us if you have questions.`],
       cta: { label: "View orders", url: `${base}/dashboard/author/orders` },
     },
   ]);
@@ -302,7 +302,7 @@ export async function itemRefunded(itemId: string) {
 export async function passwordResetLink(user: { name: string; email: string }, url: string, ttlMinutes: number) {
   sendEmail({
     to: user.email,
-    subject: "Reset your Grandma Cookie Book password",
+    subject: "Reset your South Texas Book & Author password",
     lines: [
       `Hi ${first(user.name)}, we received a request to reset your password.`,
       `This link works once and expires in ${ttlMinutes} minutes. If you didn't ask for it, you can ignore this email — your password won't change.`,
@@ -314,7 +314,7 @@ export async function passwordResetLink(user: { name: string; email: string }, u
 export async function passwordChanged(user: { name: string; email: string }) {
   sendEmail({
     to: user.email,
-    subject: "Your Grandma Cookie Book password was changed",
+    subject: "Your South Texas Book & Author password was changed",
     lines: [
       `Hi ${first(user.name)}, the password for your account was just changed and other devices were signed out.`,
       "If this wasn't you, reset your password straight away and contact us.",
@@ -384,7 +384,7 @@ export async function issueResolved(issueId: string) {
   });
   const author = i.booking?.author ?? i.orderItem!.author;
   const refunded = i.status === "REFUNDED";
-  const note = i.resolutionNote ? [`Note from Grandma Cookie Book: ${i.resolutionNote}`] : [];
+  const note = i.resolutionNote ? [`Note from South Texas Book & Author: ${i.resolutionNote}`] : [];
   sendEmail([
     {
       to: i.buyer.email,
@@ -423,9 +423,9 @@ export async function referralSubmitted(referralId: string) {
   }));
   sendEmail({
     to: r.referredEmail,
-    subject: `${r.referrer.name} invited you to sell and speak on Grandma Cookie Book`,
+    subject: `${r.referrer.name} invited you to sell and speak on South Texas Book & Author`,
     lines: [
-      `Hi ${first(r.referredName)}, ${r.referrer.name} thinks your books and talks would be a great fit for Grandma Cookie Book — a marketplace where schools, libraries and businesses buy books and book author visits.`,
+      `Hi ${first(r.referredName)}, ${r.referrer.name} thinks your books and talks would be a great fit for South Texas Book & Author — a marketplace where schools, libraries and businesses buy books and book author visits.`,
       "Joining is free. You set your own prices and get paid through Stripe.",
     ],
     cta: { label: "Create your author account", url: `${base}/signup?role=AUTHOR&email=${encodeURIComponent(r.referredEmail)}` },

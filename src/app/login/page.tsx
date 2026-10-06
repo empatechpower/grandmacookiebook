@@ -12,7 +12,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
     <div className="auth-shell">
       <div className="auth-art">
         <div>
-          <div className="eyebrow" style={{ color: "#e8b089" }}>Welcome back</div>
+          <div className="eyebrow" style={{ color: "#e5c37a" }}>Welcome back</div>
           <h2 style={{ fontSize: "2.6rem", letterSpacing: "-.03em" }}>Your desk is waiting.</h2>
         </div>
         {process.env.NODE_ENV !== "production" && (

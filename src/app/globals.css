@@ -1,19 +1,20 @@
 :root {
-  --paper: #f4efe6;
-  --paper-2: #ebe4d6;
-  --ink: #1b1612;
-  --ink-soft: #4a4038;
-  --mute: #7a7066;
-  --line: #ddd4c4;
-  --terracotta: #c24d1d;
-  --terracotta-d: #9a3812;
-  --sage: #3d5a48;
-  --sage-l: #5c7a66;
+  /* Brand palette from the South Texas Book & Author logo: navy, gold, cream. */
+  --paper: #f6f1e6;
+  --paper-2: #ece4d3;
+  --ink: #14285a;        /* navy — text, dark panels, primary dark buttons */
+  --ink-soft: #3c4a6b;
+  --mute: #6c7488;
+  --line: #ddd5c3;
+  --terracotta: #93691b; /* deep gold — accents and main call-to-action buttons (AA contrast with white text) */
+  --terracotta-d: #765313;
+  --sage: #2f5d62;       /* river teal — success / secondary actions */
+  --sage-l: #4c7a7f;
   --gold: #c9a227;
-  --card: #fffaf3;
+  --card: #fffbf3;
   --danger: #b42318;
   --ok: #2f6b45;
-  --shadow: 0 18px 50px rgba(27,22,18,.08);
+  --shadow: 0 18px 50px rgba(20,40,90,.10);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -72,7 +73,7 @@ img { max-width: 100%; display: block; }
   font-size: .72rem; letter-spacing: .06em; text-transform: uppercase;
   padding: 5px 10px; border-radius: 999px; background: var(--paper-2); color: var(--ink-soft);
 }
-.chip-role.admin { background: #1b1612; color: #f4efe6; }
+.chip-role.admin { background: var(--ink); color: var(--paper); }
 .chip-role.author { background: #efe0c8; color: #6b4a12; }
 .chip-role.buyer { background: #dce8df; color: #2d4a38; }
 
@@ -175,7 +176,7 @@ section.pad { padding: 56px 0; }
 .dash { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 72px); }
 .side {
   border-right: 1px solid var(--line); padding: 24px 16px;
-  background: #efe8da;
+  background: #efe8d8;
 }
 .side a, .side button.linkish {
   display: block; width: 100%; text-align: left;
@@ -192,7 +193,7 @@ section.pad { padding: 56px 0; }
 .kpi b { display: block; font-family: Fraunces, serif; font-size: 1.7rem; margin-top: 4px; }
 table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 16px; overflow: hidden; }
 th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); font-size: .9rem; }
-th { background: #efe8da; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+th { background: #efe8d8; font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
 .badge { font-size: .72rem; padding: 3px 8px; border-radius: 999px; font-weight: 600; }
 .b-ok { background: #dceee3; color: #215c36; }
 .b-wait { background: #f3e6c4; color: #7a5a10; }
@@ -455,7 +456,7 @@ fieldset.field legend { font-size: .8rem; margin-bottom: 6px; color: var(--ink-s
 .side .side-logout:hover { background: var(--ink); color: var(--paper); }
 
 @media (max-width: 960px) {
-  .side { position: sticky; top: 0; z-index: 30; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 4px; padding: 10px 12px; overflow: visible; background: #efe8da; }
+  .side { position: sticky; top: 0; z-index: 30; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 4px; padding: 10px 12px; overflow: visible; background: #efe8d8; }
   .side-brand { padding: 0; flex: 1; }
   .side-brand b { display: none; }
   .side-user { display: none; }
@@ -497,3 +498,10 @@ fieldset.field legend { font-size: .8rem; margin-bottom: 6px; color: var(--ink-s
 .featured-badge { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .04em; color: #7a5a10; background: #f3e6c4; border-radius: 999px; padding: 2px 8px; margin-right: 6px; text-transform: none; }
 .cover-lg.ph { display: grid; place-items: center; font-family: Fraunces, serif; font-size: 1.6rem; padding: 20px; text-align: center; }
 .badge { display: inline-block; white-space: nowrap; margin: 2px 0; }
+
+/* ---------- Logo ---------- */
+.mark-logo { width: 46px; height: 46px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px var(--line); object-fit: cover; flex: none; }
+.side .mark-logo { width: 40px; height: 40px; }
+.foot-logo { width: 88px; height: 88px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px var(--line); margin-bottom: 10px; display: block; }
+.mark b { line-height: 1.15; }
+@media (max-width: 960px) { .mark-logo { width: 38px; height: 38px; } }

@@ -22,7 +22,7 @@ export function LoginForm({ next }: { next?: string }) {
           <Link href="/forgot-password" style={{ textDecoration: "underline" }}>Forgot password?</Link>
         </div>
       </div>
-      <SubmitButton pendingText="Signing in…">Enter Grandma Cookie Book</SubmitButton>
+      <SubmitButton pendingText="Signing in…">Enter South Texas Book & Author</SubmitButton>
       <p style={{ marginTop: 16, fontSize: ".9rem" }}>
         No account?{" "}
         <Link href="/signup" style={{ color: "var(--terracotta)" }}>

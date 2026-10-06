@@ -93,7 +93,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="field">
                 <label htmlFor="venue">{v.format === "VIRTUAL" ? "Platform / link" : "Venue address"}</label>
-                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "125 Maple Ave, Atlanta, GA"} />
+                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "1200 N 10th St, McAllen, TX"} />
               </div>
               <div className="field">
                 <label htmlFor="message">Anything the author should know?</label>

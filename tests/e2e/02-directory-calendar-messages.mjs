@@ -22,7 +22,7 @@ const cases = [
   ["language=spanish", "Jeanette Gil, Miriam Bejerano"],
   ["identity=bilingual", "Jeanette Gil, Miriam Bejerano"],
   ["q=astronomy", "Allie Davis"],
-  ["location=houston", "Jeanette Gil, Meena Julapalli"],
+  ["location=harlingen", "Meena Julapalli"],
   ["topic=sel&grade=prek", "Jeanette Gil"],
 ];
 for (const [qs, want] of cases) { await anon.goto(`${B}/authors?${qs}`); const got = await names(anon); ok(got === want, `filter ${qs} -> ${got}`); }

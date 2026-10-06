@@ -10,7 +10,7 @@ const login = async (p, email, pw = "atelier123") => { await p.goto(B + "/login"
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const lastResetLink = (email) => {
   const log = readFileSync(process.env.SERVER_LOG ?? `${S}/server.log`, "utf8");
-  const blocks = log.split("[email] ").filter(b => b.startsWith(`to=${email} subject="Reset your Grandma Cookie Book password"`));
+  const blocks = log.split("[email] ").filter(b => b.startsWith(`to=${email} subject="Reset your South Texas Book & Author password"`));
   return blocks.length ? blocks.at(-1).match(/(http:\/\/\S+reset-password\?token=\S+)/)?.[1] : null;
 };
 
@@ -40,7 +40,7 @@ ok(true, "old password no longer works");
 await login(fresh, "jeanette@atelier.test", "newpass123"); await fresh.waitForURL("**/dashboard/**");
 ok(true, "new password works");
 await sleep(400);
-ok(/to=jeanette@atelier\.test subject="Your Grandma Cookie Book password was changed"/.test(readFileSync(process.env.SERVER_LOG ?? `${S}/server.log`, "utf8")), "password-changed alert emailed");
+ok(/to=jeanette@atelier\.test subject="Your South Texas Book & Author password was changed"/.test(readFileSync(process.env.SERVER_LOG ?? `${S}/server.log`, "utf8")), "password-changed alert emailed");
 
 // --- Change password (signed in) signs out other devices
 const a1 = await ctx(); await login(a1, "buyer@atelier.test"); await a1.waitForURL("**/dashboard/**");

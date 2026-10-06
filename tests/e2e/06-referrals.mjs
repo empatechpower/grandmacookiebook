@@ -30,7 +30,7 @@ ok((await chike.locator("body").innerText()).includes("Tara Adams"), "seeded pen
 await chike.fill("#name", "Ngozi Writes"); await chike.fill("#email", "author@atelier.test"); await chike.getByRole("button", { name: "Send referral" }).click();
 ok(await sees(chike, "yourself"), "can't refer yourself");
 await chike.fill("#name", "Mike"); await chike.fill("#email", "mike@atelier.test"); await chike.getByRole("button", { name: "Send referral" }).click();
-ok(await sees(chike, "already has a Grandma Cookie Book account"), "can't refer an existing member");
+ok(await sees(chike, "already has a South Texas Book & Author account"), "can't refer an existing member");
 await chike.goto(B + "/dashboard/author/referrals");
 await chike.fill("#name", "Ngozi Writes"); await chike.fill("#email", refEmail); await chike.getByRole("button", { name: "Send referral" }).click();
 ok(await sees(chike, "Referral sent"), "referral submitted");

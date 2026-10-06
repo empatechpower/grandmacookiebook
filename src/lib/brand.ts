@@ -1,6 +1,7 @@
-/** Platform name and tagline, used in the header, emails and page titles. */
+/** Platform name, tagline and logo — used in the header, sidebar, footer, emails and page titles. */
 export const BRAND = {
-  name: "Grandma Cookie Book",
-  mark: "G",
-  tagline: "Books & author visits",
+  name: "South Texas Book & Author",
+  tagline: "For the Rio Grande Valley",
+  logo: "/brand/logo-160.png",
+  domain: "southtexasbookanauthor.com",
 };

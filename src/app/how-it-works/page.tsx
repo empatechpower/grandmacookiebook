@@ -23,7 +23,7 @@ export default function How() {
     <section className="pad">
       <div className="wrap">
         <div className="eyebrow">Roles</div>
-        <h2 style={{ marginBottom: 24 }}>How Grandma Cookie Book is structured</h2>
+        <h2 style={{ marginBottom: 24 }}>How South Texas Book & Author is structured</h2>
         <div className="grid-3">
           {roles.map((r) => (
             <article className="card" key={r.role}>
@@ -41,7 +41,7 @@ export default function How() {
           {[
             ["1 · Request", "Buyer picks a package and sends date, venue and audience."],
             ["2 · Accept", "Author accepts or declines, with an optional note."],
-            ["3 · Pay", "Buyer pays to confirm. Grandma Cookie Book holds the payment until after the visit."],
+            ["3 · Pay", "Buyer pays to confirm. South Texas Book & Author holds the payment until after the visit."],
             ["4 · Deliver", "The buyer confirms the visit happened and the author is paid — or it releases automatically 14 days after the event."],
           ].map(([t, d]) => (
             <div className="rp" key={t}>

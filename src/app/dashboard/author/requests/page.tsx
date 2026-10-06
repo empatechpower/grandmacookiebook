@@ -47,7 +47,7 @@ export default async function Requests() {
             <td>{money(net(b.fee, b.commissionPct))}<div className="muted" style={{ fontSize: ".75rem" }}>of {money(b.fee)}</div></td>
             <td>
               <Badge status={b.status} />
-              {b.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while Grandma Cookie Book reviews it">Problem reported</span></div>}
+              {b.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while South Texas Book & Author reviews it">Problem reported</span></div>}
             </td>
             <td><span className={`badge ${moneyBadge(bookingMoneyStatus(b))}`}>{bookingMoneyStatus(b)}</span></td>
             <td>

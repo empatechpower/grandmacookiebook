@@ -26,7 +26,7 @@ export default async function Referrals() {
     <>
       <PageHead
         title="Referral program"
-        sub={`Refer an author or publisher. Once we verify it, you earn ${s.referralPct}% of every sale they make on Grandma Cookie Book for ${s.referralMonths} months — paid quarterly.`}
+        sub={`Refer an author or publisher. Once we verify it, you earn ${s.referralPct}% of every sale they make on South Texas Book & Author for ${s.referralMonths} months — paid quarterly.`}
         action={<Link className="btn btn-ghost btn-sm" href="/referral" target="_blank">Program terms</Link>}
       />
       {!eligible && (

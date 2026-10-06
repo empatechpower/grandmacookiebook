@@ -27,7 +27,7 @@ export default async function AuthorReviews() {
             <div key={r.id} className="review">
               <div className="split">
                 <Stars single avg={r.rating} />
-                <span className="muted" style={{ fontSize: ".8rem" }}>{fmtDate(r.createdAt)}{r.hidden ? " · hidden by Grandma Cookie Book" : ""}</span>
+                <span className="muted" style={{ fontSize: ".8rem" }}>{fmtDate(r.createdAt)}{r.hidden ? " · hidden by South Texas Book & Author" : ""}</span>
               </div>
               <p style={{ margin: "6px 0" }}>{r.body}</p>
               <div className="muted" style={{ fontSize: ".8rem" }}>

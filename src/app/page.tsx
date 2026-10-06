@@ -44,15 +44,15 @@ export default async function Home() {
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="eyebrow">Books · author visits · book fairs</div>
+            <div className="eyebrow">For the Rio Grande Valley in South Texas</div>
             <h1>
               Books to own.
               <br />
               Voices to <em>invite</em>.
             </h1>
             <p className="lede">
-              Find vetted authors for school visits, keynotes and workshops — and buy their books directly. Built for schools, libraries,
-              businesses and the authors who inspire them.
+              Find vetted authors for school visits, keynotes and workshops — and buy their books directly. Built for South Texas schools,
+              libraries, businesses and the authors who inspire them.
             </p>
             <form action="/authors" className="hero-search" role="search">
               <input name="q" placeholder="Search authors, topics or books…" aria-label="Search authors, topics or books" />

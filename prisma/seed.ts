@@ -37,20 +37,20 @@ async function main() {
     db.user.create({ data: { name, email, role, passwordHash, ...extra } });
 
   await user("Sarah Mitchell", "admin@atelier.test", "ADMIN");
-  const buyer = await user("Ada Brooks", "buyer@atelier.test", "BUYER", { location: "125 Maple Ave, Atlanta, GA 30303", orgType: "SCHOOL", orgName: "Oxbridge Preschool" });
+  const buyer = await user("Ada Brooks", "buyer@atelier.test", "BUYER", { location: "1200 N 10th St, McAllen, TX 78501", orgType: "SCHOOL", orgName: "Oxbridge Preschool" });
   const school = await user("Nancy Mullin", "school@atelier.test", "BUYER", { orgType: "SCHOOL", orgName: "St. Cloud Elementary" });
 
   const tags = (...t: string[]) => (t.length ? `,${t.join(",")},` : "");
   type AuthorSeed = { name: string; email: string; bio: string; headline: string; topics: string; grades: string; languages: string; identities?: string; location: string };
   const authorData: AuthorSeed[] = [
-    { name: "Marcus Bell", email: "author@atelier.test", bio: "Novelist and storyteller who loves a school hall full of questions.", headline: "Novelist · school & library speaker", topics: tags("literacy", "writing", "history"), grades: tags("g68", "g912", "adult"), languages: tags("english"), identities: tags("black-owned"), location: "Atlanta, GA" },
-    { name: "Jeanette Gil", email: "jeanette@atelier.test", bio: "Social-emotional learning author and classroom speaker.", headline: "SEL author for early grades", topics: tags("sel", "confidence", "family"), grades: tags("prek", "k2", "g35"), languages: tags("english", "spanish"), identities: tags("hispanic-owned", "women-owned", "bilingual"), location: "Houston, TX" },
-    { name: "Mike Crowder", email: "mike@atelier.test", bio: "Makes STEM feel like play for families and schools.", headline: "STEM author & family-night host", topics: tags("stem", "literacy"), grades: tags("k2", "g35", "g68"), languages: tags("english"), location: "Columbus, OH" },
-    { name: "Meena Julapalli", email: "meena@atelier.test", bio: "Physician-author speaking on joy and resilience at work.", headline: "Keynote speaker on joy & resilience", topics: tags("mental-health", "leadership", "confidence"), grades: tags("adult", "college"), languages: tags("english"), identities: tags("aapi-owned", "women-owned"), location: "Houston, TX" },
-    { name: "Susan Friedland", email: "susan@atelier.test", bio: "Animal tales for young readers and libraries.", headline: "Picture books about animals & kindness", topics: tags("nature", "anti-bullying"), grades: tags("prek", "k2"), languages: tags("english"), identities: tags("women-owned"), location: "Chicago, IL" },
+    { name: "Marcus Bell", email: "author@atelier.test", bio: "Novelist and storyteller who loves a school hall full of questions.", headline: "Novelist · school & library speaker", topics: tags("literacy", "writing", "history"), grades: tags("g68", "g912", "adult"), languages: tags("english"), identities: tags("black-owned"), location: "McAllen, TX" },
+    { name: "Jeanette Gil", email: "jeanette@atelier.test", bio: "Social-emotional learning author and classroom speaker.", headline: "SEL author for early grades", topics: tags("sel", "confidence", "family"), grades: tags("prek", "k2", "g35"), languages: tags("english", "spanish"), identities: tags("hispanic-owned", "women-owned", "bilingual"), location: "Edinburg, TX" },
+    { name: "Mike Crowder", email: "mike@atelier.test", bio: "Makes STEM feel like play for families and schools.", headline: "STEM author & family-night host", topics: tags("stem", "literacy"), grades: tags("k2", "g35", "g68"), languages: tags("english"), location: "Brownsville, TX" },
+    { name: "Meena Julapalli", email: "meena@atelier.test", bio: "Physician-author speaking on joy and resilience at work.", headline: "Keynote speaker on joy & resilience", topics: tags("mental-health", "leadership", "confidence"), grades: tags("adult", "college"), languages: tags("english"), identities: tags("aapi-owned", "women-owned"), location: "Harlingen, TX" },
+    { name: "Susan Friedland", email: "susan@atelier.test", bio: "Animal tales for young readers and libraries.", headline: "Picture books about animals & kindness", topics: tags("nature", "anti-bullying"), grades: tags("prek", "k2"), languages: tags("english"), identities: tags("women-owned"), location: "Mission, TX" },
     { name: "Allie Davis", email: "allie@atelier.test", bio: "Astronomy writer bringing the night sky indoors.", headline: "Astronomy author · virtual assemblies", topics: tags("stem", "nature"), grades: tags("g35", "g68", "g912"), languages: tags("english", "french"), location: "Remote" },
-    { name: "Jayme Branagh", email: "jayme@atelier.test", bio: "Empathy educator and workshop facilitator.", headline: "Empathy workshops for schools & teams", topics: tags("sel", "diversity", "anti-bullying"), grades: tags("g35", "g68", "adult"), languages: tags("english"), identities: tags("lgbtq-owned"), location: "Seattle, WA" },
-    { name: "Miriam Bejerano", email: "miriam@atelier.test", bio: "Picture-book author about travel and curiosity.", headline: "Travel & curiosity picture books", topics: tags("diversity", "family", "arts"), grades: tags("prek", "k2", "g35"), languages: tags("english", "spanish", "portuguese"), identities: tags("hispanic-owned", "bilingual"), location: "Miami, FL" },
+    { name: "Jayme Branagh", email: "jayme@atelier.test", bio: "Empathy educator and workshop facilitator.", headline: "Empathy workshops for schools & teams", topics: tags("sel", "diversity", "anti-bullying"), grades: tags("g35", "g68", "adult"), languages: tags("english"), identities: tags("lgbtq-owned"), location: "Weslaco, TX" },
+    { name: "Miriam Bejerano", email: "miriam@atelier.test", bio: "Picture-book author about travel and curiosity.", headline: "Travel & curiosity picture books", topics: tags("diversity", "family", "arts"), grades: tags("prek", "k2", "g35"), languages: tags("english", "spanish", "portuguese"), identities: tags("hispanic-owned", "bilingual"), location: "Pharr, TX" },
   ];
   // Demo authors get simulated Stripe accounts ("acct_mock_…") so the catalog works without Stripe keys.
   const a: Record<string, string> = {};
@@ -117,13 +117,13 @@ async function main() {
   });
 
   const visits: [string, string, string, number, number, string][] = [
-    ["Classroom SEL visit", "Jeanette Gil", "HYBRID", 45, 420, "Anywhere (virtual) · Houston on-site"],
-    ["STEM family night", "Mike Crowder", "IN_PERSON", 60, 780, "Ohio & Indiana"],
+    ["Classroom SEL visit", "Jeanette Gil", "HYBRID", 45, 420, "Anywhere (virtual) · Hidalgo County on-site"],
+    ["STEM family night", "Mike Crowder", "IN_PERSON", 60, 780, "Cameron County"],
     ["Corporate keynote: Joy", "Meena Julapalli", "IN_PERSON", 60, 1800, "Nationwide"],
-    ["Library animal tales", "Susan Friedland", "IN_PERSON", 40, 390, "Chicago area"],
+    ["Library animal tales", "Susan Friedland", "IN_PERSON", 40, 390, "Mission & McAllen"],
     ["Astronomy assembly", "Allie Davis", "VIRTUAL", 50, 510, "Anywhere"],
-    ["Empathy workshop", "Jayme Branagh", "HYBRID", 75, 640, "Seattle & Portland"],
-    ["Author Q&A and signing", "Marcus Bell", "IN_PERSON", 90, 650, "Atlanta metro"],
+    ["Empathy workshop", "Jayme Branagh", "HYBRID", 75, 640, "Weslaco & Mercedes"],
+    ["Author Q&A and signing", "Marcus Bell", "IN_PERSON", 90, 650, "Rio Grande Valley"],
   ];
   const pkg: Record<string, { id: string; authorId: string; fee: number }> = {};
   for (const [title, author, format, durationMins, fee, region] of visits) {
@@ -177,8 +177,8 @@ async function main() {
       data: {
         buyerId,
         total: b.price * qty,
-        shippingAddress: "125 Maple Ave, Atlanta, GA 30303",
-        phone: "(404) 555-0142",
+        shippingAddress: "1200 N 10th St, McAllen, TX 78501",
+        phone: "(956) 555-0142",
         status: "PAID",
         paymentRef: `pi_mock_seed${n}`,
         chargeId: `ch_mock_seed${n}`,
@@ -203,7 +203,7 @@ async function main() {
   const msg = (senderId: string, body: string, minsAgo: number) =>
     db.message.create({ data: { conversationId: convo.id, senderId, body, createdAt: new Date(Date.now() - minsAgo * 60000) } });
   await msg(buyer.id, "Hi Marcus! We'd love you for our reading week. Around 120 students, grades 6–8. Could you do a Q&A and signing?", 180);
-  await msg(a["Marcus Bell"], "Happy to! I've sent my package details. If the venue is outside the Atlanta metro I'll add travel to the final quote.", 150);
+  await msg(a["Marcus Bell"], "Happy to! I've sent my package details. If the venue is outside the Valley I'll add travel to the final quote.", 150);
   await msg(buyer.id, "Great — it's in Oxbridge, I've sent the request for the 20th.", 120);
   await db.conversation.update({ where: { id: convo.id }, data: { lastMessageAt: new Date(Date.now() - 120 * 60000), buyerLastReadAt: new Date() } });
 
@@ -312,7 +312,7 @@ async function main() {
     data: {
       buyerId: school.id, title: "Author assembly for Reading Week", format: "ANY", audience: "Grades 3–5 assembly", audienceSize: 220,
       description: "We'd love an energetic author to kick off Reading Week with an assembly and a short Q&A. Themes around kindness or curiosity are a bonus.",
-      eventDate: soon(40), deadline: soon(20), grade: "g35", budgetMax: 70000, location: "Atlanta, GA",
+      eventDate: soon(40), deadline: soon(20), grade: "g35", budgetMax: 70000, location: "Edinburg, TX",
     },
   });
   const jPkg = await db.visitPackage.findFirstOrThrow({ where: { authorId: a["Jeanette Gil"] } });
@@ -324,14 +324,14 @@ async function main() {
   // Storefront extras for Marcus Bell: social links, media, a featured book with extra photos.
   await db.user.update({
     where: { id: a["Marcus Bell"] },
-    data: { websiteUrl: "https://example.com/marcus-bell", facebookUrl: "https://facebook.com/example", instagramUrl: "https://instagram.com/example", phone: "(404) 555-0199" },
+    data: { websiteUrl: "https://example.com/marcus-bell", facebookUrl: "https://facebook.com/example", instagramUrl: "https://instagram.com/example", phone: "(956) 555-0199" },
   });
   const photo = (id: string) => `https://images.unsplash.com/${id}?w=900&h=560&fit=crop`;
   await db.media.createMany({
     data: [
       { authorId: a["Marcus Bell"], kind: "PHOTO", category: "SCHOOL_VISITS", title: "Reading week at St. Cloud Elementary", url: photo("photo-1503676260728-1c00da094a0b"), caption: "Q&A with 7th graders", position: 1 },
-      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "AWARDS", title: "Georgia Author of the Year finalist", url: photo("photo-1513475382585-d06e58bcb0e0"), position: 2 },
-      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "PHOTOS", title: "Signing at the Atlanta Book Festival", url: photo("photo-1524995997946-a1c2e315a42f"), position: 3 },
+      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "AWARDS", title: "Texas Library Association honoree", url: photo("photo-1513475382585-d06e58bcb0e0"), position: 2 },
+      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "PHOTOS", title: "Signing at the RGV Book Festival", url: photo("photo-1524995997946-a1c2e315a42f"), position: 3 },
     ],
   });
   await db.book.update({ where: { id: bookIds["Letters from the Delta"] }, data: { featured: true } });

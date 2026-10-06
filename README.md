@@ -1,4 +1,4 @@
-# Grandma Cookie Book — buy books, book authors, host talks
+# South Texas Book & Author — buy books, book authors, host talks
 
 A marketplace with three roles:
 
