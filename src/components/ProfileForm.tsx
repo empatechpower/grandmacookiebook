@@ -43,6 +43,16 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
       </div>
       {showBio && (
         <div className="field">
+          <label htmlFor="slug">Storefront link</label>
+          <div className="slug-input">
+            <span>/authors/</span>
+            <input id="slug" name="slug" defaultValue={user.slug ?? ""} placeholder="your-name" pattern="[a-z0-9]+(-[a-z0-9]+)*" minLength={3} maxLength={40} />
+          </div>
+          <div className="hint">Lowercase letters, numbers and dashes. Your old link keeps working.</div>
+        </div>
+      )}
+      {showBio && (
+        <div className="field">
           <label htmlFor="headline">Headline</label>
           <input id="headline" name="headline" maxLength={120} defaultValue={user.headline ?? ""} placeholder="Children's author & SEL speaker" />
         </div>
@@ -95,6 +105,20 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
             <div className="field">
               <label htmlFor="videoUrl">Intro video</label>
               <input id="videoUrl" name="videoUrl" type="url" defaultValue={user.videoUrl ?? ""} placeholder="YouTube or Vimeo link" />
+            </div>
+          </div>
+          <div className="field-row three">
+            <div className="field">
+              <label htmlFor="facebookUrl">Facebook</label>
+              <input id="facebookUrl" name="facebookUrl" type="url" defaultValue={user.facebookUrl ?? ""} placeholder="https://facebook.com/…" />
+            </div>
+            <div className="field">
+              <label htmlFor="instagramUrl">Instagram</label>
+              <input id="instagramUrl" name="instagramUrl" type="url" defaultValue={user.instagramUrl ?? ""} placeholder="https://instagram.com/…" />
+            </div>
+            <div className="field">
+              <label htmlFor="tiktokUrl">TikTok</label>
+              <input id="tiktokUrl" name="tiktokUrl" type="url" defaultValue={user.tiktokUrl ?? ""} placeholder="https://tiktok.com/@…" />
             </div>
           </div>
           <Checks name="topics" legend="Topics you speak and write about" opts={TOPICS} selected={user.topics} hint="Schools filter by these." />

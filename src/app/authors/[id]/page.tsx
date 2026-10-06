@@ -16,20 +16,26 @@ import { Stars } from "@/components/Stars";
 import { orgTypeLabel } from "@/lib/constants";
 import { searchAuthors } from "@/lib/directory";
 import { AuthorCard } from "@/components/AuthorCard";
+import { MediaGrid } from "@/components/MediaGrid";
 
 export default async function AuthorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [author, user] = await Promise.all([
     db.user.findFirst({
-      where: { id, ...bookableAuthor },
+      // The storefront link can be the author's custom slug or their id.
+      where: { OR: [{ id }, { slug: id.toLowerCase() }], ...bookableAuthor },
       include: {
-        books: { where: { status: "APPROVED" }, orderBy: { createdAt: "desc" } },
+        books: { where: { status: "APPROVED" }, orderBy: [{ featured: "desc" }, { createdAt: "desc" }] },
+        media: { orderBy: { position: "asc" } },
         packages: { where: { status: "APPROVED" }, orderBy: { fee: "asc" } },
       },
     }),
     currentUser(),
   ]);
   if (!author) notFound();
+  const socials = ([["Facebook", author.facebookUrl], ["Instagram", author.instagramUrl], ["TikTok", author.tiktokUrl]] as [string, string | null][]).filter(
+    (x): x is [string, string] => !!x[1],
+  );
   const [dates, reviews] = await Promise.all([
     openDates(author.id, 60),
     db.review.findMany({
@@ -81,6 +87,9 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
               )}
               {author.videoUrl && <a className="btn btn-line" href={author.videoUrl} target="_blank" rel="noreferrer">Watch intro video</a>}
               {author.websiteUrl && <a className="btn btn-ghost" href={author.websiteUrl} target="_blank" rel="noreferrer">Website ↗</a>}
+              {socials.map(([label, url]) => (
+                <a key={label} className="btn btn-ghost" href={url} target="_blank" rel="noreferrer">{label} ↗</a>
+              ))}
             </div>
           </div>
         </div>
@@ -100,7 +109,14 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
           <div className="empty">No visit packages listed yet.</div>
         )}
 
-        <h2 className="h2-sm">Books</h2>
+        {author.media.length > 0 && (
+          <>
+            <h2 className="h2-sm" id="media">Photos & videos</h2>
+            <MediaGrid items={author.media} />
+          </>
+        )}
+
+        <h2 className="h2-sm">Books & products</h2>
         {author.books.length ? (
           <div className="grid-4">
             {author.books.map((b) => <BookCard key={b.id} b={{ ...b, author: ref }} />)}

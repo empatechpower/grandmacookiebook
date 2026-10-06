@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtWhen } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
@@ -35,7 +36,7 @@ export default async function BuyerHome() {
       <Table heads={["Date", "Visit", "Author", "Fee", "Status"]} empty="No upcoming visits. Browse talks to invite an author.">
         {bookings.map((b) => (
           <tr key={b.id}>
-            <td>{fmtDate(b.eventDate)}</td>
+            <td>{fmtWhen(b)}</td>
             <td>{b.package.title}</td>
             <td>{b.author.name}</td>
             <td>{money(b.fee)}</td>

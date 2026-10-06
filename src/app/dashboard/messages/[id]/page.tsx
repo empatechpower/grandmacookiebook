@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtWhen } from "@/lib/dates";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -43,7 +44,7 @@ export default async function Thread({ params, searchParams }: { params: Promise
         <div className="alert alert-info">
           {bookings.map((b) => (
             <div key={b.id}>
-              B-{b.number} · {b.package.title} · {fmtDate(b.eventDate)} · {money(b.fee)} <Badge status={b.status} />
+              B-{b.number} · {b.package.title} · {fmtWhen(b)} · {money(b.fee)} <Badge status={b.status} />
             </div>
           ))}
         </div>

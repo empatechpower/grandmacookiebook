@@ -1,6 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import Link from "next/link";
-import { SideNav } from "@/components/SideNav";
+import { SideNav, type NavLink } from "@/components/SideNav";
 import { BRAND } from "@/lib/brand";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
 import { logout } from "@/app/actions/auth";
@@ -8,7 +8,7 @@ import { unreadCount } from "@/lib/messages";
 import { db } from "@/lib/db";
 
 // Entries whose href starts with "#" are group headings.
-const NAV: Record<string, { label: string; links: [string, string][] }> = {
+const NAV: Record<string, { label: string; links: NavLink[] }> = {
   BUYER: {
     label: "Library",
     links: [
@@ -24,22 +24,22 @@ const NAV: Record<string, { label: string; links: [string, string][] }> = {
   },
   AUTHOR: {
     label: "Studio",
+    // Top-level items follow the client's requested menu; indented items ("sub") sit under them.
     links: [
-      ["/dashboard/author", "Overview"],
-      ["#listings", "Listings"],
-      ["/dashboard/author/books", "My books"],
-      ["/dashboard/author/visits", "Visit packages"],
-      ["/dashboard/author/availability", "Availability"],
-      ["#work", "Bookings & sales"],
-      ["/dashboard/author/requests", "Booking requests"],
-      ["/dashboard/author/opportunities", "Opportunities"],
-      ["/dashboard/author/orders", "Book orders"],
-      ["/dashboard/messages", "Messages"],
-      ["#growth", "Money & growth"],
-      ["/dashboard/author/payouts", "Payouts"],
-      ["/dashboard/author/reviews", "Reviews"],
-      ["/dashboard/author/referrals", "Referrals"],
-      ["/dashboard/author/profile", "Public profile"],
+      ["/dashboard/author", "Dashboard"],
+      ["/dashboard/author/requests", "Bookings"],
+      ["/dashboard/author/availability", "Availability", "sub"],
+      ["/dashboard/author/opportunities", "Opportunities", "sub"],
+      ["/dashboard/messages", "Messages", "sub"],
+      ["/dashboard/author/orders", "Orders"],
+      ["/dashboard/author/visits", "Listings"],
+      ["/dashboard/author/books", "Products"],
+      ["/dashboard/author/profile", "Storefront"],
+      ["/dashboard/author/media", "Media", "sub"],
+      ["/dashboard/author/reviews", "Reviews", "sub"],
+      ["/dashboard/author/settings", "Settings"],
+      ["/dashboard/author/payouts", "Payouts", "sub"],
+      ["/dashboard/author/referrals", "Referrals", "sub"],
     ],
   },
   ADMIN: {

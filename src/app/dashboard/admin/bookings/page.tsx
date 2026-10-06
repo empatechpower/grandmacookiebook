@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { fmtWhen } from "@/lib/dates";
 import { money } from "@/lib/money";
 import { adminCancelBooking } from "@/app/actions/admin";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
@@ -21,7 +22,7 @@ export default async function AdminBookings() {
             <td>{b.package.title}<div className="muted" style={{ fontSize: ".8rem" }}>{b.organisation}</div></td>
             <td>{b.author.name}</td>
             <td>{b.buyer.name}</td>
-            <td>{fmtDate(b.eventDate)}</td>
+            <td>{fmtWhen(b)}</td>
             <td>{money(b.fee)}</td>
             <td><Badge status={b.status} /></td>
             <td>

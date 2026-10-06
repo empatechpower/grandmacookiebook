@@ -33,6 +33,12 @@ model User {
   identities      String   @default("")
   websiteUrl      String?
   videoUrl        String?
+  // Storefront: editable public link (/authors/<slug>) and social profiles.
+  slug            String?  @unique
+  facebookUrl     String?
+  instagramUrl    String?
+  tiktokUrl       String?
+  phone           String?
   // Buyer organisation (schools, libraries, businesses…); shown to authors on requests and reviews.
   orgType         String? // SCHOOL | LIBRARY | BUSINESS | NONPROFIT | INDIVIDUAL
   orgName         String?
@@ -63,26 +69,29 @@ model User {
   referredBy      Referral[]           @relation("ReferredUser")
   referralPayouts ReferralPayout[]
   rfps            Rfp[]
+  media           Media[]
   bids            Bid[]
 }
 
 model Book {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   authorId    String
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author      User        @relation(fields: [authorId], references: [id], onDelete: Cascade)
   title       String
   description String
   category    String // see CATEGORIES
   price       Int
-  stock       Int      @default(0)
+  stock       Int         @default(0)
   coverUrl    String?
   // Optional classroom-set pricing: unit price drops to bulkPrice at bulkMinQty copies or more.
   bulkMinQty  Int?
   bulkPrice   Int?
-  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED | ARCHIVED
+  featured    Boolean     @default(false) // shown first on the author's storefront
+  images      BookImage[]
+  status      String      @default("PENDING") // PENDING | APPROVED | REJECTED | ARCHIVED
   reviewNote  String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   cartItems  CartItem[]
   orderItems OrderItem[]
@@ -129,6 +138,7 @@ model Order {
   buyer           User        @relation(fields: [buyerId], references: [id])
   total           Int
   shippingAddress String
+  phone           String?
   status          String      @default("PENDING") // PENDING (awaiting payment) | PAID | CANCELLED
   stripeSessionId String?     @unique
   paymentRef      String? // Stripe PaymentIntent id
@@ -139,24 +149,27 @@ model Order {
 
 // Each line is fulfilled and paid out to its own author, so status and transfer live on the line.
 model OrderItem {
-  id            String    @id @default(cuid())
-  orderId       String
-  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  bookId        String
-  book          Book      @relation(fields: [bookId], references: [id])
-  authorId      String
-  author        User      @relation("SoldItems", fields: [authorId], references: [id])
-  title         String
-  unitPrice     Int
-  qty           Int
-  commissionPct Int // platform cut at time of sale
-  status        String    @default("PENDING") // PENDING | PAID | SHIPPED | DELIVERED | REFUNDED | CANCELLED
+  id             String    @id @default(cuid())
+  orderId        String
+  order          Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookId         String
+  book           Book      @relation(fields: [bookId], references: [id])
+  authorId       String
+  author         User      @relation("SoldItems", fields: [authorId], references: [id])
+  title          String
+  unitPrice      Int
+  qty            Int
+  commissionPct  Int // platform cut at time of sale
+  status         String    @default("PENDING") // PENDING | PAID | SHIPPED | DELIVERED | REFUNDED | CANCELLED
   // Author's share is held until the buyer confirms receipt or releaseAt passes.
-  releaseAt     DateTime?
-  transferId    String? // Stripe transfer of the author's share
-  transferError String?
-  review        Review?
-  issues        Issue[]
+  releaseAt      DateTime?
+  transferId     String? // Stripe transfer of the author's share
+  transferError  String?
+  carrier        String?
+  trackingNumber String?
+  shippedAt      DateTime?
+  review         Review?
+  issues         Issue[]
 
   @@index([authorId, status])
 }
@@ -171,6 +184,7 @@ model Booking {
   packageId       String
   package         VisitPackage @relation(fields: [packageId], references: [id])
   eventDate       DateTime
+  eventTime       String? // "HH:MM" local start time
   organisation    String
   venue           String
   audienceSize    Int
@@ -439,4 +453,29 @@ model Article {
   updatedAt   DateTime  @updatedAt
 
   @@index([kind, published, publishedAt])
+}
+
+// Extra product photos (the main one is Book.coverUrl).
+model BookImage {
+  id       String @id @default(cuid())
+  bookId   String
+  book     Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  url      String
+  position Int    @default(0)
+}
+
+// Author storefront media: photos, videos, interviews, school visits, awards.
+model Media {
+  id        String   @id @default(cuid())
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  kind      String // PHOTO | VIDEO
+  category  String // PHOTOS | VIDEOS | INTERVIEWS | SCHOOL_VISITS | AWARDS | OTHER
+  url       String // image URL, or a YouTube/Vimeo/other video link
+  title     String
+  caption   String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([authorId, position])
 }

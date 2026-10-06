@@ -4,6 +4,7 @@ import { money } from "@/lib/money";
 import { parseTags } from "@/lib/tags";
 import type { DirectoryAuthor } from "@/lib/directory";
 import { Stars } from "./Stars";
+import { authorPath } from "@/lib/storefront";
 
 // Warm, on-brand backgrounds for authors without a photo, picked by name so each keeps its color.
 const PH = ["#e7d8c0,#d9cbb6", "#f0d5c4,#e2b79d", "#d7e3d8,#b9cdbd", "#efe0c8,#dcc39a", "#e6d6e3,#cdb7c9", "#dde2ec,#bfc8da"];
@@ -29,13 +30,13 @@ export function AuthorCard({ a }: { a: DirectoryAuthor }) {
   const first = a.name.split(" ")[0];
   return (
     <article className="card author-card">
-      <Link href={`/authors/${a.id}`}>
+      <Link href={authorPath(a)}>
         <AuthorPhoto name={a.name} url={a.avatarUrl} />
       </Link>
       <div className="body">
         {topics.length > 0 && <div className="meta">{topics.join(", ")}</div>}
         <h3>
-          <Link href={`/authors/${a.id}`}>{a.name}</Link>
+          <Link href={authorPath(a)}>{a.name}</Link>
         </h3>
         {a.headline && <p className="muted" style={{ fontSize: ".85rem" }}>{a.headline}</p>}
         {a.ratingCount > 0 && <div style={{ marginTop: 4 }}><Stars avg={a.ratingAvg} count={a.ratingCount} size=".82rem" /></div>}
@@ -47,7 +48,7 @@ export function AuthorCard({ a }: { a: DirectoryAuthor }) {
         </div>
         <div className="split" style={{ marginTop: 12 }}>
           <span className="price">{a.fromFee != null ? `From ${money(a.fromFee)}` : "Books only"}</span>
-          <Link href={`/authors/${a.id}`} style={{ color: "var(--terracotta)", fontWeight: 600, fontSize: ".9rem" }}>
+          <Link href={authorPath(a)} style={{ color: "var(--terracotta)", fontWeight: 600, fontSize: ".9rem" }}>
             Book {first} &gt;
           </Link>
         </div>

@@ -12,7 +12,7 @@ import { isLateCancellation } from "@/lib/dates";
 import * as notify from "@/lib/notify";
 import { liveWhere } from "@/lib/catalog";
 import { unitPriceFor } from "@/lib/pricing";
-import { fromDayKey, isDayKey, todayKey } from "@/lib/dates";
+import { fromDayKey, isDayKey, isTime, todayKey } from "@/lib/dates";
 
 async function requireBuyer(action: string) {
   const user = await currentUser();
@@ -82,6 +82,7 @@ export async function checkout(fd: FormData) {
         buyerId: user.id,
         total,
         shippingAddress: address,
+        phone: str(fd, "phone").slice(0, 30) || null,
         items: {
           create: cart.map((c) => ({
             bookId: c.bookId,
@@ -97,6 +98,9 @@ export async function checkout(fd: FormData) {
   })
     .catch(() => null);
   if (!order) return fail("Some items just sold out — please check your cart", "/cart");
+  // Remember the phone for next time.
+  const phone = str(fd, "phone").slice(0, 30);
+  if (phone && !user.phone) await db.user.update({ where: { id: user.id }, data: { phone } });
 
   if (demoMode) {
     await fulfillOrder(order.id, demoPayment());
@@ -155,6 +159,8 @@ export async function requestBooking(fd: FormData) {
   const audienceSize = int(fd, "audienceSize");
   if (isNaN(eventDate.getTime()) || key <= todayKey()) return fail("Pick an event date from tomorrow onwards");
   if (!organisation || !venue) return fail("Organization and venue are required");
+  const eventTime = str(fd, "eventTime");
+  if (!isTime(eventTime)) return fail("Choose a start time");
   // If the author publishes availability, the date must be one of their open days and not already taken.
   const openDays = await db.availableDate.count({ where: { authorId: pkg.authorId, date: { gte: fromDayKey(todayKey()) } } });
   if (openDays) {
@@ -171,6 +177,7 @@ export async function requestBooking(fd: FormData) {
       authorId: pkg.authorId,
       packageId: pkg.id,
       eventDate,
+      eventTime,
       organisation,
       venue,
       audienceSize,

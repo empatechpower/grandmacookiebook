@@ -81,9 +81,15 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
                   <div className="hint">This author hasn’t published a calendar — propose a date and they’ll confirm.</div>
                 </div>
               )}
+              <div className="field-row">
+              <div className="field">
+                <label htmlFor="eventTime">Start time</label>
+                <input id="eventTime" name="eventTime" type="time" required defaultValue="10:00" />
+              </div>
               <div className="field">
                 <label htmlFor="audienceSize">Audience size</label>
                 <input id="audienceSize" name="audienceSize" type="number" min={1} required placeholder="120" />
+              </div>
               </div>
               <div className="field">
                 <label htmlFor="venue">{v.format === "VIRTUAL" ? "Platform / link" : "Venue address"}</label>

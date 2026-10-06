@@ -49,6 +49,11 @@ export function BookForm({ book }: { book?: Book }) {
           <div className="hint">JPEG, PNG or WebP, up to 5 MB.</div>
         </div>
       </div>
+      <div className="field">
+        <label htmlFor="images">More photos (optional)</label>
+        <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+        <div className="hint">Back cover, inside pages, merchandise shots — up to 8 extra photos.</div>
+      </div>
       <div className="field-row">
         <div className="field">
           <label htmlFor="bulkMinQty">Classroom-set price from (copies)</label>

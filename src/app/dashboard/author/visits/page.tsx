@@ -12,8 +12,8 @@ export default async function AuthorPackages() {
   const pkgs = await db.visitPackage.findMany({ where: { authorId: user.id }, orderBy: { createdAt: "desc" } });
   return (
     <>
-      <PageHead title="Visit packages" sub="What schools, libraries and companies can book you for." action={<Link className="btn btn-ink" href="/dashboard/author/visits/new">Add a package</Link>} />
-      <Table heads={["Package", "Format", "Duration", "Fee", "Status", ""]} empty="No packages yet — add a visit or keynote.">
+      <PageHead title="Listings" sub="Your visit, workshop and speaking listings — pricing, location and visit details. Set the dates you're free under Availability." action={<Link className="btn btn-terra" href="/dashboard/author/visits/new">+ Create New Listing</Link>} />
+      <Table heads={["Listing", "Format", "Duration", "Price", "Status", ""]} empty="No listings yet — create your first visit or keynote.">
         {pkgs.map((p) => (
           <tr key={p.id}>
             <td>

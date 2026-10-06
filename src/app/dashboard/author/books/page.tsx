@@ -3,21 +3,22 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { categoryLabel } from "@/lib/constants";
 import { money } from "@/lib/money";
-import { toggleArchive } from "@/app/actions/author";
+import { toggleArchive, toggleFeatured } from "@/app/actions/author";
 import { Badge, PageHead, Table } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function AuthorBooks() {
   const user = await requireUser("AUTHOR");
-  const books = await db.book.findMany({ where: { authorId: user.id }, orderBy: { createdAt: "desc" } });
+  const books = await db.book.findMany({ where: { authorId: user.id }, orderBy: [{ featured: "desc" }, { createdAt: "desc" }] });
   return (
     <>
-      <PageHead title="My books" sub="Approved titles sell directly to buyers." action={<Link className="btn btn-terra" href="/dashboard/author/books/new">Add a book</Link>} />
-      <Table heads={["Title", "Category", "Price", "Stock", "Status", ""]} empty="No books yet — add your first title.">
+      <PageHead title="Products" sub="Books and merchandise you sell. Approved products appear on your storefront — featured ones first." action={<Link className="btn btn-terra" href="/dashboard/author/books/new">+ Add product</Link>} />
+      <Table heads={["Product", "Category", "Price", "Inventory", "Status", ""]} empty="No products yet — add your first book or item.">
         {books.map((b) => (
           <tr key={b.id}>
             <td>
               <b>{b.title}</b>
+              {b.featured && <span className="featured-badge" style={{ marginLeft: 8 }}>★ Featured</span>}
               {b.status === "REJECTED" && b.reviewNote && <div style={{ fontSize: ".8rem", color: "var(--danger)" }}>{b.reviewNote}</div>}
             </td>
             <td>{categoryLabel(b.category)}</td>
@@ -27,6 +28,12 @@ export default async function AuthorBooks() {
             <td>
               <div className="row">
                 <Link className="btn btn-line btn-sm" href={`/dashboard/author/books/${b.id}`}>Edit</Link>
+                <form action={toggleFeatured}>
+                  <input type="hidden" name="id" value={b.id} />
+                  <SubmitButton className="btn btn-ghost btn-sm" title={b.featured ? "Remove from featured" : "Show first on your storefront"}>
+                    {b.featured ? "★ Unfeature" : "☆ Feature"}
+                  </SubmitButton>
+                </form>
                 <form action={toggleArchive}>
                   <input type="hidden" name="kind" value="book" />
                   <input type="hidden" name="id" value={b.id} />

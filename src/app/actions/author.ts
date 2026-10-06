@@ -6,13 +6,15 @@ import { done, fail, str } from "@/lib/actions";
 import { CATEGORIES, FORMATS, GRADES, IDENTITIES, LANGUAGES, ORG_TYPES, TOPICS } from "@/lib/constants";
 import { serializeTags } from "@/lib/tags";
 import * as notify from "@/lib/notify";
+import { CARRIERS } from "@/lib/shipping";
+import { slugError } from "@/lib/storefront";
 import { hasFile, saveImage } from "@/lib/storage";
 import { redirect } from "next/navigation";
 import { createConnectedAccount, demoMode, fetchAccountReady, onboardingLink } from "@/lib/payments";
 import { toCents } from "@/lib/money";
 
 // Our own uploads are stored as relative /uploads/… paths.
-const ownUpload = z.string().regex(/^\/uploads\/(avatars|covers)\/[0-9a-f-]{36}\.(jpg|png|webp)$/);
+const ownUpload = z.string().regex(/^\/uploads\/(avatars|covers|media)\/[0-9a-f-]{36}\.(jpg|png|webp)$/);
 const url = z.union([z.literal(""), ownUpload, z.string().url("Cover must be a full URL (https://…)")]);
 
 const BookSchema = z.object({
@@ -48,9 +50,24 @@ export async function saveBook(fd: FormData) {
     if ("error" in saved) return fail(saved.error);
     data.coverUrl = saved.url;
   }
+  // Extra product photos (up to 8 per product).
+  const extra: string[] = [];
+  for (const f of fd.getAll("images")) {
+    if (!hasFile(f)) continue;
+    const saved = await saveImage(f, "covers");
+    if ("error" in saved) return fail(saved.error);
+    extra.push(saved.url);
+  }
+  const addImages = async (bookId: string) => {
+    if (!extra.length) return;
+    const count = await db.bookImage.count({ where: { bookId } });
+    if (count + extra.length > 8) return;
+    await db.bookImage.createMany({ data: extra.map((url, i) => ({ bookId, url, position: count + i + 1 })) });
+  };
 
   if (!id) {
-    await db.book.create({ data: { ...data, authorId: user.id } });
+    const created = await db.book.create({ data: { ...data, authorId: user.id } });
+    await addImages(created.id);
     await notify.listingSubmitted("book", data.title, user.name);
     return done("Book submitted for admin review", "/dashboard/author/books");
   }
@@ -59,7 +76,9 @@ export async function saveBook(fd: FormData) {
   // Price and stock changes go live immediately; content changes need re-review.
   const contentChanged = (["title", "description", "category", "coverUrl"] as const).some((k) => existing[k] !== data[k]);
   const status = contentChanged || existing.status === "REJECTED" ? "PENDING" : existing.status;
+  if (extra.length && (await db.bookImage.count({ where: { bookId: id } })) + extra.length > 8) return fail("Up to 8 extra photos per product");
   await db.book.update({ where: { id }, data: { ...data, status, reviewNote: status === "PENDING" ? null : existing.reviewNote } });
+  await addImages(id);
   if (status === "PENDING" && existing.status !== "PENDING") await notify.listingSubmitted("book", data.title, user.name);
   await done(status === "PENDING" && existing.status !== "PENDING" ? "Saved — resubmitted for review" : "Book saved", "/dashboard/author/books");
 }
@@ -144,12 +163,21 @@ export async function respondBooking(fd: FormData) {
   await done(accept ? "Accepted — the buyer can now pay to confirm" : "Request declined");
 }
 
+/** Marks a line shipped (with optional tracking), or updates the tracking on a shipped line. */
 export async function shipItem(fd: FormData) {
   const user = await requireUser("AUTHOR");
   const id = str(fd, "id");
-  const r = await db.orderItem.updateMany({ where: { id, authorId: user.id, status: "PAID" }, data: { status: "SHIPPED" } });
-  if (r.count) await notify.itemShipped(id);
-  await done(r.count ? "Marked as shipped" : "Already handled");
+  const item = await db.orderItem.findFirst({ where: { id, authorId: user.id } });
+  if (!item || !["PAID", "SHIPPED", "DELIVERED"].includes(item.status)) return fail("This order line can't be updated");
+  const carrier = (CARRIERS as readonly string[]).includes(str(fd, "carrier")) ? str(fd, "carrier") : null;
+  const trackingNumber = str(fd, "trackingNumber").slice(0, 60) || null;
+  const firstShip = item.status === "PAID";
+  await db.orderItem.update({
+    where: { id },
+    data: { carrier, trackingNumber, ...(firstShip ? { status: "SHIPPED", shippedAt: new Date() } : {}) },
+  });
+  if (firstShip || (trackingNumber && trackingNumber !== item.trackingNumber)) await notify.itemShipped(id);
+  await done(firstShip ? "Marked as shipped — the buyer has been emailed" : "Tracking updated");
 }
 
 /** Starts (or resumes) Stripe Connect onboarding so the author can be paid automatically. */
@@ -188,7 +216,16 @@ export async function updateProfile(fd: FormData) {
     await db.user.update({ where: { id: user.id }, data: { ...base, orgType, orgName: str(fd, "orgName").slice(0, 120) || null } });
     return done("Profile saved");
   }
-  const urls = { avatarUrl: str(fd, "avatarUrl"), websiteUrl: str(fd, "websiteUrl"), videoUrl: str(fd, "videoUrl") };
+  const urls = {
+    avatarUrl: str(fd, "avatarUrl"), websiteUrl: str(fd, "websiteUrl"), videoUrl: str(fd, "videoUrl"),
+    facebookUrl: str(fd, "facebookUrl"), instagramUrl: str(fd, "instagramUrl"), tiktokUrl: str(fd, "tiktokUrl"),
+  };
+  const slug = str(fd, "slug").toLowerCase();
+  if (slug) {
+    const err = slugError(slug);
+    if (err) return fail(err);
+    if (await db.user.findFirst({ where: { slug, id: { not: user.id } } })) return fail("That storefront link is taken — try another");
+  }
   for (const [k, v] of Object.entries(urls)) {
     if (!optionalUrl.safeParse(v).success) return fail(`${k.replace("Url", "")} link must be a full URL (https://…)`);
   }
@@ -208,6 +245,10 @@ export async function updateProfile(fd: FormData) {
       avatarUrl: urls.avatarUrl || null,
       websiteUrl: urls.websiteUrl || null,
       videoUrl: urls.videoUrl || null,
+      facebookUrl: urls.facebookUrl || null,
+      instagramUrl: urls.instagramUrl || null,
+      tiktokUrl: urls.tiktokUrl || null,
+      slug: slug || null,
       topics: tags("topics", TOPICS),
       grades: tags("grades", GRADES),
       languages: tags("languages", LANGUAGES),
@@ -215,4 +256,24 @@ export async function updateProfile(fd: FormData) {
     },
   });
   await done("Profile saved");
+}
+
+export async function updateAccount(fd: FormData) {
+  const user = await requireUser("AUTHOR", "BUYER");
+  await db.user.update({ where: { id: user.id }, data: { phone: str(fd, "phone").slice(0, 30) || null } });
+  await done("Settings saved");
+}
+
+export async function toggleFeatured(fd: FormData) {
+  const user = await requireUser("AUTHOR");
+  const book = await db.book.findFirst({ where: { id: str(fd, "id"), authorId: user.id } });
+  if (!book) return fail("Product not found");
+  await db.book.update({ where: { id: book.id }, data: { featured: !book.featured } });
+  await done(book.featured ? "No longer featured" : "Featured — shown first on your storefront");
+}
+
+export async function removeBookImage(fd: FormData) {
+  const user = await requireUser("AUTHOR");
+  await db.bookImage.deleteMany({ where: { id: str(fd, "id"), book: { authorId: user.id } } });
+  await done("Photo removed");
 }

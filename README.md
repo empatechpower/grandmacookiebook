@@ -62,6 +62,14 @@ Held payments are released by a daily job, `GET /api/cron/release-payouts` with 
 
 **Email.** Transactional emails (booking requests/acceptances/confirmations, order receipts, shipping, refunds, payouts, first unread message in a thread, listing reviews, author approval, admin alerts for new authors, listings and contact messages) are sent through [Resend](https://resend.com) after the response, so a failing provider never breaks an action. Without `RESEND_API_KEY` they're printed to the server log. All wording lives in `src/lib/notify.ts`.
 
+**Author dashboard.** Menu: Dashboard (earnings, orders, bookings, book sales, payment status, booking activity, order tracking), Bookings (+ Availability, Opportunities, Messages), Orders, Listings (visit packages), Products (books & merchandise, ★ featured, extra photos), Storefront (+ Media, Reviews), Settings (+ Payouts, Referrals, password).
+
+**Storefront.** Each author has a public page at `/authors/<slug>` (custom, editable link; the id link keeps working) with bio, website, Facebook, Instagram, TikTok, a media gallery (photos, videos — YouTube/Vimeo play inline — interviews, school visits, awards), featured products first, listings, reviews.
+
+**Orders & shipping.** Authors see the customer's name, organization, email, phone and shipping address; add a carrier + tracking number when shipping (USPS/UPS/FedEx/DHL link automatically) and can update it later; the customer is emailed the tracking link. Authors and admins can export orders as CSV. Bookings have a start time.
+
+**Admin notifications.** Admins are emailed for every booking request, booking payment, cancellation and order, plus new authors, listings, problem reports, referrals and contact messages.
+
 **Reviews.** Buyers can review an author (1–5 stars + text) after a visit is completed or a book is marked received, once per sale; they're emailed a prompt. Ratings show on author cards and profiles, and the directory can sort by *Top rated*. Authors post one public reply per review (Studio → Reviews). Admins can hide abusive reviews (Admin → Reviews), which also removes them from the average (cached on the user as `ratingAvg`/`ratingCount`).
 
 **Report a problem (money-back guarantee).** While payment is still held, buyers can report a problem on an order line or booking. That pauses the automatic release and alerts admins and the author. In Admin → Problem reports, the admin either **refunds the buyer** (from the held money) or **releases payment to the author**; both sides are emailed the outcome.

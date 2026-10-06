@@ -35,7 +35,7 @@ export const hasFile = (v: FormDataEntryValue | null): v is File => typeof v ===
  * Validates by content (not the browser-supplied name or type) and stores the image.
  * Returns its public URL, or an error message for the user.
  */
-export async function saveImage(file: File, folder: "avatars" | "covers"): Promise<{ url: string } | { error: string }> {
+export async function saveImage(file: File, folder: "avatars" | "covers" | "media"): Promise<{ url: string } | { error: string }> {
   if (file.size > MAX_IMAGE_BYTES) return { error: "Images must be 5 MB or smaller" };
   const buf = Buffer.from(await file.arrayBuffer());
   const type = TYPES.find((t) => t.magic(buf));

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtWhen } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { issueReasonLabel, orgTypeLabel } from "@/lib/constants";
 import { money } from "@/lib/money";
@@ -36,7 +37,7 @@ export default async function Issues({ searchParams }: { searchParams: Promise<{
               <td>
                 <b>{b ? `B-${b.number}` : `O-${it!.order.number}`}</b> · {money(amount)}
                 <div className="muted" style={{ fontSize: ".8rem" }}>
-                  {b ? `${b.package.title} · event ${fmtDate(b.eventDate)}` : `${it!.title} × ${it!.qty} · ${it!.status.toLowerCase()}`}
+                  {b ? `${b.package.title} · event ${fmtWhen(b)}` : `${it!.title} × ${it!.qty} · ${it!.status.toLowerCase()}`}
                 </div>
               </td>
               <td>

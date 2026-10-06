@@ -65,6 +65,10 @@ export default async function Cart() {
                 <span className="price-lg">{money(total)}</span>
               </div>
               <div className="field">
+                <label htmlFor="phone">Phone (for delivery questions, optional)</label>
+                <input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" />
+              </div>
+              <div className="field">
                 <label htmlFor="address">Shipping address</label>
                 <textarea id="address" name="address" required defaultValue={user.location ?? ""} placeholder="Street, city, state" />
               </div>

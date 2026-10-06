@@ -13,7 +13,7 @@ export default async function AdminOrders() {
   });
   return (
     <>
-      <PageHead title="Orders" sub="Every book order, line by line. Each line's author share is held until the buyer confirms receipt or 14 days pass." />
+      <PageHead title="Orders" sub="Every book order, line by line. Each line's author share is held until the buyer confirms receipt or 14 days pass." action={<a className="btn btn-line btn-sm" href="/dashboard/admin/orders/export">Export CSV</a>} />
       <Table heads={["Order", "Date", "Buyer", "Book", "Author", "Amount", "Fee", "Status", "To author", ""]} empty="No orders yet.">
         {orders.flatMap((o) =>
           o.items.map((i, idx) => (

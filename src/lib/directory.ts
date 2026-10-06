@@ -69,6 +69,7 @@ export async function searchAuthors(f: DirectoryFilters) {
     select: {
       id: true,
       name: true,
+      slug: true,
       headline: true,
       avatarUrl: true,
       location: true,

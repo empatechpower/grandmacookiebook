@@ -15,6 +15,7 @@ type BookCardData = {
   author: { id: string; name: string };
   bulkMinQty?: number | null;
   bulkPrice?: number | null;
+  featured?: boolean;
 };
 
 export function BookCard({ b }: { b: BookCardData }) {
@@ -25,6 +26,7 @@ export function BookCard({ b }: { b: BookCardData }) {
       </Link>
       <div className="body">
         <div className="meta">
+          {b.featured && <span className="featured-badge">★ Featured</span>}
           {categoryLabel(b.category)} · {b.author.name}
         </div>
         <h3>

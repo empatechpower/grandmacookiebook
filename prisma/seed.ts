@@ -55,7 +55,8 @@ async function main() {
   // Demo authors get simulated Stripe accounts ("acct_mock_…") so the catalog works without Stripe keys.
   const a: Record<string, string> = {};
   for (const [i, { name, email, ...profile }] of authorData.entries()) {
-    a[name] = (await user(name, email, "AUTHOR", { ...profile, stripeAccountId: `acct_mock_seed${i}`, payoutsReady: true })).id;
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    a[name] = (await user(name, email, "AUTHOR", { ...profile, slug, stripeAccountId: `acct_mock_seed${i}`, payoutsReady: true })).id;
   }
 
   // Open weekdays over the next ~8 weeks, varied per author (Marcus keeps an empty calendar
@@ -152,6 +153,7 @@ async function main() {
         commissionPct: 15,
         status,
         eventDate: soon(days),
+        eventTime: "10:00",
         organisation: org,
         venue: "Main hall",
         audienceSize: 120,
@@ -176,6 +178,7 @@ async function main() {
         buyerId,
         total: b.price * qty,
         shippingAddress: "125 Maple Ave, Atlanta, GA 30303",
+        phone: "(404) 555-0142",
         status: "PAID",
         paymentRef: `pi_mock_seed${n}`,
         chargeId: `ch_mock_seed${n}`,
@@ -317,6 +320,28 @@ async function main() {
     data: { rfpId: rfp.id, authorId: a["Jeanette Gil"], packageId: jPkg.id, fee: 52000,
       message: "I'd open with an interactive reading of my kindness picture book, then a feelings-chart activity the whole hall can join in. 45 minutes plus Q&A." },
   });
+
+  // Storefront extras for Marcus Bell: social links, media, a featured book with extra photos.
+  await db.user.update({
+    where: { id: a["Marcus Bell"] },
+    data: { websiteUrl: "https://example.com/marcus-bell", facebookUrl: "https://facebook.com/example", instagramUrl: "https://instagram.com/example", phone: "(404) 555-0199" },
+  });
+  const photo = (id: string) => `https://images.unsplash.com/${id}?w=900&h=560&fit=crop`;
+  await db.media.createMany({
+    data: [
+      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "SCHOOL_VISITS", title: "Reading week at St. Cloud Elementary", url: photo("photo-1503676260728-1c00da094a0b"), caption: "Q&A with 7th graders", position: 1 },
+      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "AWARDS", title: "Georgia Author of the Year finalist", url: photo("photo-1513475382585-d06e58bcb0e0"), position: 2 },
+      { authorId: a["Marcus Bell"], kind: "PHOTO", category: "PHOTOS", title: "Signing at the Atlanta Book Festival", url: photo("photo-1524995997946-a1c2e315a42f"), position: 3 },
+    ],
+  });
+  await db.book.update({ where: { id: bookIds["Letters from the Delta"] }, data: { featured: true } });
+  await db.bookImage.createMany({
+    data: [
+      { bookId: bookIds["Letters from the Delta"], url: img("photo-1512820790803-83ca734da794"), position: 1 },
+      { bookId: bookIds["Letters from the Delta"], url: img("photo-1495446815901-a7297e633e8d"), position: 2 },
+    ],
+  });
+  await db.orderItem.updateMany({ where: { status: "SHIPPED" }, data: { carrier: "USPS", trackingNumber: "9400111899223197428490", shippedAt: new Date() } });
 
   await db.setting.createMany({
     data: [

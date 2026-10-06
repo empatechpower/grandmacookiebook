@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fmtWhen } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
@@ -42,7 +43,7 @@ export default async function BuyerBookings() {
               {b.authorNote && <div style={{ fontSize: ".8rem", marginTop: 4 }}>“{b.authorNote}”</div>}
               <ContractCell b={b} />
             </td>
-            <td>{fmtDate(b.eventDate)}</td>
+            <td>{fmtWhen(b)}</td>
             <td>{b.organisation}<div className="muted" style={{ fontSize: ".8rem" }}>{b.venue}</div></td>
             <td>{money(b.fee)}</td>
             <td>

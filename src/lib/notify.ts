@@ -3,7 +3,8 @@ import { db } from "./db";
 import { sendEmail, type Email } from "./email";
 import { money, net } from "./money";
 import { appUrl } from "./url";
-import { fmtDate } from "./dates";
+import { fmtDate, fmtWhen } from "./dates";
+import { trackingUrl } from "./shipping";
 
 /** Every transactional email the platform sends, in one place. */
 
@@ -79,15 +80,21 @@ export async function bookingRequested(bookingId: string) {
   const base = await appUrl();
   sendEmail({
     to: b.author.email,
-    subject: `New booking request: ${b.package.title} on ${fmtDate(b.eventDate)}`,
+    subject: `New booking request: ${b.package.title} on ${fmtWhen(b)}`,
     lines: [
-      `${b.buyer.name} requested “${b.package.title}” for ${b.organisation} on ${fmtDate(b.eventDate)}.`,
+      `${b.buyer.name} requested “${b.package.title}” for ${b.organisation} on ${fmtWhen(b)}.`,
       `Venue: ${b.venue} · Audience: ${b.audienceSize}`,
       ...(b.message ? [`Their note: “${b.message}”`] : []),
       "Accept (you can adjust the fee to include travel) or decline from your studio.",
     ],
     cta: { label: "Respond to request", url: `${base}/dashboard/author/requests` },
   });
+  await toAdmins((to) => ({
+    to,
+    subject: `[Admin] New booking request B-${b.number}: ${b.package.title}`,
+    lines: [`${b.buyer.name} (${b.organisation}) requested ${b.author.name} for ${fmtWhen(b)} — ${money(b.fee)}.`],
+    cta: { label: "View bookings", url: `${base}/dashboard/admin/bookings` },
+  }));
 }
 
 export async function bookingResponded(bookingId: string) {
@@ -96,15 +103,15 @@ export async function bookingResponded(bookingId: string) {
   const accepted = b.status === "ACCEPTED";
   sendEmail({
     to: b.buyer.email,
-    subject: accepted ? `${b.author.name} accepted your booking — pay to confirm` : `${b.author.name} can't make ${fmtDate(b.eventDate)}`,
+    subject: accepted ? `${b.author.name} accepted your booking — pay to confirm` : `${b.author.name} can't make ${fmtWhen(b)}`,
     lines: accepted
       ? [
-          `${b.author.name} accepted “${b.package.title}” on ${fmtDate(b.eventDate)}.`,
+          `${b.author.name} accepted “${b.package.title}” on ${fmtWhen(b)}.`,
           `Final fee: ${money(b.fee)}.${b.authorNote ? ` Note from the author: “${b.authorNote}”` : ""}`,
           "Pay to confirm the date. Your payment is held by Grandma Cookie Book and only released to the author after the visit.",
         ]
       : [
-          `${b.author.name} declined “${b.package.title}” on ${fmtDate(b.eventDate)}.${b.authorNote ? ` Their note: “${b.authorNote}”` : ""}`,
+          `${b.author.name} declined “${b.package.title}” on ${fmtWhen(b)}.${b.authorNote ? ` Their note: “${b.authorNote}”` : ""}`,
           "You haven't been charged. You can message them about another date or browse other authors.",
         ],
     cta: accepted ? { label: `Pay ${money(b.fee)}`, url: `${base}/dashboard/buyer/bookings` } : { label: "Find an author", url: `${base}/authors` },
@@ -117,7 +124,7 @@ export async function bookingPaid(bookingId: string) {
   sendEmail([
     {
       to: b.buyer.email,
-      subject: `Booking confirmed: ${b.package.title} on ${fmtDate(b.eventDate)}`,
+      subject: `Booking confirmed: ${b.package.title} on ${fmtWhen(b)}`,
       lines: [
         `Payment of ${money(b.fee)} received — B-${b.number} is confirmed.`,
         `After the visit, mark it complete so ${first(b.author.name)} gets paid. If you don't, payment releases automatically 14 days after the event.`,
@@ -126,14 +133,20 @@ export async function bookingPaid(bookingId: string) {
     },
     {
       to: b.author.email,
-      subject: `Confirmed and paid: ${b.organisation} on ${fmtDate(b.eventDate)}`,
+      subject: `Confirmed and paid: ${b.organisation} on ${fmtWhen(b)}`,
       lines: [
-        `${b.buyer.name} paid for “${b.package.title}” on ${fmtDate(b.eventDate)}.`,
+        `${b.buyer.name} paid for “${b.package.title}” on ${fmtWhen(b)}.`,
         `Your share, ${money(net(b.fee, b.commissionPct))}, is released when they confirm the visit happened, or automatically 14 days after the event.`,
       ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     },
   ]);
+  await toAdmins((to) => ({
+    to,
+    subject: `[Admin] Booking paid B-${b.number}: ${money(b.fee)}`,
+    lines: [`${b.buyer.name} paid ${money(b.fee)} for ${b.author.name} — “${b.package.title}” on ${fmtWhen(b)}. Payment is held until after the event.`],
+    cta: { label: "View bookings", url: `${base}/dashboard/admin/bookings` },
+  }));
 }
 
 export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "refunded" | "late") {
@@ -147,7 +160,7 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
   sendEmail([
     {
       to: b.author.email,
-      subject: `Booking canceled: ${b.organisation} on ${fmtDate(b.eventDate)}`,
+      subject: `Booking canceled: ${b.organisation} on ${fmtWhen(b)}`,
       lines: [
         `B-${b.number} (“${b.package.title}”) has been canceled. The date is open again on your calendar.`,
         ...(outcome === "late" ? [`It was a late cancellation, so your fee of ${money(net(b.fee, b.commissionPct))} has been released to you.`] : []),
@@ -161,6 +174,12 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
       cta: { label: "View bookings", url: `${base}/dashboard/buyer/bookings` },
     },
   ]);
+  await toAdmins((to) => ({
+    to,
+    subject: `[Admin] Booking canceled B-${b.number}`,
+    lines: [`B-${b.number} (${b.author.name} for ${b.organisation}, ${fmtWhen(b)}) was canceled — ${{ unpaid: "it hadn't been paid", refunded: `refunded ${money(b.fee)}`, late: "late cancellation, author paid" }[outcome]}.`],
+    cta: { label: "View bookings", url: `${base}/dashboard/admin/bookings` },
+  }));
 }
 
 // ---------- Orders ----------
@@ -199,6 +218,12 @@ export async function orderPaid(orderId: string) {
     });
   }
   sendEmail(emails);
+  await toAdmins((to) => ({
+    to,
+    subject: `[Admin] New order O-${o.number}: ${money(o.total)}`,
+    lines: [`${o.buyer.name} ordered:`, ...o.items.map((i) => `• ${i.title} × ${i.qty} — ${money(i.unitPrice * i.qty)} (${i.author.name})`)],
+    cta: { label: "View orders", url: `${base}/dashboard/admin/orders` },
+  }));
 }
 
 export async function itemShipped(itemId: string) {
@@ -209,7 +234,11 @@ export async function itemShipped(itemId: string) {
   sendEmail({
     to: i.order.buyer.email,
     subject: `Shipped: ${i.title}`,
-    lines: [`${i.author.name} has shipped ${i.title} × ${i.qty} from order O-${i.order.number}.`, "Please mark it received when it arrives."],
+    lines: [
+      `${i.author.name} has shipped ${i.title} × ${i.qty} from order O-${i.order.number}.`,
+      ...(i.trackingNumber ? [`Tracking: ${i.carrier ?? ""} ${i.trackingNumber}${trackingUrl(i.carrier, i.trackingNumber) ? ` — ${trackingUrl(i.carrier, i.trackingNumber)}` : ""}`] : []),
+      "Please mark it received when it arrives.",
+    ],
     cta: { label: "View order", url: `${await appUrl()}/dashboard/buyer/orders` },
   });
 }

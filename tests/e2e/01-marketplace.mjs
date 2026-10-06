@@ -7,7 +7,7 @@ const ctx = async () => { const c = await browser.newContext({ viewport: { width
   p.setDefaultNavigationTimeout(90000); p.on("pageerror", e => errors.push(e.message)); p.on("console", m => m.type()==="error" && errors.push(m.text())); return p; };
 const ok = (cond, msg) => { console.log((cond ? "PASS " : "FAIL ") + msg); if (!cond) process.exitCode = 1; };
 const text = p => p.locator("body").innerText();
-const settle = p => p.waitForLoadState("networkidle");
+const settle = p => p.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
 const stamp = Date.now().toString().slice(-6);
 
 // 1. Public home

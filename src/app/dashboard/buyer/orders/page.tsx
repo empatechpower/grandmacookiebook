@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
+import { trackingUrl } from "@/lib/shipping";
 import { markReceived } from "@/app/actions/shop";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -39,6 +40,15 @@ export default async function BuyerOrders() {
               <td>{money(i.unitPrice * i.qty)}</td>
               <td>
                 <Badge status={i.status} />
+                {i.trackingNumber && (
+                  <div style={{ fontSize: ".78rem", marginTop: 4 }}>
+                    {trackingUrl(i.carrier, i.trackingNumber) ? (
+                      <a href={trackingUrl(i.carrier, i.trackingNumber)!} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Track {i.carrier} ↗</a>
+                    ) : (
+                      <>{i.carrier} {i.trackingNumber}</>
+                    )}
+                  </div>
+                )}
                 {i.issues.length > 0 && <div><span className="badge b-off">Problem reported</span></div>}
               </td>
               <td>

@@ -1,9 +1,11 @@
 import { db } from "@/lib/db";
+import { fmtWhen } from "@/lib/dates";
 import { requireUser } from "@/lib/auth";
 import { money, net } from "@/lib/money";
 import { respondBooking } from "@/app/actions/author";
 import { openConversation } from "@/app/actions/messages";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
+import { bookingMoneyStatus, moneyBadge } from "@/lib/shipping";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ContractCell } from "@/components/ContractCell";
 import { orgTypeLabel } from "@/lib/constants";
@@ -21,8 +23,8 @@ export default async function Requests() {
   });
   return (
     <>
-      <PageHead title="Booking requests" sub="Accept to let the buyer pay and confirm. Your fee is released after the visit, when the buyer confirms or 14 days after the event." />
-      <Table heads={["ID", "Event", "Date", "Requested by", "You earn", "Status", ""]} empty="No booking requests yet.">
+      <PageHead title="Bookings" sub="Accept or decline requests, see who booked and when, and track payment. Your fee is released after the visit — when the organizer confirms, or 14 days after the event." />
+      <Table heads={["ID", "Event", "Date & time", "Organization", "You earn", "Status", "Payment", ""]} empty="No bookings yet.">
         {bookings.map((b) => (
           <tr key={b.id}>
             <td>B-{b.number}</td>
@@ -32,7 +34,7 @@ export default async function Requests() {
               {b.message && <div style={{ fontSize: ".8rem", marginTop: 4 }}>“{b.message}”</div>}
               <ContractCell b={b} />
             </td>
-            <td>{fmtDate(b.eventDate)}</td>
+            <td>{fmtWhen(b)}</td>
             <td>
               {b.buyer.name}
               {orgTypeLabel(b.buyer.orgType) && <div><span className="chip">{orgTypeLabel(b.buyer.orgType)}</span></div>}
@@ -47,6 +49,7 @@ export default async function Requests() {
               <Badge status={b.status} />
               {b.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while Grandma Cookie Book reviews it">Problem reported</span></div>}
             </td>
+            <td><span className={`badge ${moneyBadge(bookingMoneyStatus(b))}`}>{bookingMoneyStatus(b)}</span></td>
             <td>
               {b.status === "PENDING" && (
                 <form action={respondBooking} className="inline-form" style={{ flexWrap: "wrap", maxWidth: 300 }}>

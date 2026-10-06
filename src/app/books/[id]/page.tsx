@@ -5,20 +5,22 @@ import { liveWhere } from "@/lib/catalog";
 import { categoryLabel } from "@/lib/constants";
 import { money } from "@/lib/money";
 import { addToCart } from "@/app/actions/shop";
-import { Cover, Initials } from "@/components/ui";
+import { Initials } from "@/components/ui";
+import { ProductGallery } from "@/components/ProductGallery";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const book = await db.book.findFirst({
     where: { id, ...liveWhere },
-    include: { author: { select: { id: true, name: true, bio: true, _count: { select: { packages: { where: liveWhere } } } } } },
+    include: {
+      images: { orderBy: { position: "asc" } }, author: { select: { id: true, name: true, bio: true, _count: { select: { packages: { where: liveWhere } } } } } },
   });
   if (!book) notFound();
   return (
     <section className="pad">
       <div className="wrap detail">
-        <Cover url={book.coverUrl} title={book.title} className="cover-lg" />
+        <ProductGallery title={book.title} cover={book.coverUrl} images={book.images.map((i) => i.url)} />
         <div className="stack">
           <div className="eyebrow">{categoryLabel(book.category)}</div>
           <h1>{book.title}</h1>
