@@ -104,7 +104,7 @@ To use real Stripe (test mode first):
 1. In the Stripe dashboard, enable **Connect** (platform / marketplace, Express accounts).
 2. Put the secret key in `.env` as `STRIPE_SECRET_KEY`.
 3. Webhook: locally run `stripe listen --forward-to localhost:3000/api/stripe/webhook --forward-connect-to localhost:3000/api/stripe/webhook` and copy the `whsec_…` into `STRIPE_WEBHOOK_SECRET`. In production, add two endpoints at `https://<domain>/api/stripe/webhook`: one listening to *Your account* events (`checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`), whose signing secret goes in `STRIPE_WEBHOOK_SECRET`, and one listening to *Connected accounts* events (`account.updated`), whose secret goes in `STRIPE_CONNECT_WEBHOOK_SECRET`.
-4. Set `APP_URL` to the public URL in production.
+4. `APP_URL` is optional on Vercel: links default to the production domain (your custom domain once added). The `.vercel.app` address keeps working after a custom domain is added, so the Stripe webhook URL can stay on it — just don't redirect `.vercel.app` to the custom domain, because Stripe doesn't follow redirects.
 5. Run `npm run db:reset` — the mock demo accounts can't receive real transfers, so connect a real test author through **Studio → Payouts → Connect Stripe**.
 
 **Country note:** Stripe Connect needs the platform's Stripe account in a supported country. If authors live in a different country from the platform, Stripe requires cross-border payouts with the "recipient" service agreement — confirm the client's and authors' countries before launch.
