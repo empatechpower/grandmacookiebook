@@ -3,6 +3,7 @@ import { inviteAdmin, saveFees } from "@/app/actions/admin";
 import { PageHead } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ChangePasswordForm } from "@/components/PasswordForms";
+import { integrationStatus } from "@/lib/integrations";
 
 export default async function Settings() {
   const s = await getSettings();
@@ -56,6 +57,20 @@ export default async function Settings() {
           </div>
           <SubmitButton className="btn btn-terra">Add admin</SubmitButton>
         </form>
+      </div>
+      <h3 className="h2-sm">Integrations</h3>
+      <div className="table-wrap" style={{ maxWidth: 820 }}>
+        <table>
+          <tbody>
+            {integrationStatus().map((i) => (
+              <tr key={i.name}>
+                <td><b>{i.name}</b><div className="muted" style={{ fontSize: ".75rem" }}><code>{i.env}</code></div></td>
+                <td><span className={`badge ${i.ok ? "b-ok" : "b-wait"}`}>{i.ok ? "Set up" : "Not set"}</span></td>
+                <td className="muted" style={{ fontSize: ".88rem" }}>{i.detail}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       <ChangePasswordForm />
     </>
