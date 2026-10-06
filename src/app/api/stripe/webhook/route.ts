@@ -6,7 +6,7 @@ import { expireOrder, fulfillBooking, fulfillOrder } from "@/lib/fulfillment";
 /**
  * Stripe webhook — the source of truth for payments. Stripe needs two endpoints at this URL:
  *  - "Your account" events (STRIPE_WEBHOOK_SECRET): checkout.session.completed,
- *    checkout.session.async_payment_succeeded, checkout.session.expired
+ *    checkout.session.async_payment_succeeded, checkout.session.async_payment_failed, checkout.session.expired
  *  - "Connected accounts" events (STRIPE_CONNECT_WEBHOOK_SECRET): account.updated
  * Each endpoint has its own signing secret, so a request is accepted if either verifies.
  */
@@ -35,7 +35,10 @@ export async function POST(req: Request) {
       if (paid?.kind === "booking") await fulfillBooking(paid.id, paid.payment, paid.sessionId);
       break;
     }
-    case "checkout.session.expired": {
+    // Unpaid (expired) or a delayed payment such as a US bank transfer that failed:
+    // cancel the order and release its stock. Bookings simply stay "accepted" so the buyer can retry.
+    case "checkout.session.expired":
+    case "checkout.session.async_payment_failed": {
       const s = event.data.object;
       if (s.metadata?.kind === "order" && s.metadata.id) await expireOrder(s.metadata.id);
       break;
