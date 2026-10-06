@@ -78,7 +78,11 @@ Held payments are released by a daily job, `GET /api/cron/release-payouts` with 
 
 **Cancellations.** Buyers can cancel unpaid requests freely. Paid bookings cancelled at least `cancelNoticeDays` (default 7, in Admin → Fees) before the event are refunded in full; later cancellations aren't refunded and the author is paid straight away (status `LATE_CANCELLED`), matching the reference site's "guaranteed payment for last-minute cancellations".
 
-**Classroom-set pricing.** Books can have a bulk price per copy from a minimum quantity; the cart and checkout apply it automatically. There's also a *Gift sets & merchandise* category.
+**Bulk book discounts.** Platform-wide tiers set in Admin → Fees (default: 1–9 copies regular price, 10–24 copies 20% off, 25+ copies 30% off), applied automatically in the cart and at checkout. Authors can switch them off per product (Products → Bulk discounts On/Off, or in the product form). Order lines store both the discounted and regular price. There's also a *Gift sets & merchandise* category.
+
+**Invoices.** Every paid order and booking gets an invoice (INV-1001, INV-1002…) from the business address in `src/lib/brand.ts`, linked from the receipt email and the customer's Orders / My bookings pages, printable or saved as PDF from the browser (`/invoices/[id]`, visible to the customer and admins only). Admin → Invoices lists them with CSV export. (Purchase-order invoices with a balance due are the next step.)
+
+**Guest / Author.** Customer accounts are called *Guest* in the interface (role `BUYER` in the code). Sign-up offers Guest or Author; the login page has Guest / Author tabs, which only change the wording — the account decides where you land.
 
 **Content (admin-edited).** *Collections* (Admin → Collections) are curated lists of authors and books with curator notes — the Featured Author Catalog, Educator's Monthly Favorites, themed months; featured ones show on the home page (use them for sponsored placements too). *Articles* (Admin → News & events) power `/news`, `/resources` and `/events`, with simple formatting (blank-line paragraphs, `## ` headings, `- ` bullets).
 

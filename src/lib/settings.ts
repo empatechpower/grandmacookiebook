@@ -9,6 +9,11 @@ export const DEFAULT_SETTINGS = {
   // Paid bookings canceled by the buyer less than this many days before the event are not
   // refunded and the author is paid ("guaranteed payment for last-minute cancellations").
   cancelNoticeDays: 7,
+  // Bulk book discounts (products can opt out): 10–24 copies 20% off, 25+ copies 30% off.
+  bulkTier1Min: 10,
+  bulkTier1Pct: 20,
+  bulkTier2Min: 25,
+  bulkTier2Pct: 30,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 

@@ -11,7 +11,7 @@ import { cancelBooking as cancelPaidBooking } from "@/lib/refunds";
 import { isLateCancellation } from "@/lib/dates";
 import * as notify from "@/lib/notify";
 import { liveWhere } from "@/lib/catalog";
-import { unitPriceFor } from "@/lib/pricing";
+import { tiersFrom, unitPriceFor } from "@/lib/pricing";
 import { fromDayKey, isDayKey, isTime, todayKey } from "@/lib/dates";
 
 async function requireBuyer(action: string) {
@@ -65,8 +65,10 @@ export async function checkout(fd: FormData) {
     if (c.book.status !== "APPROVED") return fail(`“${c.book.title}” is no longer available — remove it to continue`, "/cart");
     if (c.book.stock < c.qty) return fail(`Only ${c.book.stock} left of “${c.book.title}”`, "/cart");
   }
-  const total = cart.reduce((s, c) => s + unitPriceFor(c.book, c.qty) * c.qty, 0);
-  const { bookCommissionPct } = await getSettings();
+  const settings = await getSettings();
+  const { bookCommissionPct } = settings;
+  const tiers = tiersFrom(settings);
+  const total = cart.reduce((s, c) => s + unitPriceFor(c.book, c.qty, tiers) * c.qty, 0);
 
   // Create the order unpaid and reserve stock. Payment (webhook or return page) marks it PAID and
   // pays the authors; an expired checkout cancels it and releases the stock.
@@ -88,7 +90,8 @@ export async function checkout(fd: FormData) {
             bookId: c.bookId,
             authorId: c.book.authorId,
             title: c.book.title,
-            unitPrice: unitPriceFor(c.book, c.qty),
+            unitPrice: unitPriceFor(c.book, c.qty, tiers),
+            listPrice: unitPriceFor(c.book, c.qty, tiers) < c.book.price ? c.book.price : null,
             qty: c.qty,
             commissionPct: bookCommissionPct,
           })),
@@ -110,7 +113,7 @@ export async function checkout(fd: FormData) {
     kind: "order",
     id: order.id,
     email: user.email,
-    lines: cart.map((c) => ({ name: c.book.title, unitAmount: unitPriceFor(c.book, c.qty), qty: c.qty })),
+    lines: cart.map((c) => ({ name: c.book.title, unitAmount: unitPriceFor(c.book, c.qty, tiers), qty: c.qty })),
     cancelPath: "/cart",
   });
   await db.order.update({ where: { id: order.id }, data: { stripeSessionId: session.sessionId } });

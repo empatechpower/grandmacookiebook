@@ -2,7 +2,8 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
-import { hasBulkPrice, unitPriceFor } from "@/lib/pricing";
+import { bulkDiscountPct, tiersFrom, unitPriceFor } from "@/lib/pricing";
+import { getSettings } from "@/lib/settings";
 import { checkout, updateCartItem } from "@/app/actions/shop";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Table } from "@/components/ui";
@@ -11,11 +12,12 @@ export const metadata = { title: "Cart" };
 
 export default async function Cart() {
   const user = await requireUser("BUYER");
+  const tiers = tiersFrom(await getSettings());
   const items = await db.cartItem.findMany({
     where: { userId: user.id },
     include: { book: { include: { author: { select: { name: true } } } } },
   });
-  const total = items.reduce((s, i) => s + unitPriceFor(i.book, i.qty) * i.qty, 0);
+  const total = items.reduce((s, i) => s + unitPriceFor(i.book, i.qty, tiers) * i.qty, 0);
 
   return (
     <section className="pad">
@@ -42,10 +44,13 @@ export default async function Cart() {
                     {i.book.status !== "APPROVED" && <div className="badge b-off">No longer available</div>}
                   </td>
                   <td>
-                    {money(unitPriceFor(i.book, i.qty))}
-                    {unitPriceFor(i.book, i.qty) < i.book.price && <div className="badge b-ok">Classroom price</div>}
-                    {hasBulkPrice(i.book) && unitPriceFor(i.book, i.qty) === i.book.price && (
-                      <div className="muted" style={{ fontSize: ".75rem" }}>{money(i.book.bulkPrice!)} each for {i.book.bulkMinQty}+</div>
+                    {bulkDiscountPct(i.book, i.qty, tiers) > 0 && <div className="muted" style={{ textDecoration: "line-through", fontSize: ".8rem" }}>{money(i.book.price)}</div>}
+                    {money(unitPriceFor(i.book, i.qty, tiers))}
+                    {bulkDiscountPct(i.book, i.qty, tiers) > 0 && <div><span className="badge b-ok">Bulk {bulkDiscountPct(i.book, i.qty, tiers)}% off</span></div>}
+                    {i.book.bulkEnabled && i.qty < tiers.min2 && (
+                      <div className="muted" style={{ fontSize: ".75rem" }}>
+                        {i.qty < tiers.min1 ? `Order ${tiers.min1 - i.qty} more for ${tiers.pct1}% off` : `Order ${tiers.min2 - i.qty} more for ${tiers.pct2}% off`}
+                      </div>
                     )}
                   </td>
                   <td>
@@ -55,7 +60,7 @@ export default async function Cart() {
                       <SubmitButton className="btn btn-ghost btn-sm" pendingText="…">Update</SubmitButton>
                     </form>
                   </td>
-                  <td>{money(unitPriceFor(i.book, i.qty) * i.qty)}</td>
+                  <td>{money(unitPriceFor(i.book, i.qty, tiers) * i.qty)}</td>
                 </tr>
               ))}
             </Table>

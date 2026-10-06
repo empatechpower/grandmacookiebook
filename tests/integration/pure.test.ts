@@ -2,7 +2,7 @@ import "./helpers";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { money, net, toCents } from "../../src/lib/money";
-import { unitPriceFor } from "../../src/lib/pricing";
+import { bulkDiscountPct, tiersLabel, unitPriceFor } from "../../src/lib/pricing";
 import { isLateCancellation, fromDayKey, dayKey } from "../../src/lib/dates";
 import { parseTags, serializeTags, hasTag } from "../../src/lib/tags";
 import { TOPICS } from "../../src/lib/constants";
@@ -16,11 +16,16 @@ test("money formats cents and computes author share", () => {
   assert.equal(net(30000, 15), 25500);
 });
 
-test("classroom-set price applies only at the minimum quantity", () => {
-  const book = { price: 1600, bulkMinQty: 25, bulkPrice: 1300 };
-  assert.equal(unitPriceFor(book, 24), 1600);
-  assert.equal(unitPriceFor(book, 25), 1300);
-  assert.equal(unitPriceFor({ price: 1600, bulkMinQty: null, bulkPrice: null }, 100), 1600);
+test("bulk tiers: 1–9 regular, 10–24 20% off, 25+ 30% off; products can opt out", () => {
+  const tiers = { min1: 10, pct1: 20, min2: 25, pct2: 30 };
+  const book = { price: 1600, bulkEnabled: true };
+  assert.equal(unitPriceFor(book, 9, tiers), 1600);
+  assert.equal(unitPriceFor(book, 10, tiers), 1280);
+  assert.equal(unitPriceFor(book, 24, tiers), 1280);
+  assert.equal(unitPriceFor(book, 25, tiers), 1120);
+  assert.equal(bulkDiscountPct({ bulkEnabled: false }, 100, tiers), 0);
+  assert.equal(unitPriceFor({ price: 1999, bulkEnabled: true }, 10, tiers), 1599, "rounds to the cent");
+  assert.equal(tiersLabel(tiers), "10–24 copies: 20% off · 25+ copies: 30% off");
 });
 
 test("late cancellation is measured in whole days before the event", () => {

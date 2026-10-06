@@ -26,7 +26,7 @@ export default async function Issues({ searchParams }: { searchParams: Promise<{
         sub="Buyers report problems while payment is held. An open report pauses the author's payout until you refund the buyer or release it."
         action={<Link className="btn btn-ghost btn-sm" href={all ? "?" : "?all=1"}>{all ? "Show open only" : "Show all"}</Link>}
       />
-      <Table heads={["Reported", "Sale", "Buyer", "Author", "Problem", "Decision"]} empty={all ? "No reports yet." : "No open reports."}>
+      <Table heads={["Reported", "Sale", "Customer", "Author", "Problem", "Decision"]} empty={all ? "No reports yet." : "No open reports."}>
         {issues.map((i) => {
           const b = i.booking, it = i.orderItem;
           const amount = b ? b.fee : it!.unitPrice * it!.qty;

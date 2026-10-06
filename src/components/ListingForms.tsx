@@ -54,16 +54,12 @@ export function BookForm({ book }: { book?: Book }) {
         <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple />
         <div className="hint">Back cover, inside pages, merchandise shots — up to 8 extra photos.</div>
       </div>
-      <div className="field-row">
-        <div className="field">
-          <label htmlFor="bulkMinQty">Classroom-set price from (copies)</label>
-          <input id="bulkMinQty" name="bulkMinQty" type="number" min={2} defaultValue={book?.bulkMinQty ?? ""} placeholder="e.g. 25" />
-        </div>
-        <div className="field">
-          <label htmlFor="bulkPrice">Classroom-set price per copy (USD)</label>
-          <input id="bulkPrice" name="bulkPrice" type="number" step="0.01" min="1" defaultValue={dollars(book?.bulkPrice ?? undefined)} placeholder="Optional" />
-        </div>
-      </div>
+      <label className="check-line">
+        <input type="checkbox" name="bulkEnabled" defaultChecked={book?.bulkEnabled ?? true} />
+        <span>
+          <b>Bulk discounts</b> — apply the platform's classroom-set discounts (e.g. 10–24 copies 20% off, 25+ copies 30% off) to this product
+        </span>
+      </label>
       <div className="field">
         <label htmlFor="coverUrl">…or cover image URL</label>
         <div className="row" style={{ alignItems: "center" }}>

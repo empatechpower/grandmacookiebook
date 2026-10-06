@@ -12,6 +12,7 @@ export default async function BuyerOrders() {
   const orders = await db.order.findMany({
     where: { buyerId: user.id },
     include: {
+      invoice: { select: { id: true, number: true } },
       items: {
         include: {
           author: { select: { name: true } },
@@ -32,7 +33,14 @@ export default async function BuyerOrders() {
         {orders.flatMap((o) =>
           o.items.map((i, idx) => (
             <tr key={i.id}>
-              <td>{idx === 0 ? `O-${o.number}` : ""}</td>
+              <td>
+                {idx === 0 && (
+                  <>
+                    O-{o.number}
+                    {o.invoice && <div><Link href={`/invoices/${o.invoice.id}`} style={{ fontSize: ".78rem", textDecoration: "underline" }}>Invoice INV-{o.invoice.number}</Link></div>}
+                  </>
+                )}
+              </td>
               <td>{idx === 0 ? fmtDate(o.createdAt) : ""}</td>
               <td>{i.title}</td>
               <td>{i.author.name}</td>

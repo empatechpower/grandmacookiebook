@@ -33,6 +33,17 @@ export default async function Settings() {
             </div>
           </div>
           <div className="hint" style={{ marginBottom: 12 }}>Applies to new referrals; existing ones keep their rate and end date.</div>
+          <fieldset className="field">
+            <legend>Bulk book discounts (authors can switch these off per product)</legend>
+            <div className="field-row">
+              <div className="field"><label htmlFor="t1m">Tier 1 from (copies)</label><input id="t1m" name="bulkTier1Min" type="number" min={2} defaultValue={s.bulkTier1Min} /></div>
+              <div className="field"><label htmlFor="t1p">Tier 1 discount %</label><input id="t1p" name="bulkTier1Pct" type="number" min={0} max={90} defaultValue={s.bulkTier1Pct} /></div>
+            </div>
+            <div className="field-row">
+              <div className="field"><label htmlFor="t2m">Tier 2 from (copies)</label><input id="t2m" name="bulkTier2Min" type="number" min={3} defaultValue={s.bulkTier2Min} /></div>
+              <div className="field"><label htmlFor="t2p">Tier 2 discount %</label><input id="t2p" name="bulkTier2Pct" type="number" min={0} max={90} defaultValue={s.bulkTier2Pct} /></div>
+            </div>
+          </fieldset>
           <div className="field">
             <label htmlFor="cn">Late cancellation window (days)</label>
             <input id="cn" name="cancelNoticeDays" type="number" min={0} max={60} defaultValue={s.cancelNoticeDays} />

@@ -27,7 +27,7 @@ export default async function BuyerHome() {
           <Link href="/dashboard/buyer/bookings" style={{ textDecoration: "underline" }}>Pay now</Link>
         </div>
       )}
-      <Kpis items={[["Orders", orders], ["Active bookings", bookings.length], ["In cart", cart._sum.qty ?? 0], ["Role", "Buyer"]]} />
+      <Kpis items={[["Orders", orders], ["Active bookings", bookings.length], ["In cart", cart._sum.qty ?? 0], ["Account", "Guest"]]} />
       <div className="row-btns" style={{ marginBottom: 28 }}>
         <Link className="btn btn-terra" href="/books">Shop books</Link>
         <Link className="btn btn-ink" href="/visits">Book a visit</Link>

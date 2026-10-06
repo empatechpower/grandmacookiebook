@@ -19,6 +19,7 @@ export default async function BuyerBookings() {
     include: {
       package: true,
       author: { select: { id: true, name: true } },
+      invoice: { select: { id: true, number: true } },
       review: { select: { id: true } },
       issues: { where: { status: "OPEN" }, select: { id: true } },
     },
@@ -34,7 +35,10 @@ export default async function BuyerBookings() {
       <Table heads={["ID", "Visit", "Date", "Venue", "Fee", "Status", ""]} empty="No bookings yet.">
         {bookings.map((b) => (
           <tr key={b.id}>
-            <td>B-{b.number}</td>
+            <td>
+              B-{b.number}
+              {b.invoice && <div><Link href={`/invoices/${b.invoice.id}`} style={{ fontSize: ".78rem", textDecoration: "underline" }}>Invoice INV-{b.invoice.number}</Link></div>}
+            </td>
             <td>
               <b>{b.package.title}</b>
               <div className="muted" style={{ fontSize: ".8rem" }}>

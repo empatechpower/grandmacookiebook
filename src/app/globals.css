@@ -505,3 +505,23 @@ fieldset.field legend { font-size: .8rem; margin-bottom: 6px; color: var(--ink-s
 .foot-logo { width: 88px; height: 88px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px var(--line); margin-bottom: 10px; display: block; }
 .mark b { line-height: 1.15; }
 @media (max-width: 960px) { .mark-logo { width: 38px; height: 38px; } }
+.check-line { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 16px; font-size: .92rem; color: var(--ink-soft); cursor: pointer; }
+.check-line input { width: auto; margin-top: 4px; }
+
+/* ---------- Invoice ---------- */
+.invoice { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 36px; color: var(--ink); }
+.invoice-head { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding-bottom: 20px; border-bottom: 2px solid var(--ink); }
+.invoice-logo { border-radius: 50%; }
+.invoice-title { font-family: Fraunces, serif; font-size: 2rem; letter-spacing: .08em; color: var(--terracotta); }
+.invoice-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 22px 0; font-size: .92rem; }
+.invoice-meta .meta { margin-bottom: 4px; }
+.invoice-stamp { display: inline-block; border: 2px solid var(--ok); color: var(--ok); font-weight: 700; letter-spacing: .12em; padding: 3px 12px; border-radius: 6px; transform: rotate(-3deg); }
+.invoice-stamp.void { border-color: var(--danger); color: var(--danger); }
+.invoice-lines { width: 100%; border-collapse: collapse; background: transparent; }
+.invoice-lines th { background: var(--paper-2); }
+.invoice-lines td:nth-child(n+2), .invoice-lines th:nth-child(n+2) { text-align: right; white-space: nowrap; }
+.invoice-totals { display: grid; grid-template-columns: 1fr auto; gap: 6px 28px; margin: 18px 0 0 auto; max-width: 320px; font-size: .95rem; }
+.invoice-totals span:nth-child(even) { text-align: right; }
+.invoice-foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); font-size: .85rem; }
+@media (max-width: 700px) { .invoice { padding: 20px; } .invoice-meta { grid-template-columns: 1fr; } }
+@media print { .invoice { border: 0; padding: 0; } }

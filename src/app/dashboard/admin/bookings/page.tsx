@@ -15,7 +15,7 @@ export default async function AdminBookings() {
   return (
     <>
       <PageHead title="Bookings" sub="All visit and speech bookings. Cancelling a paid booking refunds the buyer; held fees never reach the author." />
-      <Table heads={["ID", "Visit", "Author", "Buyer", "Date", "Fee", "Status", "To author", ""]} empty="No bookings yet.">
+      <Table heads={["ID", "Visit", "Author", "Customer", "Date", "Fee", "Status", "To author", ""]} empty="No bookings yet.">
         {bookings.map((b) => (
           <tr key={b.id}>
             <td>B-{b.number}</td>

@@ -9,6 +9,7 @@ async function main() {
   await db.booking.deleteMany();
   await db.orderItem.deleteMany();
   await db.order.deleteMany();
+  await db.invoice.deleteMany();
   await db.bid.deleteMany();
   await db.rfp.deleteMany();
   await db.collectionItem.deleteMany();
@@ -31,6 +32,7 @@ async function main() {
   // Restart human-friendly numbering so re-seeding gives the same O-/B- numbers.
   await db.$executeRawUnsafe(`ALTER SEQUENCE "Order_number_seq" RESTART WITH 2201`);
   await db.$executeRawUnsafe(`ALTER SEQUENCE "Booking_number_seq" RESTART WITH 1041`);
+  await db.$executeRawUnsafe(`ALTER SEQUENCE "Invoice_number_seq" RESTART WITH 1001`);
 
   const passwordHash = await bcrypt.hash("atelier123", 10);
   const user = (name: string, email: string, role: string, extra: object = {}) =>
@@ -99,7 +101,7 @@ async function main() {
         stock,
         coverUrl: img(cover),
         status: "APPROVED",
-        description: `${title} — signed copies shipped directly by ${author}. Classroom-set discounts available on request.`,
+        description: `${title} — signed copies shipped directly by ${author}. Bulk discounts for classroom sets apply automatically.`,
       },
     });
     bookIds[title] = b.id;
@@ -250,12 +252,12 @@ async function main() {
     data: { referrerId: a["Marcus Bell"], referredEmail: "tara.adams@example.com", referredName: "Tara Adams", pct: 2, expiresAt: inAYear },
   });
 
-  // Classroom-set pricing and a gift set.
-  await db.book.update({ where: { id: bookIds["The Empathy Effect"] }, data: { bulkMinQty: 25, bulkPrice: 1300 } });
+  // Bulk discounts are on by default; the gift set opts out.
   await db.book.create({
     data: {
       title: "Cookie Jar Story Set", authorId: a["Miriam Bejerano"], price: 3500, category: "gifts", stock: 20, status: "APPROVED",
       coverUrl: img("photo-1589998059171-988d887df646"),
+      bulkEnabled: false,
       description: "A gift box with a signed picture book, a recipe card for grandma's travel cookies and a bookmark.",
     },
   });
@@ -342,6 +344,14 @@ async function main() {
     ],
   });
   await db.orderItem.updateMany({ where: { status: "SHIPPED" }, data: { carrier: "USPS", trackingNumber: "9400111899223197428490", shippedAt: new Date() } });
+
+  // Invoices for the sales that were already paid.
+  for (const o of await db.order.findMany({ where: { status: "PAID" }, orderBy: { number: "asc" } })) {
+    await db.invoice.create({ data: { orderId: o.id, total: o.total, issuedAt: o.createdAt } });
+  }
+  for (const b of await db.booking.findMany({ where: { paymentRef: { not: null } }, orderBy: { number: "asc" } })) {
+    await db.invoice.create({ data: { bookingId: b.id, total: b.fee, issuedAt: b.createdAt } });
+  }
 
   await db.setting.createMany({
     data: [

@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { categoryLabel } from "@/lib/constants";
 import { money } from "@/lib/money";
-import { toggleArchive, toggleFeatured } from "@/app/actions/author";
+import { toggleArchive, toggleBulk, toggleFeatured } from "@/app/actions/author";
 import { Badge, PageHead, Table } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -13,7 +13,7 @@ export default async function AuthorBooks() {
   return (
     <>
       <PageHead title="Products" sub="Books and merchandise you sell. Approved products appear on your storefront — featured ones first." action={<Link className="btn btn-terra" href="/dashboard/author/books/new">+ Add product</Link>} />
-      <Table heads={["Product", "Category", "Price", "Inventory", "Status", ""]} empty="No products yet — add your first book or item.">
+      <Table heads={["Product", "Category", "Price", "Inventory", "Bulk discounts", "Status", ""]} empty="No products yet — add your first book or item.">
         {books.map((b) => (
           <tr key={b.id}>
             <td>
@@ -24,6 +24,14 @@ export default async function AuthorBooks() {
             <td>{categoryLabel(b.category)}</td>
             <td>{money(b.price)}</td>
             <td>{b.stock}</td>
+            <td>
+              <form action={toggleBulk}>
+                <input type="hidden" name="id" value={b.id} />
+                <SubmitButton className={`btn btn-sm ${b.bulkEnabled ? "btn-sage" : "btn-line"}`} title="Turn the platform's bulk discounts on or off for this product">
+                  {b.bulkEnabled ? "On" : "Off"}
+                </SubmitButton>
+              </form>
+            </td>
             <td><Badge status={b.status} /></td>
             <td>
               <div className="row">

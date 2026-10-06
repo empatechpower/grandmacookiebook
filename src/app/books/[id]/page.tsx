@@ -7,6 +7,8 @@ import { money } from "@/lib/money";
 import { addToCart } from "@/app/actions/shop";
 import { Initials } from "@/components/ui";
 import { ProductGallery } from "@/components/ProductGallery";
+import { getSettings } from "@/lib/settings";
+import { tiersFrom, tiersLabel, unitPriceFor } from "@/lib/pricing";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
@@ -17,6 +19,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
       images: { orderBy: { position: "asc" } }, author: { select: { id: true, name: true, bio: true, _count: { select: { packages: { where: liveWhere } } } } } },
   });
   if (!book) notFound();
+  const tiers = tiersFrom(await getSettings());
   return (
     <section className="pad">
       <div className="wrap detail">
@@ -44,9 +47,10 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
                 Add to cart
               </SubmitButton>
             </form>
-            {book.bulkMinQty && book.bulkPrice ? (
+            {book.bulkEnabled && tiersLabel(tiers) ? (
               <div className="alert alert-ok" style={{ margin: 0 }}>
-                <b>Classroom sets:</b> {money(book.bulkPrice)} per copy when you order {book.bulkMinQty} or more.
+                <b>Classroom-set discounts:</b> {tiersLabel(tiers)} — applied automatically at checkout
+                {" "}({money(unitPriceFor(book, tiers.min1, tiers))} and {money(unitPriceFor(book, tiers.min2, tiers))} per copy).
               </div>
             ) : (
               <p className="muted" style={{ fontSize: ".85rem" }}>Ordering a classroom set? Set the quantity — the author ships directly.</p>

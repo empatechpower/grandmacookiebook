@@ -5,6 +5,7 @@ import { refundPayment, reverseTransfer, transferToAuthor, type PaidPayment } fr
 import { addDays } from "./dates";
 import * as notify from "./notify";
 import { accrueReferral } from "./referrals";
+import { issueInvoice } from "./invoices";
 
 /**
  * Payment lifecycle. The buyer's money is held by the platform and the author's
@@ -31,6 +32,7 @@ export async function fulfillOrder(orderId: string, payment: PaidPayment, sessio
     include: { items: true },
   });
   await db.cartItem.deleteMany({ where: { userId: order.buyerId, bookId: { in: order.items.map((i) => i.bookId) } } });
+  await issueInvoice({ orderId: order.id });
   await notify.orderPaid(order.id);
 }
 
@@ -42,6 +44,7 @@ export async function fulfillBooking(bookingId: string, payment: PaidPayment, se
   if (claimed.count) {
     const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
     await db.booking.update({ where: { id: bookingId }, data: { releaseAt: addDays(b.eventDate, HOLD_DAYS) } });
+    await issueInvoice({ bookingId });
     return notify.bookingPaid(bookingId);
   }
 

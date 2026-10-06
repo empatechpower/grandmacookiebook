@@ -41,11 +41,12 @@ ok((await db.contactMessage.count({ where: { topic: "Book fair request", body: {
 // Bulk pricing
 const buyer = await ctx(); await login(buyer, "buyer@atelier.test");
 await buyer.goto(B + "/books?q=Empathy"); await buyer.locator(".card").first().getByRole("link").first().click(); await buyer.waitForURL("**/books/**");
-ok((await text(buyer)).includes("$13 per copy when you order 25"), "book page shows classroom-set price");
+ok((await text(buyer)).includes("10–24 copies: 20% off · 25+ copies: 30% off"), "book page shows the bulk discount tiers");
 await buyer.fill("input[name=qty]", "30"); await buyer.click("text=Add to cart"); await buyer.waitForURL("**/cart");
-ok((await text(buyer)).includes("$390"), "cart applies $13 × 30 = $390");
-await buyer.fill("#address", "1 Test Road"); await buyer.getByRole("button", { name: /Pay \$390/ }).click(); await buyer.waitForURL("**/dashboard/buyer/orders");
-ok((await db.orderItem.findFirst({ where: { title: "The Empathy Effect", qty: 30 } }))?.unitPrice === 1300, "order line snapshots the bulk price");
+ok((await text(buyer)).includes("$336") && (await text(buyer)).includes("Bulk 30% off"), "cart applies 30% off: $11.20 × 30 = $336");
+await buyer.fill("#address", "1 Test Road"); await buyer.getByRole("button", { name: /Pay \$336/ }).click(); await buyer.waitForURL("**/dashboard/buyer/orders");
+const bulkLine = await db.orderItem.findFirst({ where: { title: "The Empathy Effect", qty: 30 } });
+ok(bulkLine?.unitPrice === 1120 && bulkLine?.listPrice === 1600, "order line snapshots the discounted and regular price");
 
 // RFP: buyer posts, author bids, buyer accepts -> booking
 await buyer.goto(B + "/dashboard/buyer/requests/new");

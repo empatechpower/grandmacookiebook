@@ -5,10 +5,24 @@ import { login, signup } from "@/app/actions/auth";
 import { SubmitButton } from "./SubmitButton";
 import { ORG_TYPES } from "@/lib/constants";
 
-export function LoginForm({ next }: { next?: string }) {
+/**
+ * Login with an Author / Guest choice (as the client requested). The choice only changes the
+ * wording and sign-up link — the account itself decides where you land, so picking the
+ * "wrong" tab can never lock anyone out.
+ */
+export function LoginForm({ next, initialAs = "GUEST" }: { next?: string; initialAs?: "GUEST" | "AUTHOR" }) {
   const [state, action] = useActionState(login, undefined);
+  const [as, setAs] = useState<"GUEST" | "AUTHOR">(initialAs);
   return (
     <form action={action}>
+      <div className="role-pick" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 18 }} role="tablist" aria-label="I am logging in as">
+        {([["GUEST", "I'm a guest", "Schools, organizations & readers"], ["AUTHOR", "I'm an author", "Manage your storefront"]] as const).map(([v, l, sub]) => (
+          <button key={v} type="button" role="tab" aria-selected={as === v} className={`role-opt${as === v ? " on" : ""}`} onClick={() => setAs(v)}>
+            <b>{l}</b>
+            <span>{sub}</span>
+          </button>
+        ))}
+      </div>
       {state?.error && <div className="alert alert-err">{state.error}</div>}
       {next && <input type="hidden" name="next" value={next} />}
       <div className="field">
@@ -25,8 +39,8 @@ export function LoginForm({ next }: { next?: string }) {
       <SubmitButton pendingText="Signing in…">Enter South Texas Book & Author</SubmitButton>
       <p style={{ marginTop: 16, fontSize: ".9rem" }}>
         No account?{" "}
-        <Link href="/signup" style={{ color: "var(--terracotta)" }}>
-          Join
+        <Link href={as === "AUTHOR" ? "/signup?role=AUTHOR" : "/signup"} style={{ color: "var(--terracotta)" }}>
+          {as === "AUTHOR" ? "Join as an author" : "Create a free guest account"}
         </Link>
       </p>
     </form>
@@ -34,7 +48,7 @@ export function LoginForm({ next }: { next?: string }) {
 }
 
 const ROLE_OPTS = [
-  { value: "BUYER", label: "Buyer", sub: "Shop & book" },
+  { value: "BUYER", label: "Guest", sub: "Buy books & book authors" },
   { value: "AUTHOR", label: "Author", sub: "Sell & speak" },
 ];
 

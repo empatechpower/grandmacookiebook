@@ -119,17 +119,18 @@ export async function bookingResponded(bookingId: string) {
 }
 
 export async function bookingPaid(bookingId: string) {
+  const inv = await db.invoice.findFirst({ where: { bookingId } });
   const b = await bookingWithPeople(bookingId);
   const base = await appUrl();
   sendEmail([
     {
       to: b.buyer.email,
-      subject: `Booking confirmed: ${b.package.title} on ${fmtWhen(b)}`,
+      subject: `Booking confirmed: ${b.package.title} on ${fmtWhen(b)}${inv ? ` — invoice INV-${inv.number}` : ""}`,
       lines: [
         `Payment of ${money(b.fee)} received — B-${b.number} is confirmed.`,
         `After the visit, mark it complete so ${first(b.author.name)} gets paid. If you don't, payment releases automatically 14 days after the event.`,
       ],
-      cta: { label: "View booking", url: `${base}/dashboard/buyer/bookings` },
+      cta: inv ? { label: `View invoice INV-${inv.number}`, url: `${base}/invoices/${inv.id}` } : { label: "View booking", url: `${base}/dashboard/buyer/bookings` },
     },
     {
       to: b.author.email,
@@ -185,6 +186,7 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
 // ---------- Orders ----------
 
 export async function orderPaid(orderId: string) {
+  const inv = await db.invoice.findFirst({ where: { orderId } });
   const o = await db.order.findUniqueOrThrow({
     where: { id: orderId },
     include: { buyer: { select: { name: true, email: true } }, items: { include: { author: { select: { id: true, name: true, email: true } } } } },
@@ -193,13 +195,13 @@ export async function orderPaid(orderId: string) {
   const emails: Email[] = [
     {
       to: o.buyer.email,
-      subject: `Order O-${o.number} confirmed`,
+      subject: `Order O-${o.number} confirmed${inv ? ` — invoice INV-${inv.number}` : ""}`,
       lines: [
         `Thanks, ${first(o.buyer.name)}! We received ${money(o.total)}.`,
         ...o.items.map((i) => `• ${i.title} × ${i.qty} — ${money(i.unitPrice * i.qty)} (ships from ${i.author.name})`),
         "Each author ships their own titles. Mark each one received when it arrives.",
       ],
-      cta: { label: "Track your order", url: `${base}/dashboard/buyer/orders` },
+      cta: inv ? { label: `View invoice INV-${inv.number}`, url: `${base}/invoices/${inv.id}` } : { label: "Track your order", url: `${base}/dashboard/buyer/orders` },
     },
   ];
   const byAuthor = new Map<string, typeof o.items>();

@@ -2,7 +2,7 @@ export const metadata = { title: "How it works" };
 
 const roles = [
   {
-    role: "Buyer",
+    role: "Guest",
     title: "Read and host",
     body: "Create a free account. Find authors by topic, grade, budget and date. Message them, request a visit, pay once they accept — your payment is held until the visit happens, so you're covered if anything goes wrong.",
   },
