@@ -83,7 +83,7 @@ export default async function DashLayout({ children }: { children: React.ReactNo
       <aside className="side">
         <Link className="mark side-brand" href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="mark-logo" src={BRAND.logo} alt="" width={60} height={60} />
+          <img className="mark-logo" src={BRAND.logo} alt="" width={76} height={76} />
           <b>{BRAND.name}</b>
         </Link>
         <div className="side-user">

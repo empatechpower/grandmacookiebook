@@ -631,3 +631,11 @@ footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 
 
 @media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
 @media print { .topbar::after, footer.site::before { display: none; } }
+
+/* Show the whole logo inside its white circle (cropping clipped the "SOUTH TEXAS" lettering and the web address). */
+.mark-logo, .foot-logo, .invoice-logo { object-fit: contain; background: #fff; }
+.mark-logo { width: 80px; height: 80px; padding: 4px; }
+.side .mark-logo { width: 76px; height: 76px; padding: 4px; }
+.side .side-brand { gap: 12px; }
+.foot-logo { padding: 11px; }
+@media (max-width: 960px) { .mark-logo, .side .mark-logo { width: 58px; height: 58px; padding: 3px; } }
