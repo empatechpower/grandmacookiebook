@@ -558,8 +558,11 @@ footer.site { border-top: 0; position: relative; background: linear-gradient(180
 footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--rainbow); }
 .foot-contact { margin-top: 10px; font-size: .86rem; }
 .foot-contact a { color: var(--sky); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-.side { background: linear-gradient(180deg, #fff7e3, var(--sky-l)); border-right: 0; box-shadow: inset -5px 0 0 0 transparent; position: relative; }
-.side::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, var(--berry), var(--sun), var(--leaf), var(--sky), var(--grape)); }
+.side { background: linear-gradient(180deg, #fff7e3, var(--sky-l)); }
+@media (min-width: 961px) {
+  /* Stays pinned (sticky, full height); the rainbow edge is a border so it never scrolls away. */
+  .side { border-right: 5px solid; border-image: linear-gradient(180deg, var(--berry), var(--sun), var(--leaf), var(--sky), var(--grape)) 1; }
+}
 
 /* Hero: playful color blobs */
 .hero { position: relative; overflow: hidden; }
