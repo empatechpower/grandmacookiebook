@@ -11,7 +11,7 @@ export async function GET() {
   if (!user || user.role !== "AUTHOR") return new Response("Not found", { status: 404 });
   const items = await db.orderItem.findMany({
     where: { authorId: user.id, status: { notIn: ["PENDING", "CANCELLED"] } },
-    include: { order: { include: { buyer: { select: { name: true, email: true, phone: true, orgName: true } } } } },
+    include: { order: { include: { buyer: { select: { name: true, email: true, phone: true, orgName: true } }, purchaseOrder: { select: { status: true } } } } },
     orderBy: { order: { createdAt: "desc" } },
   });
   const $ = (cents: number) => (cents / 100).toFixed(2);

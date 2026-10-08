@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { LEGAL } from "@/lib/legal";
 import { cookies } from "next/headers";
 import { Header } from "@/components/Header";
 import { Toast } from "@/components/Toast";
@@ -44,9 +45,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <div className="foot-grid">
                 <div className="foot-brand">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={BRAND.logo} alt={`${BRAND.name} logo`} width={88} height={88} className="foot-logo" />
+                <img src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={128} height={128} className="foot-logo" />
                 <b className="serif">{BRAND.name}</b>
                   <p>The marketplace for books and author visits — connecting schools, libraries and businesses with vetted authors.</p>
+                  <p className="foot-contact">
+                    <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a>
+                    <br />
+                    {BRAND.address.join(", ")}
+                  </p>
                   {SOCIALS.length > 0 && (
                     <div className="foot-links" style={{ marginTop: 10 }}>
                       {SOCIALS.map(([label, url]) => <a key={label} href={url} target="_blank" rel="noreferrer">{label}</a>)}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -19,7 +20,7 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
     include: {
       bids: {
         where: { status: { not: "WITHDRAWN" } },
-        include: { author: { select: { id: true, name: true, headline: true, avatarUrl: true, ratingAvg: true, ratingCount: true } }, package: true },
+        include: { author: { select: { id: true, name: true, slug: true, headline: true, avatarUrl: true, ratingAvg: true, ratingCount: true } }, package: true },
         orderBy: { fee: "asc" },
       },
     },
@@ -38,7 +39,7 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
             {r.status === "OPEN" && (
               <form action={closeRfp}>
                 <input type="hidden" name="id" value={r.id} />
-                <SubmitButton className="btn btn-line btn-sm" confirm="Close this request? Authors won't be able to bid.">Close request</SubmitButton>
+                <SubmitButton className="btn btn-line btn-sm" confirm="Close this request? Authors won't be able to send proposals.">Close request</SubmitButton>
               </form>
             )}
           </div>
@@ -48,12 +49,12 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
         {r.description}
         <div className="muted" style={{ fontSize: ".85rem", marginTop: 10 }}>
           {[r.location, ...labelsFor(TOPICS, r.topic ? [r.topic] : []), ...labelsFor(GRADES, r.grade ? [r.grade] : [])].filter(Boolean).join(" · ")}
-          {` · bids close ${fmtDate(r.deadline)}`}
+          {` · proposals due ${fmtDate(r.deadline)}`}
         </div>
       </div>
       <h3 className="h2-sm">{r.bids.length} bid{r.bids.length === 1 ? "" : "s"}</h3>
       {r.bids.length === 0 ? (
-        <div className="empty">No bids yet. Matching authors have been emailed — bids usually arrive within a few days.</div>
+        <div className="empty">No proposals yet. Matching authors have been emailed — proposals usually arrive within a few days.</div>
       ) : (
         <div className="stack">
           {r.bids.map((b) => (
@@ -62,7 +63,7 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="split">
                   <div>
-                    <Link href={`/authors/${b.author.id}`} target="_blank"><b>{b.author.name}</b></Link>
+                    <Link href={authorPath(b.author)} target="_blank"><b>{b.author.name}</b></Link>
                     {b.author.ratingCount > 0 && <span style={{ marginLeft: 8 }}><Stars avg={b.author.ratingAvg} count={b.author.ratingCount} size=".8rem" /></span>}
                     <div className="muted" style={{ fontSize: ".82rem" }}>{b.package.title} · {formatLabel(b.package.format)} · {b.package.durationMins} min</div>
                   </div>
@@ -76,11 +77,11 @@ export default async function RequestDetail({ params }: { params: Promise<{ id: 
                   <div className="row" style={{ marginTop: 10 }}>
                     <form action={acceptBid}>
                       <input type="hidden" name="id" value={b.id} />
-                      <SubmitButton className="btn btn-terra btn-sm" confirm={`Accept ${b.author.name}'s bid of ${money(b.fee)}? Other bids will be declined.`}>Accept bid</SubmitButton>
+                      <SubmitButton className="btn btn-terra btn-sm" confirm={`Accept ${b.author.name}'s proposal of ${money(b.fee)}? Other proposals will be declined.`}>Accept proposal</SubmitButton>
                     </form>
                     <form action={openConversation}>
                       <input type="hidden" name="with" value={b.author.id} />
-                      <input type="hidden" name="draft" value={`About your bid on “${r.title}”: `} />
+                      <input type="hidden" name="draft" value={`About your proposal for “${r.title}”: `} />
                       <SubmitButton className="btn btn-ghost btn-sm">Message</SubmitButton>
                     </form>
                     <form action={declineBid}>

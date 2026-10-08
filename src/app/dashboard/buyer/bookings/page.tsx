@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { fmtWhen } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -10,6 +11,7 @@ import { openConversation } from "@/app/actions/messages";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 import { ContractCell } from "@/components/ContractCell";
+import { PO_STATUS_LABEL, canUsePo } from "@/lib/purchaseOrders";
 
 export default async function BuyerBookings() {
   const user = await requireUser("BUYER");
@@ -18,8 +20,9 @@ export default async function BuyerBookings() {
     where: { buyerId: user.id },
     include: {
       package: true,
-      author: { select: { id: true, name: true } },
-      invoice: { select: { id: true, number: true } },
+      author: { select: { id: true, name: true, slug: true } },
+      invoice: { select: { id: true, number: true, status: true, dueAt: true } },
+      purchaseOrder: { select: { poNumber: true, status: true, adminNote: true } },
       review: { select: { id: true } },
       issues: { where: { status: "OPEN" }, select: { id: true } },
     },
@@ -42,7 +45,7 @@ export default async function BuyerBookings() {
             <td>
               <b>{b.package.title}</b>
               <div className="muted" style={{ fontSize: ".8rem" }}>
-                <Link href={`/authors/${b.author.id}`}>{b.author.name}</Link>
+                <Link href={authorPath(b.author)}>{b.author.name}</Link>
               </div>
               {b.authorNote && <div style={{ fontSize: ".8rem", marginTop: 4 }}>“{b.authorNote}”</div>}
               <ContractCell b={b} />
@@ -53,14 +56,22 @@ export default async function BuyerBookings() {
             <td>
               <Badge status={b.status} />
               {b.issues.length > 0 && <div><span className="badge b-off">Problem reported</span></div>}
+              {b.purchaseOrder && (
+                <div className="muted" style={{ fontSize: ".78rem", marginTop: 4 }} title={b.purchaseOrder.adminNote ?? undefined}>
+                  PO {b.purchaseOrder.poNumber} · {b.purchaseOrder.status === "APPROVED" && b.invoice?.dueAt ? `Invoice due ${fmtDate(b.invoice.dueAt)}` : PO_STATUS_LABEL[b.purchaseOrder.status]}
+                </div>
+              )}
             </td>
             <td>
               <div className="row" style={{ flexWrap: "wrap" }}>
-                {b.status === "ACCEPTED" && (
-                  <form action={payBooking}>
-                    <input type="hidden" name="id" value={b.id} />
-                    <SubmitButton className="btn btn-terra btn-sm" pendingText="Paying…">Pay {money(b.fee)}</SubmitButton>
-                  </form>
+                {b.status === "ACCEPTED" && b.purchaseOrder?.status !== "PENDING" && (
+                  <>
+                    <form action={payBooking}>
+                      <input type="hidden" name="id" value={b.id} />
+                      <SubmitButton className="btn btn-terra btn-sm" pendingText="Paying…">Pay {money(b.fee)}</SubmitButton>
+                    </form>
+                    {canUsePo(user) && <Link className="btn btn-line btn-sm" href={`/dashboard/buyer/bookings/po?id=${b.id}`}>Pay by purchase order</Link>}
+                  </>
                 )}
                 {b.status === "CONFIRMED" && !b.issues.length && dayKey(b.eventDate) <= todayKey() && (
                   <form action={confirmVisit}>
@@ -88,6 +99,8 @@ export default async function BuyerBookings() {
                       confirm={
                         b.status !== "CONFIRMED"
                           ? "Cancel this booking request?"
+                          : b.purchaseOrder && b.purchaseOrder.status !== "PAID"
+                            ? "Cancel this booking? Its invoice will be voided."
                           : isLateCancellation(b.eventDate, cancelNoticeDays)
                             ? `This is less than ${cancelNoticeDays} days before the event, so the ${money(b.fee)} fee won't be refunded and will be paid to the author. Cancel anyway?`
                             : `Cancel and get a full refund of ${money(b.fee)}?`

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -14,7 +15,7 @@ import { SubmitButton } from "@/components/SubmitButton";
 export default async function VisitPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [v, user] = await Promise.all([
-    db.visitPackage.findFirst({ where: { id, ...liveWhere }, include: { author: { select: { id: true, name: true, bio: true } } } }),
+    db.visitPackage.findFirst({ where: { id, ...liveWhere }, include: { author: { select: { id: true, name: true, slug: true, bio: true } } } }),
     currentUser(),
   ]);
   if (!v) notFound();
@@ -29,7 +30,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
             {formatLabel(v.format)} · {v.durationMins} min
           </div>
           <h1>{v.title}</h1>
-          <Link href={`/authors/${v.author.id}`} className="author-line">
+          <Link href={authorPath(v.author)} className="author-line">
             <Initials name={v.author.name} />
             <div>
               <b>{v.author.name}</b>

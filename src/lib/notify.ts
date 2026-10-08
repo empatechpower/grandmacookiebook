@@ -5,6 +5,8 @@ import { money, net } from "./money";
 import { appUrl } from "./url";
 import { fmtDate, fmtWhen } from "./dates";
 import { trackingUrl } from "./shipping";
+import { LEGAL } from "./legal";
+import { BRAND } from "./brand";
 
 /** Every transactional email the platform sends, in one place. */
 
@@ -120,8 +122,21 @@ export async function bookingResponded(bookingId: string) {
 
 export async function bookingPaid(bookingId: string) {
   const inv = await db.invoice.findFirst({ where: { bookingId } });
+  const po = await db.purchaseOrder.findUnique({ where: { bookingId } });
   const b = await bookingWithPeople(bookingId);
   const base = await appUrl();
+  if (po) {
+    sendEmail({
+      to: b.author.email,
+      subject: `Confirmed by purchase order: ${b.organisation} on ${fmtWhen(b)}`,
+      lines: [
+        `${b.buyer.name} booked “${b.package.title}” on ${fmtWhen(b)}, paying by purchase order ${po.poNumber} (approved).`,
+        `Your share, ${money(net(b.fee, b.commissionPct))}, is released after the visit once they've paid the invoice.`,
+      ],
+      cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
+    });
+    return;
+  }
   sendEmail([
     {
       to: b.buyer.email,
@@ -187,12 +202,13 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
 
 export async function orderPaid(orderId: string) {
   const inv = await db.invoice.findFirst({ where: { orderId } });
+  const po = await db.purchaseOrder.findUnique({ where: { orderId } });
   const o = await db.order.findUniqueOrThrow({
     where: { id: orderId },
     include: { buyer: { select: { name: true, email: true } }, items: { include: { author: { select: { id: true, name: true, email: true } } } } },
   });
   const base = await appUrl();
-  const emails: Email[] = [
+  const emails: Email[] = po ? [] : [
     {
       to: o.buyer.email,
       subject: `Order O-${o.number} confirmed${inv ? ` — invoice INV-${inv.number}` : ""}`,
@@ -214,12 +230,15 @@ export async function orderPaid(orderId: string) {
         `${o.buyer.name} ordered:`,
         ...items.map((i) => `• ${i.title} × ${i.qty}`),
         `Ship to: ${o.shippingAddress}`,
-        "Mark each line shipped in your studio. Your share is released when the buyer confirms receipt, or automatically after 14 days.",
+        po
+          ? `Paid by purchase order ${po.poNumber} (approved) — please ship now. Your share is released once they've paid the invoice.`
+          : "Mark each line shipped in your studio. Your share is released when the buyer confirms receipt, or automatically after 14 days.",
       ],
       cta: { label: "View orders", url: `${base}/dashboard/author/orders` },
     });
   }
   sendEmail(emails);
+  if (po) return;
   await toAdmins((to) => ({
     to,
     subject: `[Admin] New order O-${o.number}: ${money(o.total)}`,
@@ -486,10 +505,10 @@ export async function rfpPosted(rfpId: string) {
       subject: `New request: ${r.title}`,
       lines: [
         `Hi ${first(a.name)}, ${r.buyer.orgName || r.buyer.name} is looking for an author: “${r.title}”.`,
-        `Date: ${fmtDate(r.eventDate)} · Audience: ${r.audience}${r.budgetMax ? ` · Budget up to ${money(r.budgetMax)}` : ""}`,
-        `Bids close ${fmtDate(r.deadline)}.`,
+        `Date: ${fmtDate(r.eventDate)} · Audience: ${r.audience}`,
+        `Proposals due ${fmtDate(r.deadline)}.`,
       ],
-      cta: { label: "View and bid", url },
+      cta: { label: "View and submit a proposal", url },
     })),
   );
   return authors.length;
@@ -499,9 +518,9 @@ export async function bidReceived(bidId: string) {
   const b = await db.bid.findUniqueOrThrow({ where: { id: bidId }, include: { author: true, rfp: { include: { buyer: true } } } });
   sendEmail({
     to: b.rfp.buyer.email,
-    subject: `New bid from ${b.author.name}: ${money(b.fee)}`,
-    lines: [`${b.author.name} bid ${money(b.fee)} on “${b.rfp.title}”.`, `“${b.message}”`],
-    cta: { label: "Compare bids", url: `${await appUrl()}/dashboard/buyer/requests/${b.rfpId}` },
+    subject: `New proposal from ${b.author.name}: ${money(b.fee)}`,
+    lines: [`${b.author.name} sent a proposal of ${money(b.fee)} for “${b.rfp.title}”.`, `“${b.message}”`],
+    cta: { label: "Compare proposals", url: `${await appUrl()}/dashboard/buyer/requests/${b.rfpId}` },
   });
 }
 
@@ -513,8 +532,89 @@ export async function bidDecided(bidId: string) {
     to: b.author.email,
     subject: won ? `You won “${b.rfp.title}”` : `Update on “${b.rfp.title}”`,
     lines: won
-      ? [`${b.rfp.buyer.orgName || b.rfp.buyer.name} accepted your bid of ${money(b.fee)} for ${fmtDate(b.rfp.eventDate)}. It's now a booking; they'll pay to confirm it.`]
-      : [`${b.rfp.buyer.orgName || b.rfp.buyer.name} chose another author for “${b.rfp.title}”. Thanks for bidding — keep an eye on new requests.`],
+      ? [`${b.rfp.buyer.orgName || b.rfp.buyer.name} accepted your proposal of ${money(b.fee)} for ${fmtDate(b.rfp.eventDate)}. It's now a booking; they'll pay to confirm it.`]
+      : [`${b.rfp.buyer.orgName || b.rfp.buyer.name} chose another author for “${b.rfp.title}”. Thanks for your proposal — keep an eye on new requests.`],
     cta: won ? { label: "View booking", url: `${base}/dashboard/author/requests` } : { label: "See open requests", url: `${base}/dashboard/author/opportunities` },
+  });
+}
+
+// ---------- Purchase orders ----------
+
+const poWithSale = (id: string) =>
+  db.purchaseOrder.findUniqueOrThrow({
+    where: { id },
+    include: {
+      buyer: { select: { name: true, email: true, orgName: true } },
+      order: { include: { invoice: true } },
+      booking: { include: { invoice: true, package: { select: { title: true } }, author: { select: { name: true } } } },
+    },
+  });
+const poRef = (po: Awaited<ReturnType<typeof poWithSale>>) =>
+  po.order ? `order O-${po.order.number}` : `booking B-${po.booking!.number} (${po.booking!.package.title} with ${po.booking!.author.name})`;
+
+export async function poSubmitted(saleId: string, kind: "order" | "booking") {
+  const po = await db.purchaseOrder.findUniqueOrThrow({ where: kind === "order" ? { orderId: saleId } : { bookingId: saleId } });
+  const full = await poWithSale(po.id);
+  const base = await appUrl();
+  sendEmail({
+    to: full.buyer.email,
+    subject: `Purchase order ${po.poNumber} received`,
+    lines: [
+      `Thanks! We received PO ${po.poNumber} for ${money(po.amount)} for ${poRef(full)}.`,
+      "We'll review it and email you once it's approved, usually within one business day.",
+    ],
+    cta: { label: "View your account", url: `${base}/dashboard` },
+  });
+  await toAdmins((to) => ({
+    to,
+    subject: `[Admin] Purchase order to review: ${po.poNumber} — ${money(po.amount)}`,
+    lines: [`${full.buyer.orgName || full.buyer.name} sent PO ${po.poNumber} for ${money(po.amount)} (${poRef(full)}). Billing: ${po.billingName}, ${po.billingEmail}.`],
+    cta: { label: "Review purchase orders", url: `${base}/dashboard/admin/purchase-orders` },
+  }));
+}
+
+export async function poReviewed(poId: string) {
+  const po = await poWithSale(poId);
+  const base = await appUrl();
+  const inv = po.order?.invoice ?? po.booking?.invoice;
+  if (po.status === "APPROVED" && inv) {
+    const invoiceLines = [
+      `Invoice INV-${inv.number} for ${money(inv.total)} is due ${inv.dueAt ? fmtDate(inv.dueAt) : "on receipt"} (Net ${po.termsDays}).`,
+      `Please reference PO ${po.poNumber} and INV-${inv.number} with payment.`,
+      `Remit to: ${BRAND.name}, ${BRAND.address.join(", ")}. Questions: ${LEGAL.email}.`,
+    ];
+    sendEmail([
+      {
+        to: po.buyer.email,
+        subject: `Purchase order ${po.poNumber} approved — invoice INV-${inv.number}`,
+        lines: [`Your PO for ${poRef(po)} is approved and confirmed${po.order ? " — the authors are shipping your books" : ""}.`, ...invoiceLines],
+        cta: { label: `View invoice INV-${inv.number}`, url: `${base}/invoices/${inv.id}` },
+      },
+      ...(po.billingEmail !== po.buyer.email
+        ? [{ to: po.billingEmail, subject: `Invoice INV-${inv.number} — PO ${po.poNumber}`, lines: [`Hello ${first(po.billingName)}, ${po.buyer.orgName || po.buyer.name} placed ${poRef(po)} on purchase order ${po.poNumber}.`, ...invoiceLines] }]
+        : []),
+    ]);
+  } else if (po.status === "REJECTED") {
+    sendEmail({
+      to: po.buyer.email,
+      subject: `Purchase order ${po.poNumber} wasn't approved`,
+      lines: [
+        `We couldn't approve PO ${po.poNumber} for ${poRef(po)}.${po.adminNote ? ` Reason: ${po.adminNote}` : ""}`,
+        po.order ? "Your cart has been kept — you can check out again with a corrected PO or by card." : "You can send a corrected PO or pay by card from your bookings.",
+      ],
+      cta: { label: po.order ? "Go to cart" : "View bookings", url: `${base}${po.order ? "/cart" : "/dashboard/buyer/bookings"}` },
+    });
+  }
+}
+
+export async function poPaid(poId: string) {
+  const po = await poWithSale(poId);
+  const inv = po.order?.invoice ?? po.booking?.invoice;
+  if (!inv) return;
+  sendEmail({
+    to: po.buyer.email,
+    subject: `Payment received — INV-${inv.number} (PO ${po.poNumber})`,
+    lines: [`Thank you! We received payment of ${money(inv.total)} for invoice INV-${inv.number}. It's now paid in full.`],
+    cta: { label: "View invoice", url: `${await appUrl()}/invoices/${inv.id}` },
   });
 }

@@ -11,6 +11,7 @@ import { authorSignedUp, passwordChanged, passwordResetLink } from "@/lib/notify
 import { requireUser } from "@/lib/auth";
 import { appUrl } from "@/lib/url";
 import { linkReferredUser } from "@/lib/referrals";
+import { ensureAuthorSlug } from "@/lib/slugs";
 
 export type FormState = { error?: string } | undefined;
 
@@ -57,6 +58,7 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   });
   await createSession(user.id, user.sessionVersion);
   if (role === "AUTHOR") {
+    await ensureAuthorSlug(user);
     await linkReferredUser(user);
     await authorSignedUp(user);
   }

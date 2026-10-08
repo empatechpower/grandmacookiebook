@@ -6,13 +6,16 @@ import { bulkDiscountPct, tiersFrom, unitPriceFor } from "@/lib/pricing";
 import { getSettings } from "@/lib/settings";
 import { checkout, updateCartItem } from "@/app/actions/shop";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PayMethod } from "@/components/PoForm";
+import { canUsePo } from "@/lib/purchaseOrders";
 import { Table } from "@/components/ui";
 
 export const metadata = { title: "Cart" };
 
 export default async function Cart() {
   const user = await requireUser("BUYER");
-  const tiers = tiersFrom(await getSettings());
+  const settings = await getSettings();
+  const tiers = tiersFrom(settings);
   const items = await db.cartItem.findMany({
     where: { userId: user.id },
     include: { book: { include: { author: { select: { name: true } } } } },
@@ -77,11 +80,15 @@ export default async function Cart() {
                 <label htmlFor="address">Shipping address</label>
                 <textarea id="address" name="address" required defaultValue={user.location ?? ""} placeholder="Street, city, state" />
               </div>
-              <SubmitButton className="btn btn-terra" pendingText="Paying…" style={{ width: "100%" }}>
-                Pay {money(total)}
-              </SubmitButton>
+              <PayMethod
+                total={money(total)}
+                allowPo={canUsePo(user)}
+                termsDays={settings.poTermsDays}
+                billing={{ name: user.name, email: user.email, phone: user.phone ?? "", address: [user.orgName, user.location].filter(Boolean).join("\n") }}
+              />
               <p className="muted" style={{ fontSize: ".78rem", marginTop: 10 }}>
                 Each author ships their own titles. Set quantity to 0 to remove an item.
+                {!canUsePo(user) && <> Schools and organizations can pay by purchase order — set your organization type in <Link href="/dashboard/buyer/profile" style={{ textDecoration: "underline" }}>Settings</Link>.</>}
               </p>
             </form>
           </div>

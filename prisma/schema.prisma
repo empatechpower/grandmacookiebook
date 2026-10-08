@@ -71,6 +71,7 @@ model User {
   rfps            Rfp[]
   media           Media[]
   bids            Bid[]
+  purchaseOrders  PurchaseOrder[]
 }
 
 model Book {
@@ -145,6 +146,7 @@ model Order {
   createdAt       DateTime    @default(now())
   items           OrderItem[]
   invoice         Invoice?
+  purchaseOrder   PurchaseOrder?
 }
 
 // Each line is fulfilled and paid out to its own author, so status and transfer live on the line.
@@ -210,6 +212,7 @@ model Booking {
   review          Review?
   issues          Issue[]
   invoice         Invoice?
+  purchaseOrder   PurchaseOrder?
   createdAt       DateTime     @default(now())
 
   @@index([authorId, status])
@@ -491,6 +494,41 @@ model Invoice {
   bookingId String?  @unique
   booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   total     Int
-  status    String   @default("PAID") // PAID | DUE (purchase orders, later) | VOID
+  status    String   @default("PAID") // PAID | DUE (purchase order awaiting payment) | VOID
   issuedAt  DateTime @default(now())
+  dueAt     DateTime? // purchase orders: issuedAt + payment terms
+  paidAt    DateTime?
+}
+
+/**
+ * Pay by purchase order (schools and organizations). The order or booking waits for an
+ * admin to approve the PO; approval confirms it (books ship / visit is on) and issues an
+ * invoice due on the PO's terms. Authors are paid once the invoice is marked paid.
+ */
+model PurchaseOrder {
+  id             String    @id @default(cuid())
+  buyerId        String
+  buyer          User      @relation(fields: [buyerId], references: [id])
+  orderId        String?   @unique
+  order          Order?    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  bookingId      String?   @unique
+  booking        Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  poNumber       String
+  billingName    String
+  billingEmail   String
+  billingPhone   String?
+  billingAddress String
+  fileKey        String? // the signed PO document (private PDF)
+  fileName       String?
+  amount         Int
+  termsDays      Int
+  status         String    @default("PENDING") // PENDING (in review) | APPROVED (invoice due) | PAID | REJECTED | CANCELLED
+  adminNote      String?
+  paymentNote    String? // e.g. "Check #1042"
+  approvedAt     DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([status])
+  @@index([buyerId])
 }

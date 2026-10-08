@@ -48,7 +48,7 @@ await buyer.fill("#address", "1 Test Road"); await buyer.getByRole("button", { n
 const bulkLine = await db.orderItem.findFirst({ where: { title: "The Empathy Effect", qty: 30 } });
 ok(bulkLine?.unitPrice === 1120 && bulkLine?.listPrice === 1600, "order line snapshots the discounted and regular price");
 
-// RFP: buyer posts, author bids, buyer accepts -> booking
+// RFP: buyer posts, author sends a proposal, buyer accepts -> booking
 await buyer.goto(B + "/dashboard/buyer/requests/new");
 await buyer.fill("#title", "Keynote for staff wellbeing day"); await buyer.fill("#description", "A 45 minute keynote on joy and resilience for 80 teachers, followed by Q&A.");
 await buyer.fill("#audience", "Teaching staff"); await buyer.fill("#audienceSize", "80"); await buyer.fill("#eventDate", day(50)); await buyer.fill("#deadline", day(10));
@@ -64,13 +64,13 @@ const meena = await ctx(); await login(meena, "meena@atelier.test");
 await meena.goto(B + "/dashboard/author/opportunities");
 await meena.getByRole("link", { name: "Keynote for staff wellbeing day" }).click(); await meena.waitForURL("**/opportunities/**");
 await meena.fill("#fee", "1650"); await meena.fill("#message", "I'll tailor my joy-at-work keynote to the realities of teaching, with practical tools for the term.");
-await meena.getByRole("button", { name: "Send bid" }).click(); ok(await sees(meena, "Bid sent"), "author sent a bid");
-await meena.fill("#fee", "1600"); await meena.getByRole("button", { name: "Update bid" }).click(); ok(await sees(meena, "Bid updated"), "author updated bid");
+await meena.getByRole("button", { name: "Submit Proposal" }).click(); ok(await sees(meena, "Proposal submitted"), "author submitted a proposal");
+await meena.fill("#fee", "1600"); await meena.getByRole("button", { name: "Update Proposal" }).click(); ok(await sees(meena, "Proposal updated"), "author updated proposal");
 await buyer.goto(rfpUrl);
-ok((await text(buyer)).includes("$1,600") && (await text(buyer)).includes("Meena Julapalli"), "buyer sees the bid");
-await buyer.getByRole("button", { name: "Accept bid" }).click(); await buyer.waitForURL("**/dashboard/buyer/bookings");
+ok((await text(buyer)).includes("$1,600") && (await text(buyer)).includes("Meena Julapalli"), "buyer sees the proposal");
+await buyer.getByRole("button", { name: "Accept proposal" }).click(); await buyer.waitForURL("**/dashboard/buyer/bookings");
 const bk = await db.booking.findFirst({ where: { fee: 160000, status: "ACCEPTED" }, include: { author: true } });
-ok(bk?.author.email === "meena@atelier.test", "accepted bid became an accepted booking at the bid price");
+ok(bk?.author.email === "meena@atelier.test", "accepted proposal became an accepted booking at the proposal fee");
 ok((await db.rfp.findFirst({ where: { title: "Keynote for staff wellbeing day" } })).status === "AWARDED", "request marked awarded");
 
 // Late-cancellation guarantee: confirmed booking 3 days out -> no refund, author paid

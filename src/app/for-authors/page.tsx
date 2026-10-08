@@ -29,7 +29,7 @@ export default async function ForAuthors() {
         items={[
           ["Your own storefront", "A public profile with your books, visit packages, reviews, topics and intro video."],
           ["Get discovered", "Schools filter by topic, grade, format, language, location and budget — tag yourself so they find you."],
-          ["Bid on requests", "Schools and businesses post what they need. Send proposals and win bookings."],
+          ["Answer requests", "Schools and businesses post what they need. Submit proposals and win bookings."],
           ["Control your calendar", "Open the dates you're available; buyers can only request those days."],
           ["Paid on time", `Payment is collected up front and released to you after the event — at most ${HOLD_DAYS} days later.`],
           ["Paperwork handled", "Messaging, quotes with travel, optional contracts and reminders all in one place."],
@@ -41,7 +41,7 @@ export default async function ForAuthors() {
           ["Create your account", "Tell us about yourself and what you write."],
           ["Connect Stripe", "So you can be paid automatically."],
           ["List books & visits", "Our team reviews each listing to keep the marketplace trusted."],
-          ["Get booked", "Answer requests, bid on opportunities, and grow your audience."],
+          ["Get booked", "Answer requests, submit proposals, and grow your audience."],
         ]}
       />
       <Faq

@@ -3,16 +3,18 @@ import { SubmitButton } from "./SubmitButton";
 import { fmtDate } from "@/lib/dates";
 
 /** Admin view of an author's share: sent, held (with early release), or failed (with retry). */
-export function TransferCell({ kind, id, transferId, transferError, releaseAt, paid }: {
+export function TransferCell({ kind, id, transferId, transferError, releaseAt, paid, awaitingPo }: {
   kind: "item" | "booking";
   id: string;
   transferId: string | null;
   transferError: string | null;
   releaseAt: Date | null;
   paid: boolean;
+  awaitingPo?: boolean;
 }) {
   if (transferId) return <span className="badge b-ok" title={transferId}>Sent</span>;
   if (!paid) return <span className="muted">—</span>;
+  if (awaitingPo) return <span className="badge b-wait" title="Released once the purchase order invoice is marked paid">Awaiting PO payment</span>;
   return (
     <form action={retryTransfer} className="inline-form">
       <input type="hidden" name="kind" value={kind} />

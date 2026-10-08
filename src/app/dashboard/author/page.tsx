@@ -18,13 +18,13 @@ export default async function AuthorDashboard() {
     db.orderItem.aggregate({ where: sold, _sum: { qty: true } }),
     db.booking.findMany({
       where: { authorId: user.id },
-      include: { package: { select: { title: true } } },
+      include: { package: { select: { title: true } }, purchaseOrder: { select: { status: true } } },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
     db.orderItem.findMany({
       where: { authorId: user.id, status: { notIn: ["PENDING", "CANCELLED"] } },
-      include: { order: { select: { number: true, createdAt: true } } },
+      include: { order: { select: { number: true, createdAt: true, purchaseOrder: { select: { status: true } } } } },
       orderBy: { order: { createdAt: "desc" } },
       take: 5,
     }),

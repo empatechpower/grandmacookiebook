@@ -15,11 +15,11 @@ export default async function Requests() {
   return (
     <>
       <PageHead
-        title="Requests & bids"
-        sub="Describe your event once and let matching authors send you proposals. Compare bids, then accept the one you like."
+        title="Requests & proposals"
+        sub="Describe your event once and let matching authors send you proposals. Compare proposals, then accept the one you like."
         action={<Link className="btn btn-terra" href="/dashboard/buyer/requests/new">Post a request</Link>}
       />
-      <Table heads={["Request", "Event date", "Bids close", "Bids", "Status"]} empty="No requests yet. Post one and authors will come to you.">
+      <Table heads={["Request", "Event date", "Proposals due", "Proposals", "Status"]} empty="No requests yet. Post one and authors will come to you.">
         {rfps.map((r) => (
           <tr key={r.id}>
             <td><Link href={`/dashboard/buyer/requests/${r.id}`}><b>{r.title}</b></Link><div className="muted" style={{ fontSize: ".8rem" }}>{r.audience}</div></td>

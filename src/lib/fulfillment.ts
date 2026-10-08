@@ -58,14 +58,17 @@ export async function fulfillBooking(bookingId: string, payment: PaidPayment, se
 
 /** Transfers an order line's net amount to its author now (release or retry). Idempotent. */
 export async function releaseItem(itemId: string) {
-  const item = await db.orderItem.findUnique({ where: { id: itemId }, include: { order: { include: { buyer: { select: { name: true } } } }, author: true } });
-  if (!item || item.transferId || !["PAID", "SHIPPED", "DELIVERED"].includes(item.status) || !item.order.chargeId) return;
+  const item = await db.orderItem.findUnique({ where: { id: itemId }, include: { order: { include: { purchaseOrder: true } }, author: true } });
+  if (!item || item.transferId || !["PAID", "SHIPPED", "DELIVERED"].includes(item.status)) return;
+  // Card orders pay out from their charge; purchase orders once the school has paid the invoice.
+  const po = item.order.purchaseOrder;
+  if (po ? po.status !== "PAID" : !item.order.chargeId) return;
   try {
     if (!item.author.stripeAccountId) throw new Error("Author has no connected Stripe account");
     const transferId = await transferToAuthor({
       amount: net(item.unitPrice * item.qty, item.commissionPct),
       destination: item.author.stripeAccountId,
-      chargeId: item.order.chargeId,
+      chargeId: item.order.chargeId ?? undefined,
       transferGroup: `order_${item.orderId}`,
       idempotencyKey: `transfer_item_${item.id}`,
     });
@@ -78,14 +81,15 @@ export async function releaseItem(itemId: string) {
 }
 
 export async function releaseBooking(bookingId: string) {
-  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { author: true } });
-  if (!b || b.transferId || !["CONFIRMED", "COMPLETED", "LATE_CANCELLED"].includes(b.status) || !b.chargeId) return;
+  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { author: true, purchaseOrder: true } });
+  if (!b || b.transferId || !["CONFIRMED", "COMPLETED", "LATE_CANCELLED"].includes(b.status)) return;
+  if (b.purchaseOrder ? b.purchaseOrder.status !== "PAID" : !b.chargeId) return;
   try {
     if (!b.author.stripeAccountId) throw new Error("Author has no connected Stripe account");
     const transferId = await transferToAuthor({
       amount: net(b.fee, b.commissionPct),
       destination: b.author.stripeAccountId,
-      chargeId: b.chargeId,
+      chargeId: b.chargeId ?? undefined,
       transferGroup: `booking_${b.id}`,
       idempotencyKey: `transfer_booking_${b.id}`,
     });

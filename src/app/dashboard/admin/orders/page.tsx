@@ -7,7 +7,7 @@ import { TransferCell } from "@/components/TransferCell";
 
 export default async function AdminOrders() {
   const orders = await db.order.findMany({
-    include: { buyer: { select: { name: true } }, items: { include: { author: { select: { name: true } } } } },
+    include: { buyer: { select: { name: true } }, purchaseOrder: { select: { status: true, poNumber: true } }, items: { include: { author: { select: { name: true } } } } },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
@@ -27,7 +27,7 @@ export default async function AdminOrders() {
               <td>{i.commissionPct}%</td>
               <td><Badge status={i.status} /></td>
               <td>
-                <TransferCell kind="item" id={i.id} transferId={i.transferId} transferError={i.transferError} releaseAt={i.releaseAt} paid={["PAID", "SHIPPED", "DELIVERED"].includes(i.status)} />
+                <TransferCell kind="item" id={i.id} transferId={i.transferId} transferError={i.transferError} releaseAt={i.releaseAt} paid={["PAID", "SHIPPED", "DELIVERED"].includes(i.status)} awaitingPo={!!o.purchaseOrder && o.purchaseOrder.status !== "PAID"} />
               </td>
               <td>
                 {["PAID", "SHIPPED", "DELIVERED"].includes(i.status) && (

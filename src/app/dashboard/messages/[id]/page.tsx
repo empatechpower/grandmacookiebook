@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { fmtWhen } from "@/lib/dates";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
@@ -22,7 +23,7 @@ export default async function Thread({ params, searchParams }: { params: Promise
   });
   const [messages, other, bookings] = await Promise.all([
     db.message.findMany({ where: { conversationId: convo.id }, orderBy: { createdAt: "desc" }, take: 200 }),
-    db.user.findUniqueOrThrow({ where: { id: asAuthor ? convo.buyerId : convo.authorId }, select: { id: true, name: true } }),
+    db.user.findUniqueOrThrow({ where: { id: asAuthor ? convo.buyerId : convo.authorId }, select: { id: true, name: true, slug: true } }),
     db.booking.findMany({
       where: { buyerId: convo.buyerId, authorId: convo.authorId, status: { in: ["PENDING", "ACCEPTED", "CONFIRMED"] } },
       include: { package: { select: { title: true } } },
@@ -36,9 +37,9 @@ export default async function Thread({ params, searchParams }: { params: Promise
       <div className="split" style={{ marginBottom: 14 }}>
         <div>
           <Link href="/dashboard/messages" className="muted" style={{ fontSize: ".85rem" }}>← All messages</Link>
-          <h2>{asAuthor ? other.name : <Link href={`/authors/${other.id}`}>{other.name}</Link>}</h2>
+          <h2>{asAuthor ? other.name : <Link href={authorPath(other)}>{other.name}</Link>}</h2>
         </div>
-        {!asAuthor && <Link className="btn btn-line btn-sm" href={`/authors/${other.id}`}>View packages & book</Link>}
+        {!asAuthor && <Link className="btn btn-line btn-sm" href={authorPath(other)}>View packages & book</Link>}
       </div>
       {bookings.length > 0 && (
         <div className="alert alert-info">

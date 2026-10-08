@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { db } from "@/lib/db";
 import { BookCard } from "@/components/Cards";
 import { AuthorCard } from "@/components/AuthorCard";
@@ -26,7 +27,7 @@ export default async function Home() {
     db.collection.findMany({ where: { published: true, featured: true }, include: { _count: { select: { items: true } } }, orderBy: { sortOrder: "asc" }, take: 3 }),
     db.review.findMany({
       where: { hidden: false, rating: { gte: 4 } },
-      include: { author: { select: { id: true, name: true } }, buyer: { select: { name: true, orgName: true, orgType: true } } },
+      include: { author: { select: { id: true, name: true, slug: true } }, buyer: { select: { name: true, orgName: true, orgType: true } } },
       orderBy: { createdAt: "desc" },
       take: 3,
     }),
@@ -194,7 +195,7 @@ export default async function Home() {
                     {orgTypeLabel(r.buyer.orgType) ? ` · ${orgTypeLabel(r.buyer.orgType)}` : ""}
                     <br />
                     <span className="muted">
-                      on <Link href={`/authors/${r.author.id}`} style={{ textDecoration: "underline" }}>{r.author.name}</Link>
+                      on <Link href={authorPath(r.author)} style={{ textDecoration: "underline" }}>{r.author.name}</Link>
                     </span>
                   </figcaption>
                 </figure>

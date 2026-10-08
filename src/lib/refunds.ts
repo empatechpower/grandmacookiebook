@@ -4,6 +4,7 @@ import { net } from "./money";
 import { refundWithClawback } from "./fulfillment";
 import * as notify from "./notify";
 import { voidReferralEarning } from "./referrals";
+import { cancelPoFor } from "./purchaseOrders";
 
 /**
  * Refunds one order line (restocking it if it hadn't shipped). Returns a warning
@@ -13,7 +14,7 @@ export async function refundItem(itemId: string): Promise<{ ok: false; error: st
   const item = await db.orderItem.findUnique({ where: { id: itemId }, include: { order: true } });
   if (!item || !["PAID", "SHIPPED", "DELIVERED"].includes(item.status)) return { ok: false, error: "This line can't be refunded" };
   const gross = item.unitPrice * item.qty;
-  const warning = await refundWithClawback({
+  let warning = await refundWithClawback({
     paymentIntentId: item.order.paymentRef,
     gross,
     transferId: item.transferId,
@@ -24,6 +25,8 @@ export async function refundItem(itemId: string): Promise<{ ok: false; error: st
     db.orderItem.update({ where: { id: item.id }, data: { status: "REFUNDED" } }),
     ...(item.status === "PAID" ? [db.book.update({ where: { id: item.bookId }, data: { stock: { increment: item.qty } } })] : []),
   ]);
+  const po = await db.purchaseOrder.findUnique({ where: { orderId: item.orderId } });
+  if (po) warning = `Paid by purchase order ${po.poNumber}: ${po.status === "PAID" ? "refund the buyer directly" : "reduce the amount on the invoice they owe"} (${(gross / 100).toFixed(2)} USD).`;
   await voidReferralEarning("item", item.id);
   await notify.itemRefunded(item.id);
   return { ok: true, warning };
@@ -34,7 +37,7 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: false; err
   const b = await db.booking.findUnique({ where: { id: bookingId } });
   if (!b || ["CANCELLED", "DECLINED"].includes(b.status) || (b.status === "COMPLETED" && b.transferId))
     return { ok: false, error: "This booking can't be canceled" };
-  const warning = b.paymentRef
+  let warning = b.paymentRef
     ? await refundWithClawback({
         paymentIntentId: b.paymentRef,
         gross: b.fee,
@@ -44,6 +47,8 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: false; err
       })
     : null;
   await db.booking.update({ where: { id: b.id }, data: { status: "CANCELLED" } });
+  const po = await cancelPoFor({ bookingId: b.id });
+  if (po?.status === "PAID") warning = `Paid by purchase order ${po.poNumber}: refund ${b.organisation} directly (check or ACH).`;
   await voidReferralEarning("booking", b.id);
   await notify.bookingCancelled(b.id, b.paymentRef ? "refunded" : "unpaid");
   return { ok: true, warning, refunded: !!b.paymentRef };

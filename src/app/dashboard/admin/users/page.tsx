@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
+import { backfillAuthorSlugs } from "@/lib/slugs";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
 import { setUserStatus } from "@/app/actions/admin";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
@@ -17,6 +18,7 @@ const FILTERS = [
 
 export default async function Users({ searchParams }: { searchParams: Promise<{ filter?: string; q?: string }> }) {
   const me = await requireUser("ADMIN");
+  await backfillAuthorSlugs();
   const { filter = "all", q = "" } = await searchParams;
   const where = {
     ...(filter === "pending" ? { status: "PENDING" } : {}),

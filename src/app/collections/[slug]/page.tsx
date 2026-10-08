@@ -22,7 +22,7 @@ export default async function CollectionPage({ params }: P) {
   // Only bookable authors and live books appear; order follows the curator's.
   const [authors, books] = await Promise.all([
     authorIds.length ? searchAuthors({}).then((all) => all.filter((a) => authorIds.includes(a.id))) : [],
-    bookIds.length ? db.book.findMany({ where: { id: { in: bookIds }, ...liveWhere }, include: { author: { select: { id: true, name: true } } } }) : [],
+    bookIds.length ? db.book.findMany({ where: { id: { in: bookIds }, ...liveWhere }, include: { author: { select: { id: true, name: true, slug: true } } } }) : [],
   ]);
   const note = (key: string, id: string) => c.items.find((i) => (key === "a" ? i.authorId : i.bookId) === id)?.note;
   const byOrder = <T extends { id: string }>(list: T[], ids: string[]) => ids.map((id) => list.find((x) => x.id === id)).filter(Boolean) as T[];

@@ -525,3 +525,106 @@ fieldset.field legend { font-size: .8rem; margin-bottom: 6px; color: var(--ink-s
 .invoice-foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line); font-size: .85rem; }
 @media (max-width: 700px) { .invoice { padding: 20px; } .invoice-meta { grid-template-columns: 1fr; } }
 @media print { .invoice { border: 0; padding: 0; } }
+
+/* ===== Kid-friendly color layer (client request: "make it more colorful — it's for elementary schools and kids").
+   Keeps the navy + gold brand, and adds a bright, cheerful accent set used for stripes, cards, steps and chips. ===== */
+:root {
+  --sun: #f6b422;
+  --sky: #1f8fd1;
+  --berry: #e0473a;
+  --leaf: #2fa565;
+  --grape: #7c56b8;
+  --bubble: #e8558f;
+  --sky-l: #e3f2fc;
+  --sun-l: #fff4d6;
+  --leaf-l: #e2f5ea;
+  --berry-l: #fde6e3;
+  --grape-l: #efe7fa;
+  --rainbow: linear-gradient(90deg, var(--berry), var(--sun) 20%, var(--leaf) 40%, var(--sky) 60%, var(--grape) 80%, var(--bubble));
+}
+
+/* Bigger logo */
+.topbar-inner { height: 92px; }
+.mark-logo { width: 76px; height: 76px; box-shadow: 0 0 0 3px #fff, 0 4px 14px rgba(20,40,90,.18); }
+.side .mark-logo { width: 60px; height: 60px; }
+.foot-logo { width: 128px; height: 128px; box-shadow: 0 0 0 4px #fff, 0 6px 20px rgba(20,40,90,.18); }
+@media (max-width: 960px) { .topbar-inner { height: 76px; } .mark-logo { width: 58px; height: 58px; } }
+.dash { min-height: 100vh; }
+
+/* Rainbow stripes */
+.topbar { border-bottom: 0; }
+.topbar::after { content: ""; display: block; height: 5px; background: var(--rainbow); }
+footer.site { border-top: 0; position: relative; background: linear-gradient(180deg, var(--sky-l), var(--paper) 70%); }
+footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--rainbow); }
+.foot-contact { margin-top: 10px; font-size: .86rem; }
+.foot-contact a { color: var(--sky); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.side { background: linear-gradient(180deg, #fff7e3, var(--sky-l)); border-right: 0; box-shadow: inset -5px 0 0 0 transparent; position: relative; }
+.side::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 5px; background: linear-gradient(180deg, var(--berry), var(--sun), var(--leaf), var(--sky), var(--grape)); }
+
+/* Hero: playful color blobs */
+.hero { position: relative; overflow: hidden; }
+.hero::before, .hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(2px); z-index: -1; }
+.hero::before { width: 360px; height: 360px; left: -120px; top: -80px; background: radial-gradient(circle, rgba(246,180,34,.35), transparent 70%); }
+.hero::after { width: 420px; height: 420px; right: -140px; top: 40px; background: radial-gradient(circle, rgba(31,143,209,.22), transparent 70%); }
+.hero h1 em { color: var(--berry); }
+.eyebrow { display: inline-block; background: var(--sun-l); color: #8a5a00; padding: 5px 12px; border-radius: 999px; border: 1px dashed var(--sun); }
+.poster { background: linear-gradient(150deg, var(--ink) 0%, #1d3f86 55%, var(--grape) 120%); }
+.poster::before { content: ""; position: absolute; left: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(246,180,34,.55), transparent 70%); }
+.poster::after { background: radial-gradient(circle, var(--bubble), transparent 70%); }
+
+/* Quick filters and tags in cheerful colors */
+.filters .filter:nth-child(5n+1) { background: var(--sky-l); border-color: #b8dcf3; }
+.filters .filter:nth-child(5n+2) { background: var(--sun-l); border-color: #f5dc96; }
+.filters .filter:nth-child(5n+3) { background: var(--leaf-l); border-color: #b6e2c8; }
+.filters .filter:nth-child(5n+4) { background: var(--berry-l); border-color: #f5c1bb; }
+.filters .filter:nth-child(5n+5) { background: var(--grape-l); border-color: #d8c8f1; }
+.filters .filter.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip.tag:nth-child(4n+1) { background: var(--sky-l); color: #12577f; }
+.chip.tag:nth-child(4n+2) { background: var(--leaf-l); color: #1d6b40; }
+.chip.tag:nth-child(4n+3) { background: var(--grape-l); color: #55358e; }
+.chip.tag:nth-child(4n+4) { background: var(--sun-l); color: #7a5200; }
+
+/* Cards get a colored top edge, cycling through the palette */
+.card { border-top: 5px solid var(--sky); transition: transform .18s ease, box-shadow .18s ease; }
+.card:hover { transform: translateY(-3px) rotate(-.3deg); box-shadow: 0 16px 36px rgba(20,40,90,.14); }
+:is(.grid-3, .grid-4) > :nth-child(5n+1) .card, :is(.grid-3, .grid-4) > .card:nth-child(5n+1) { border-top-color: var(--sky); }
+:is(.grid-3, .grid-4) > :nth-child(5n+2) .card, :is(.grid-3, .grid-4) > .card:nth-child(5n+2) { border-top-color: var(--sun); }
+:is(.grid-3, .grid-4) > :nth-child(5n+3) .card, :is(.grid-3, .grid-4) > .card:nth-child(5n+3) { border-top-color: var(--leaf); }
+:is(.grid-3, .grid-4) > :nth-child(5n+4) .card, :is(.grid-3, .grid-4) > .card:nth-child(5n+4) { border-top-color: var(--berry); }
+:is(.grid-3, .grid-4) > :nth-child(5n+5) .card, :is(.grid-3, .grid-4) > .card:nth-child(5n+5) { border-top-color: var(--grape); }
+
+/* Numbered steps as bright circles */
+.steps .step:nth-child(4n+1) .step-n, .step-n { background: var(--sky); }
+.steps .step:nth-child(4n+2) .step-n { background: var(--leaf); }
+.steps .step:nth-child(4n+3) .step-n { background: var(--sun); color: var(--ink); }
+.steps .step:nth-child(4n+4) .step-n { background: var(--berry); }
+
+/* Stats and dashboard KPIs */
+.stats > div:nth-child(1) b, .kpis > :nth-child(4n+1) b { color: var(--sky); }
+.stats > div:nth-child(2) b, .kpis > :nth-child(4n+2) b { color: var(--leaf); }
+.stats > div:nth-child(3) b, .kpis > :nth-child(4n+3) b { color: var(--berry); }
+.stats > div:nth-child(4) b, .kpis > :nth-child(4n+4) b { color: var(--grape); }
+.kpi { border-top: 4px solid var(--sky); }
+.kpis > :nth-child(4n+2).kpi { border-top-color: var(--leaf); }
+.kpis > :nth-child(4n+3).kpi { border-top-color: var(--sun); }
+.kpis > :nth-child(4n+4).kpi { border-top-color: var(--grape); }
+
+/* Section bands alternate soft sky / sunshine */
+.band { background: linear-gradient(180deg, var(--sun-l), #fffaf0); border-block: 0; }
+.pad.band + .pad .sec-head h2::after, .sec-head h2::after {
+  content: ""; display: block; width: 64px; height: 6px; margin-top: 8px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--berry), var(--sun), var(--leaf), var(--sky));
+}
+
+/* Payment choice and purchase order form */
+.pay-method { border: 0; display: grid; gap: 8px; }
+.pay-method legend { font-weight: 600; font-size: .88rem; margin-bottom: 6px; }
+.pay-opt { display: flex; gap: 10px; align-items: center; border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 12px; cursor: pointer; background: #fff; }
+.pay-opt.on { border-color: var(--sky); background: var(--sky-l); }
+.pay-opt small { display: block; color: var(--mute); font-size: .75rem; }
+.po-fields { border-left: 4px solid var(--sky); padding-left: 14px; margin: 6px 0 16px; }
+.invoice-stamp.due { border-color: var(--sun); color: #8a5a00; }
+.invoice-remit { margin-top: 22px; padding: 14px 16px; border-radius: 12px; background: var(--sun-l); border: 1px dashed var(--sun); font-size: .9rem; }
+
+@media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
+@media print { .topbar::after, footer.site::before { display: none; } }

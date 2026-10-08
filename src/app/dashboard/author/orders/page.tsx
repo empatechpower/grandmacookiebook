@@ -12,7 +12,7 @@ export default async function AuthorOrders() {
   const items = await db.orderItem.findMany({
     where: { authorId: user.id, status: { notIn: ["PENDING", "CANCELLED"] } },
     include: {
-      order: { include: { buyer: { select: { name: true, email: true, phone: true, orgName: true } } } },
+      order: { include: { buyer: { select: { name: true, email: true, phone: true, orgName: true } }, purchaseOrder: { select: { status: true } } } },
       issues: { where: { status: "OPEN" }, select: { id: true } },
     },
     orderBy: { order: { createdAt: "desc" } },

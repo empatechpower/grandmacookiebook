@@ -13,7 +13,7 @@ export default async function Opportunities() {
   const [open, mine] = await Promise.all([
     db.rfp.findMany({
       where: { status: "OPEN", deadline: { gte: fromDayKey(todayKey()) } },
-      include: { buyer: { select: { orgName: true, orgType: true, name: true } }, bids: { where: { authorId: user.id }, select: { status: true } }, _count: { select: { bids: true } } },
+      include: { buyer: { select: { orgName: true, orgType: true, name: true } }, bids: { where: { authorId: user.id }, select: { status: true, fee: true } }, _count: { select: { bids: true } } },
       orderBy: { deadline: "asc" },
     }),
     db.bid.findMany({ where: { authorId: user.id }, include: { rfp: true }, orderBy: { createdAt: "desc" }, take: 50 }),
@@ -25,9 +25,9 @@ export default async function Opportunities() {
     <>
       <PageHead title="Opportunities" sub="Schools and organizations post what they need. Send a proposal with your fee — if they accept, it becomes a booking." />
       {(user.status !== "ACTIVE" || !user.payoutsReady) && (
-        <div className="alert alert-info">You can browse requests now; bidding opens once your account is approved and Stripe is connected.</div>
+        <div className="alert alert-info">You can browse requests now; submitting proposals opens once your account is approved and Stripe is connected.</div>
       )}
-      <Table heads={["Request", "From", "Event", "Budget", "Bids close", ""]} empty="No open requests right now. You'll be emailed when a matching one is posted.">
+      <Table heads={["Request", "From", "Event", "Fee", "Proposals due", ""]} empty="No open requests right now. You'll be emailed when a matching one is posted.">
         {sorted.map((r) => (
           <tr key={r.id}>
             <td>
@@ -39,17 +39,18 @@ export default async function Opportunities() {
             </td>
             <td>{r.buyer.orgName || r.buyer.name}<div className="muted" style={{ fontSize: ".78rem" }}>{orgTypeLabel(r.buyer.orgType)}</div></td>
             <td>{fmtDate(r.eventDate)}{r.location && <div className="muted" style={{ fontSize: ".78rem" }}>{r.location}</div>}</td>
-            <td>{r.budgetMax ? `Up to ${money(r.budgetMax)}` : "Open"}</td>
-            <td>{fmtDate(r.deadline)}<div className="muted" style={{ fontSize: ".78rem" }}>{r._count.bids} bid{r._count.bids === 1 ? "" : "s"}</div></td>
+            {/* Authors see only the fee they're charging, not the organizer's budget. */}
+            <td>{r.bids[0] && r.bids[0].status !== "WITHDRAWN" ? money(r.bids[0].fee) : "—"}</td>
+            <td>{fmtDate(r.deadline)}<div className="muted" style={{ fontSize: ".78rem" }}>{r._count.bids} proposal{r._count.bids === 1 ? "" : "s"}</div></td>
             <td>
-              {r.bids[0] ? <Badge status={r.bids[0].status} /> : <Link className="btn btn-terra btn-sm" href={`/dashboard/author/opportunities/${r.id}`}>Bid</Link>}
+              {r.bids[0] ? <Badge status={r.bids[0].status} /> : <Link className="btn btn-terra btn-sm" href={`/dashboard/author/opportunities/${r.id}`}>Submit Proposal</Link>}
             </td>
           </tr>
         ))}
       </Table>
       {mine.length > 0 && (
         <>
-          <h3 className="h2-sm">Your bids</h3>
+          <h3 className="h2-sm">Your proposals</h3>
           <Table heads={["Request", "Event", "Your fee", "Status"]}>
             {mine.map((b) => (
               <tr key={b.id}>

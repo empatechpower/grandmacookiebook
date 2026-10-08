@@ -29,7 +29,7 @@ async function deliver(email: Email) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.EMAIL_FROM ?? "South Texas Book & Author <onboarding@resend.dev>", to: email.to, subject: email.subject, text, html }),
+    body: JSON.stringify({ from: process.env.EMAIL_FROM ?? "South Texas Book & Author <info@southtexasbookanauthor.com>", to: email.to, subject: email.subject, text, html }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }

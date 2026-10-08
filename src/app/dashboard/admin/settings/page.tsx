@@ -49,6 +49,11 @@ export default async function Settings() {
             <input id="cn" name="cancelNoticeDays" type="number" min={0} max={60} defaultValue={s.cancelNoticeDays} />
             <div className="hint">Buyers who cancel a paid booking with less notice than this aren’t refunded; the author is paid.</div>
           </div>
+          <div className="field">
+            <label htmlFor="po">Purchase order payment terms (days)</label>
+            <input id="po" name="poTermsDays" type="number" min={0} max={120} defaultValue={s.poTermsDays} />
+            <div className="hint">Invoices for approved purchase orders are due this many days later (30 = Net 30).</div>
+          </div>
           <SubmitButton>Save schedule</SubmitButton>
         </form>
         <form action={inviteAdmin} className="panel">

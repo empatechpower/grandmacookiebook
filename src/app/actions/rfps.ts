@@ -35,7 +35,7 @@ export async function createRfp(fd: FormData) {
   const eventKey = str(fd, "eventDate");
   const deadlineKey = str(fd, "deadline");
   if (!isDayKey(eventKey) || eventKey <= todayKey()) return fail("Pick an event date in the future");
-  if (!isDayKey(deadlineKey) || deadlineKey < todayKey() || deadlineKey >= eventKey) return fail("Bids must close before the event date");
+  if (!isDayKey(deadlineKey) || deadlineKey < todayKey() || deadlineKey >= eventKey) return fail("Proposals must be due before the event date");
   if (p.data.format === "IN_PERSON" && !p.data.location) return fail("Add a location for in-person events");
   const rfp = await db.rfp.create({
     data: {
@@ -50,7 +50,7 @@ export async function createRfp(fd: FormData) {
     },
   });
   const invited = await notify.rfpPosted(rfp.id);
-  await done(`Request posted — ${invited} matching author${invited === 1 ? "" : "s"} invited to bid`, `/dashboard/buyer/requests/${rfp.id}`);
+  await done(`Request posted — ${invited} matching author${invited === 1 ? "" : "s"} invited to send proposals`, `/dashboard/buyer/requests/${rfp.id}`);
 }
 
 export async function closeRfp(fd: FormData) {
@@ -62,9 +62,9 @@ export async function closeRfp(fd: FormData) {
 /** Authors bid with one of their live packages; one bid per request, editable until decided. */
 export async function submitBid(fd: FormData) {
   const user = await requireUser("AUTHOR");
-  if (user.status !== "ACTIVE" || !user.payoutsReady) return fail("Your account must be approved and connected to Stripe before bidding");
+  if (user.status !== "ACTIVE" || !user.payoutsReady) return fail("Your account must be approved and connected to Stripe before submitting proposals");
   const rfp = await db.rfp.findFirst({ where: { id: str(fd, "rfpId"), status: "OPEN", deadline: { gte: fromDayKey(todayKey()) } } });
-  if (!rfp) return fail("This request is no longer accepting bids");
+  if (!rfp) return fail("This request is no longer accepting proposals");
   const pkg = await db.visitPackage.findFirst({ where: { id: str(fd, "packageId"), authorId: user.id, status: "APPROVED" } });
   if (!pkg) return fail("Choose one of your live visit packages");
   const fee = toCents(fd.get("fee"));
@@ -72,20 +72,20 @@ export async function submitBid(fd: FormData) {
   if (fee < 100) return fail("Enter your fee");
   if (message.length < 20) return fail("Tell the organizer what you'd do (20+ characters)");
   const existing = await db.bid.findUnique({ where: { rfpId_authorId: { rfpId: rfp.id, authorId: user.id } } });
-  if (existing && existing.status !== "PENDING" && existing.status !== "WITHDRAWN") return fail("This bid has already been decided");
+  if (existing && existing.status !== "PENDING" && existing.status !== "WITHDRAWN") return fail("This proposal has already been decided");
   const bid = await db.bid.upsert({
     where: { rfpId_authorId: { rfpId: rfp.id, authorId: user.id } },
     update: { packageId: pkg.id, fee, message, status: "PENDING" },
     create: { rfpId: rfp.id, authorId: user.id, packageId: pkg.id, fee, message },
   });
   if (!existing || existing.status === "WITHDRAWN") await notify.bidReceived(bid.id);
-  await done(existing && existing.status === "PENDING" ? "Bid updated" : "Bid sent — the organizer has been notified");
+  await done(existing && existing.status === "PENDING" ? "Proposal updated" : "Proposal submitted — the organizer has been notified");
 }
 
 export async function withdrawBid(fd: FormData) {
   const user = await requireUser("AUTHOR");
   const r = await db.bid.updateMany({ where: { id: str(fd, "id"), authorId: user.id, status: "PENDING" }, data: { status: "WITHDRAWN" } });
-  await done(r.count ? "Bid withdrawn" : "This bid can't be withdrawn");
+  await done(r.count ? "Proposal withdrawn" : "This proposal can't be withdrawn");
 }
 
 /** Accepting a bid turns it into an accepted booking at the bid price; other bids are declined. */
@@ -95,9 +95,9 @@ export async function acceptBid(fd: FormData) {
     where: { id: str(fd, "id"), status: "PENDING", rfp: { buyerId: user.id, status: "OPEN" } },
     include: { rfp: true, package: true },
   });
-  if (!bid) return fail("This bid is no longer available");
+  if (!bid) return fail("This proposal is no longer available");
   const clash = await db.booking.count({ where: { authorId: bid.authorId, eventDate: bid.rfp.eventDate, status: { in: ["ACCEPTED", "CONFIRMED"] } } });
-  if (clash) return fail("This author has since been booked on that date — message them or choose another bid");
+  if (clash) return fail("This author has since been booked on that date — message them or choose another proposal");
   const { visitCommissionPct } = await getSettings();
   const others = await db.bid.findMany({ where: { rfpId: bid.rfpId, status: "PENDING", id: { not: bid.id } }, select: { id: true } });
   const booking = await db.$transaction(async (tx) => {
@@ -124,7 +124,7 @@ export async function acceptBid(fd: FormData) {
   });
   await notify.bidDecided(bid.id);
   for (const o of others) await notify.bidDecided(o.id);
-  await done(`Bid accepted — booking B-${booking.number} created. Pay to confirm the date.`);
+  await done(`Proposal accepted — booking B-${booking.number} created. Pay to confirm the date.`);
   redirect("/dashboard/buyer/bookings");
 }
 
@@ -134,5 +134,5 @@ export async function declineBid(fd: FormData) {
   if (!bid) return fail("Already decided");
   await db.bid.update({ where: { id: bid.id }, data: { status: "DECLINED" } });
   await notify.bidDecided(bid.id);
-  await done("Bid declined");
+  await done("Proposal declined");
 }

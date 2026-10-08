@@ -14,6 +14,8 @@ export const DEFAULT_SETTINGS = {
   bulkTier1Pct: 20,
   bulkTier2Min: 25,
   bulkTier2Pct: 30,
+  // Purchase orders: invoices are due this many days after the PO is approved (Net 30).
+  poTermsDays: 30,
 };
 export type Settings = typeof DEFAULT_SETTINGS;
 

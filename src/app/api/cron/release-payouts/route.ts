@@ -1,4 +1,5 @@
 import { releaseDue } from "@/lib/fulfillment";
+import { backfillAuthorSlugs } from "@/lib/slugs";
 
 /**
  * Releases held author payouts whose 14-day hold has ended. Call daily with
@@ -9,5 +10,6 @@ export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return new Response("Unauthorized", { status: 401 });
   const released = await releaseDue();
-  return Response.json({ ok: true, released });
+  const storefrontLinks = await backfillAuthorSlugs();
+  return Response.json({ ok: true, released, storefrontLinks });
 }

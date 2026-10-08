@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { categoryLabel, formatLabel } from "@/lib/constants";
 import { money } from "@/lib/money";
 import { addToCart } from "@/app/actions/shop";
@@ -12,7 +13,7 @@ type BookCardData = {
   category: string;
   coverUrl: string | null;
   stock: number;
-  author: { id: string; name: string };
+  author: { id: string; name: string; slug?: string | null };
   bulkEnabled?: boolean;
   featured?: boolean;
 };
@@ -42,7 +43,7 @@ export function BookCard({ b }: { b: BookCardData }) {
               {b.stock < 1 ? "Sold out" : "Buy"}
             </SubmitButton>
           </form>
-          <Link className="btn btn-ghost" href={`/authors/${b.author.id}`}>
+          <Link className="btn btn-ghost" href={authorPath(b.author)}>
             Book author
           </Link>
         </div>
@@ -58,7 +59,7 @@ type VisitCardData = {
   durationMins: number;
   fee: number;
   region: string | null;
-  author: { id: string; name: string };
+  author: { id: string; name: string; slug?: string | null };
 };
 
 export function VisitCard({ v }: { v: VisitCardData }) {
@@ -72,7 +73,7 @@ export function VisitCard({ v }: { v: VisitCardData }) {
           <Link href={`/visits/${v.id}`}>{v.title}</Link>
         </h3>
         <p>
-          <Link href={`/authors/${v.author.id}`}>{v.author.name}</Link>
+          <Link href={authorPath(v.author)}>{v.author.name}</Link>
         </p>
         {v.region && <p className="muted" style={{ fontSize: ".85rem" }}>{v.region}</p>}
         <div className="price" style={{ marginTop: 8 }}>

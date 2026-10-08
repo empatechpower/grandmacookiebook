@@ -37,3 +37,7 @@ export function videoEmbedUrl(url: string) {
   } catch {}
   return null;
 }
+
+/** Base slug from a name: "Dr. Jane O'Neil" → "dr-jane-o-neil". */
+export const slugFromName = (name: string) =>
+  name.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "author";

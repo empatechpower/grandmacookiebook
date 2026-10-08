@@ -6,13 +6,15 @@ import { trackingUrl } from "@/lib/shipping";
 import { markReceived } from "@/app/actions/shop";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
+import { PO_STATUS_LABEL } from "@/lib/purchaseOrders";
 
 export default async function BuyerOrders() {
   const user = await requireUser("BUYER");
   const orders = await db.order.findMany({
     where: { buyerId: user.id },
     include: {
-      invoice: { select: { id: true, number: true } },
+      invoice: { select: { id: true, number: true, dueAt: true } },
+      purchaseOrder: { select: { poNumber: true, status: true, adminNote: true } },
       items: {
         include: {
           author: { select: { name: true } },
@@ -38,6 +40,11 @@ export default async function BuyerOrders() {
                   <>
                     O-{o.number}
                     {o.invoice && <div><Link href={`/invoices/${o.invoice.id}`} style={{ fontSize: ".78rem", textDecoration: "underline" }}>Invoice INV-{o.invoice.number}</Link></div>}
+                    {o.purchaseOrder && (
+                      <div className="muted" style={{ fontSize: ".78rem" }} title={o.purchaseOrder.adminNote ?? undefined}>
+                        PO {o.purchaseOrder.poNumber} · {o.purchaseOrder.status === "APPROVED" && o.invoice?.dueAt ? `Invoice due ${fmtDate(o.invoice.dueAt)}` : PO_STATUS_LABEL[o.purchaseOrder.status]}
+                      </div>
+                    )}
                   </>
                 )}
               </td>
@@ -47,7 +54,7 @@ export default async function BuyerOrders() {
               <td>{i.qty}</td>
               <td>{money(i.unitPrice * i.qty)}</td>
               <td>
-                <Badge status={i.status} />
+                {o.purchaseOrder && o.purchaseOrder.status !== "PAID" && i.status === "PAID" ? <span className="badge b-ok">Confirmed</span> : <Badge status={i.status} />}
                 {i.trackingNumber && (
                   <div style={{ fontSize: ".78rem", marginTop: 4 }}>
                     {trackingUrl(i.carrier, i.trackingNumber) ? (

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { statusBadge, statusLabel } from "@/lib/constants";
 
 export function Badge({ status }: { status: string }) {
@@ -58,8 +59,8 @@ export const Initials = ({ name }: { name: string }) => (
   <div className="avatar">{name.split(" ").map((p) => p[0]).slice(0, 2).join("")}</div>
 );
 
-export const AuthorLink = ({ id, name }: { id: string; name: string }) => (
-  <Link href={`/authors/${id}`} style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>
+export const AuthorLink = ({ id, name, slug }: { id: string; name: string; slug?: string | null }) => (
+  <Link href={authorPath({ id, slug })} style={{ textDecoration: "underline", textUnderlineOffset: 3 }}>
     {name}
   </Link>
 );

@@ -8,6 +8,8 @@ import { saveSettings } from "@/lib/settings";
 import { releaseBooking, releaseDue, releaseItem } from "@/lib/fulfillment";
 import { cancelBooking, refundItem } from "@/lib/refunds";
 import * as notify from "@/lib/notify";
+import { ensureAuthorSlug } from "@/lib/slugs";
+import { approvePo, markPoPaid, rejectPo } from "@/lib/purchaseOrders";
 
 export async function setUserStatus(fd: FormData) {
   const admin = await requireUser("ADMIN");
@@ -17,6 +19,7 @@ export async function setUserStatus(fd: FormData) {
   if (id === admin.id) return fail("You can't change your own status");
   const before = await db.user.findUnique({ where: { id }, select: { status: true } });
   const u = await db.user.update({ where: { id }, data: { status } });
+  if (u.role === "AUTHOR") await ensureAuthorSlug(u);
   if (u.role === "AUTHOR" && before?.status === "PENDING" && status === "ACTIVE") await notify.authorApproved(u);
   await done(status === "SUSPENDED" ? `${u.name} suspended` : `${u.name} is active`);
 }
@@ -84,7 +87,9 @@ export async function saveFees(fd: FormData) {
   const tiers = { bulkTier1Min: int(fd, "bulkTier1Min"), bulkTier1Pct: int(fd, "bulkTier1Pct"), bulkTier2Min: int(fd, "bulkTier2Min"), bulkTier2Pct: int(fd, "bulkTier2Pct") };
   if (tiers.bulkTier1Min < 2 || tiers.bulkTier2Min <= tiers.bulkTier1Min) return fail("Tier 2 must start at more copies than tier 1 (and tier 1 at 2 or more)");
   if ([tiers.bulkTier1Pct, tiers.bulkTier2Pct].some((p) => p < 0 || p > 90)) return fail("Discounts must be between 0 and 90%");
-  await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths, cancelNoticeDays, ...tiers });
+  const poTermsDays = int(fd, "poTermsDays");
+  if (poTermsDays < 0 || poTermsDays > 120) return fail("Purchase order terms must be 0–120 days");
+  await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths, cancelNoticeDays, ...tiers, poTermsDays });
   await done("Fee schedule saved — applies to new orders and bookings");
 }
 
@@ -103,4 +108,22 @@ export async function inviteAdmin(fd: FormData) {
     data: { name: p.data.name, email: p.data.email, role: "ADMIN", passwordHash: await bcrypt.hash(p.data.password, 10) },
   });
   await done(`${p.data.name} added as super admin`);
+}
+
+// ---------- Purchase orders ----------
+
+export async function reviewPurchaseOrder(fd: FormData) {
+  await requireUser("ADMIN");
+  const id = str(fd, "id");
+  const approve = str(fd, "decision") === "approve";
+  const r = approve ? await approvePo(id) : await rejectPo(id, str(fd, "note").slice(0, 300) || null);
+  if (!r.ok) return fail(r.error);
+  await done(approve ? "PO approved — the order is confirmed and the invoice was emailed" : "PO rejected — the customer has been told");
+}
+
+export async function markPurchaseOrderPaid(fd: FormData) {
+  await requireUser("ADMIN");
+  const r = await markPoPaid(str(fd, "id"), str(fd, "note").slice(0, 200) || null);
+  if (!r.ok) return fail(r.error);
+  await done("Invoice marked paid — author payouts are on their way");
 }

@@ -6,7 +6,7 @@ import { db } from "./db";
  * onboarding (otherwise we could take a buyer's money with nowhere to send the author's share).
  */
 export const liveWhere = { status: "APPROVED", author: { status: "ACTIVE", payoutsReady: true } } as const;
-export const authorSelect = { select: { id: true, name: true } } as const;
+export const authorSelect = { select: { id: true, name: true, slug: true } } as const;
 
 const text = (v: string) => ({ contains: v, mode: "insensitive" as const });
 const titleOrAuthor = (q?: string) =>

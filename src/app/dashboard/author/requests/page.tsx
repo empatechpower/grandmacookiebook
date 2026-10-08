@@ -18,6 +18,7 @@ export default async function Requests() {
       package: true,
       buyer: { select: { id: true, name: true, email: true, orgType: true } },
       issues: { where: { status: "OPEN" }, select: { id: true } },
+      purchaseOrder: { select: { status: true } },
     },
     orderBy: [{ status: "desc" }, { eventDate: "asc" }],
   });

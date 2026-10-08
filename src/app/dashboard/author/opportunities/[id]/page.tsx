@@ -35,19 +35,19 @@ export default async function Opportunity({ params }: { params: Promise<{ id: st
             <dt>Audience</dt><dd>{r.audience} (about {r.audienceSize})</dd>
             {r.topic && (<><dt>Topic</dt><dd>{labelsFor(TOPICS, [r.topic])}</dd></>)}
             {r.grade && (<><dt>Grade level</dt><dd>{labelsFor(GRADES, [r.grade])}</dd></>)}
-            <dt>Budget</dt><dd>{r.budgetMax ? `Up to ${money(r.budgetMax)}` : "Not specified"}</dd>
-            <dt>Bids close</dt><dd>{fmtDate(r.deadline)} · {r._count.bids} bid{r._count.bids === 1 ? "" : "s"} so far</dd>
+            {bid && bid.status !== "WITHDRAWN" && (<><dt>Fee</dt><dd>{money(bid.fee)}</dd></>)}
+            <dt>Proposals due</dt><dd>{fmtDate(r.deadline)} · {r._count.bids} proposal{r._count.bids === 1 ? "" : "s"} so far</dd>
           </dl>
           <p style={{ marginTop: 14, whiteSpace: "pre-wrap" }}>{r.description}</p>
         </div>
         <div className="panel">
           <div className="split" style={{ marginBottom: 12 }}>
-            <h3>{bid && bid.status !== "WITHDRAWN" ? "Your bid" : "Send a proposal"}</h3>
+            <h3>{bid && bid.status !== "WITHDRAWN" ? "Your proposal" : "Submit a proposal"}</h3>
             {bid && <Badge status={bid.status} />}
           </div>
           {bid?.status === "ACCEPTED" && <div className="alert alert-ok">Accepted! It’s now a booking — see <Link href="/dashboard/author/requests" style={{ textDecoration: "underline" }}>Booking requests</Link>.</div>}
           {bid?.status === "DECLINED" && <div className="alert alert-info">The organizer chose another proposal this time.</div>}
-          {packages.length === 0 && <div className="alert alert-info">You need a live visit package to bid. <Link href="/dashboard/author/visits/new" style={{ textDecoration: "underline" }}>Create one</Link>.</div>}
+          {packages.length === 0 && <div className="alert alert-info">You need a live listing to submit a proposal. <Link href="/dashboard/author/visits/new" style={{ textDecoration: "underline" }}>Create one</Link>.</div>}
           {canBid ? (
             <form action={submitBid}>
               <input type="hidden" name="rfpId" value={r.id} />
@@ -58,15 +58,15 @@ export default async function Opportunity({ params }: { params: Promise<{ id: st
                 </select>
               </div>
               <div className="field">
-                <label htmlFor="fee">Your fee for this event (USD)</label>
+                <label htmlFor="fee">Fee ($)</label>
                 <input id="fee" name="fee" type="number" min={1} step="0.01" required defaultValue={bid ? bid.fee / 100 : packages[0] ? packages[0].fee / 100 : ""} />
-                <div className="hint">Include any travel. {r.budgetMax ? `Their budget is up to ${money(r.budgetMax)}.` : ""}</div>
+                <div className="hint">The fee you’re charging, including any travel.</div>
               </div>
               <div className="field">
                 <label htmlFor="message">Your pitch</label>
                 <textarea id="message" name="message" required minLength={20} defaultValue={bid?.status === "PENDING" ? bid.message : ""} placeholder="What you'd do for this audience, and why you're a good fit." />
               </div>
-              <SubmitButton className="btn btn-terra">{bid?.status === "PENDING" ? "Update bid" : "Send bid"}</SubmitButton>
+              <SubmitButton className="btn btn-terra">{bid?.status === "PENDING" ? "Update Proposal" : "Submit Proposal"}</SubmitButton>
             </form>
           ) : (
             bid && (
@@ -79,10 +79,10 @@ export default async function Opportunity({ params }: { params: Promise<{ id: st
           {bid?.status === "PENDING" && (
             <form action={withdrawBid} style={{ marginTop: 10 }}>
               <input type="hidden" name="id" value={bid.id} />
-              <SubmitButton className="btn btn-ghost btn-sm" confirm="Withdraw your bid?">Withdraw bid</SubmitButton>
+              <SubmitButton className="btn btn-ghost btn-sm" confirm="Withdraw your proposal?">Withdraw proposal</SubmitButton>
             </form>
           )}
-          {!open && !bid && <p className="muted">Bidding has closed for this request.</p>}
+          {!open && !bid && <p className="muted">Proposals are closed for this request.</p>}
         </div>
       </div>
     </>

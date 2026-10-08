@@ -6,6 +6,7 @@ const img = (id: string) => `https://images.unsplash.com/${id}?w=600&h=400&fit=c
 
 async function main() {
   // Wipe in dependency order so the seed is re-runnable.
+  await db.purchaseOrder.deleteMany();
   await db.booking.deleteMany();
   await db.orderItem.deleteMany();
   await db.order.deleteMany();
@@ -312,7 +313,7 @@ async function main() {
   // An open request for proposals with one bid.
   const rfp = await db.rfp.create({
     data: {
-      buyerId: school.id, title: "Author assembly for Reading Week", format: "ANY", audience: "Grades 3–5 assembly", audienceSize: 220,
+      buyerId: school.id, title: "Author Visit", format: "ANY", audience: "Grades 3–5 assembly", audienceSize: 220,
       description: "We'd love an energetic author to kick off Reading Week with an assembly and a short Q&A. Themes around kindness or curiosity are a bonus.",
       eventDate: soon(40), deadline: soon(20), grade: "g35", budgetMax: 70000, location: "Edinburg, TX",
     },
@@ -352,6 +353,33 @@ async function main() {
   for (const b of await db.booking.findMany({ where: { paymentRef: { not: null } }, orderBy: { number: "asc" } })) {
     await db.invoice.create({ data: { bookingId: b.id, total: b.fee, issuedAt: b.createdAt } });
   }
+
+  // Purchase orders from St. Cloud Elementary: one approved with its Net 30 invoice due, one waiting for review.
+  const poOrder = async (title: string, qty: number, po: string, approvedDaysAgo: number | null) => {
+    const b = await db.book.findUniqueOrThrow({ where: { id: bookIds[title] } });
+    const approved = approvedDaysAgo !== null;
+    const approvedAt = approved ? soon(-approvedDaysAgo) : null;
+    const o = await db.order.create({
+      data: {
+        buyerId: school.id,
+        total: b.price * qty,
+        shippingAddress: "St. Cloud Elementary, 2400 W Nolana Ave, McAllen, TX 78504",
+        phone: "(956) 555-0188",
+        status: approved ? "PAID" : "PENDING",
+        items: { create: [{ bookId: b.id, authorId: b.authorId, title: b.title, unitPrice: b.price, qty, commissionPct: 5, status: approved ? "PAID" : "PENDING" }] },
+        purchaseOrder: {
+          create: {
+            buyerId: school.id, poNumber: po, billingName: "Linda Garza, Accounts Payable", billingEmail: "ap@stcloud.example.org", billingPhone: "(956) 555-0101",
+            billingAddress: "McAllen ISD — Accounts Payable\n2000 N 23rd St\nMcAllen, TX 78501", amount: b.price * qty, termsDays: 30,
+            status: approved ? "APPROVED" : "PENDING", approvedAt,
+          },
+        },
+      },
+    });
+    if (approved) await db.invoice.create({ data: { orderId: o.id, total: o.total, status: "DUE", issuedAt: approvedAt!, dueAt: soon(30 - approvedDaysAgo) } });
+  };
+  await poOrder("The Empathy Effect", 25, "4500012345", 7);
+  await poOrder("Horse Country Tales", 30, "4500012399", null);
 
   await db.setting.createMany({
     data: [

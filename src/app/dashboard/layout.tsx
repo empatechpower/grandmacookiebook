@@ -15,7 +15,7 @@ const NAV: Record<string, { label: string; links: NavLink[] }> = {
       ["/dashboard/buyer", "Overview"],
       ["#activity", "Activity"],
       ["/dashboard/buyer/bookings", "My bookings"],
-      ["/dashboard/buyer/requests", "Requests & bids"],
+      ["/dashboard/buyer/requests", "Requests & proposals"],
       ["/dashboard/buyer/orders", "Orders"],
       ["/dashboard/messages", "Messages"],
       ["#account", "Account"],
@@ -58,6 +58,7 @@ const NAV: Record<string, { label: string; links: NavLink[] }> = {
       ["/dashboard/admin/articles", "News & events"],
       ["/dashboard/admin/inbox", "Contact inbox"],
       ["#money", "Money & settings"],
+      ["/dashboard/admin/purchase-orders", "Purchase orders"],
       ["/dashboard/admin/invoices", "Invoices"],
       ["/dashboard/admin/referrals", "Referrals"],
       ["/dashboard/admin/settings", "Fees & admins"],
@@ -82,7 +83,7 @@ export default async function DashLayout({ children }: { children: React.ReactNo
       <aside className="side">
         <Link className="mark side-brand" href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="mark-logo" src={BRAND.logo} alt="" width={40} height={40} />
+          <img className="mark-logo" src={BRAND.logo} alt="" width={60} height={60} />
           <b>{BRAND.name}</b>
         </Link>
         <div className="side-user">

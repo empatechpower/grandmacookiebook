@@ -8,7 +8,7 @@ import { TransferCell } from "@/components/TransferCell";
 
 export default async function AdminBookings() {
   const bookings = await db.booking.findMany({
-    include: { package: true, buyer: { select: { name: true } }, author: { select: { name: true } } },
+    include: { package: true, buyer: { select: { name: true } }, author: { select: { name: true } }, purchaseOrder: { select: { status: true } } },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
@@ -26,7 +26,7 @@ export default async function AdminBookings() {
             <td>{money(b.fee)}</td>
             <td><Badge status={b.status} /></td>
             <td>
-              <TransferCell kind="booking" id={b.id} transferId={b.transferId} transferError={b.transferError} releaseAt={b.releaseAt} paid={["CONFIRMED", "COMPLETED"].includes(b.status)} />
+              <TransferCell kind="booking" id={b.id} transferId={b.transferId} transferError={b.transferError} releaseAt={b.releaseAt} paid={["CONFIRMED", "COMPLETED"].includes(b.status)} awaitingPo={!!b.purchaseOrder && b.purchaseOrder.status !== "PAID"} />
             </td>
             <td>
               {!["CANCELLED", "DECLINED", "COMPLETED"].includes(b.status) && (

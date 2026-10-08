@@ -2,12 +2,14 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { appUrl } from "@/lib/url";
 import { authorPath } from "@/lib/storefront";
+import { ensureAuthorSlug } from "@/lib/slugs";
 import { PageHead } from "@/components/ui";
 import { ProfileForm } from "@/components/ProfileForm";
 import { CopyLink } from "@/components/CopyLink";
 
 export default async function Storefront() {
   const user = await requireUser("AUTHOR");
+  user.slug = (await ensureAuthorSlug(user)) ?? user.slug;
   const url = `${await appUrl()}${authorPath(user)}`;
   const live = user.status === "ACTIVE" && user.payoutsReady;
   return (

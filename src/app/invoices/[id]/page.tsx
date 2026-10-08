@@ -41,6 +41,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const refunded = lines.filter((l) => l.refunded).reduce((s, l) => s + l.unit * l.qty, 0);
   const ref = inv.order ? `Order O-${inv.order.number}` : `Booking B-${inv.booking!.number}`;
   const paymentRef = inv.order?.paymentRef ?? inv.booking?.paymentRef;
+  const po = inv.order?.purchaseOrder ?? inv.booking?.purchaseOrder ?? null;
+  const overdue = inv.status === "DUE" && inv.dueAt && inv.dueAt < new Date();
+  const stamp = refunded >= total ? "REFUNDED" : overdue ? "OVERDUE" : inv.status;
 
   return (
     <section className="pad">
@@ -64,6 +67,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <b>{invoiceNo(inv.number)}</b>
               <div className="muted">Issued {fmtDate(inv.issuedAt)}</div>
               <div className="muted">{ref}</div>
+              {po && <div className="muted">PO {po.poNumber}</div>}
+              {inv.dueAt && inv.status === "DUE" && <div><b>Due {fmtDate(inv.dueAt)}</b> <span className="muted">(Net {po?.termsDays ?? 30})</span></div>}
             </div>
           </header>
 
@@ -71,9 +76,18 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <div>
               <div className="meta">Bill to</div>
               <b>{buyer.orgName || buyer.name}</b>
+              {po && (
+                <>
+                  <div>Attn: {po.billingName}</div>
+                  <div style={{ whiteSpace: "pre-wrap" }}>{po.billingAddress}</div>
+                  <div>{po.billingEmail}{po.billingPhone ? ` · ${po.billingPhone}` : ""}</div>
+                </>
+              )}
+              {!po && <>
               {buyer.orgName && <div>{buyer.name}{orgTypeLabel(buyer.orgType) ? ` · ${orgTypeLabel(buyer.orgType)}` : ""}</div>}
               <div>{buyer.email}</div>
               {(inv.order?.phone || buyer.phone) && <div>{inv.order?.phone || buyer.phone}</div>}
+              </>}
             </div>
             {inv.order && (
               <div>
@@ -83,8 +97,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             )}
             <div>
               <div className="meta">Status</div>
-              <span className={`invoice-stamp ${refunded >= total ? "void" : ""}`}>{refunded >= total ? "REFUNDED" : inv.status}</span>
+              <span className={`invoice-stamp ${refunded >= total || inv.status === "VOID" || overdue ? "void" : inv.status === "DUE" ? "due" : ""}`}>{stamp}</span>
               {paymentRef && <div className="muted" style={{ fontSize: ".8rem", marginTop: 6 }}>Paid by card (Stripe)</div>}
+              {po && <div className="muted" style={{ fontSize: ".8rem", marginTop: 6 }}>Purchase order {po.poNumber}{inv.paidAt && inv.status === "PAID" ? ` · paid ${fmtDate(inv.paidAt)}` : ""}</div>}
             </div>
           </div>
 
@@ -116,6 +131,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             {refunded > 0 && (<><span>Refunded</span><span>−{money(refunded)}</span></>)}
             <span><b>Balance due</b></span><span><b>{money(inv.status === "PAID" ? 0 : total)}</b></span>
           </div>
+
+          {inv.status === "DUE" && (
+            <div className="invoice-remit">
+              <div className="meta">Remit payment to</div>
+              <b>{BRAND.name}</b>
+              {BRAND.address.map((l) => <div key={l}>{l}</div>)}
+              <div className="muted">Make checks payable to {BRAND.name}. Please include {invoiceNo(inv.number)}{po ? ` and PO ${po.poNumber}` : ""} with your payment. For ACH details, email {LEGAL.email}.</div>
+            </div>
+          )}
 
           <footer className="invoice-foot muted">
             Thank you for supporting South Texas authors. Questions about this invoice? Contact {LEGAL.email} and quote {invoiceNo(inv.number)}.

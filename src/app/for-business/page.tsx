@@ -29,7 +29,7 @@ export default async function ForBusiness() {
         title="Meaningful events, without the admin"
         items={[
           ["Curated speakers", "Authors on leadership, wellbeing, inclusion, creativity and more — every profile reviewed."],
-          ["Proposals on request", "Share your date, audience and budget, and compare bids from interested authors."],
+          ["Proposals on request", "Share your date, audience and budget, and compare proposals from interested authors."],
           ["One invoice-free checkout", "Pay securely by card; payment is held until the event happens."],
           ["Heritage months & ERGs", "Find authors by community — #BlackOwned, #AAPIOwned, #HispanicOwned, #WomenOwned and more."],
           ["Books for everyone", "Order signed copies in bulk for attendees or as gifts."],

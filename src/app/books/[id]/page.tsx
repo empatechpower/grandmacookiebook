@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { authorPath } from "@/lib/storefront";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { liveWhere } from "@/lib/catalog";
@@ -16,7 +17,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
   const book = await db.book.findFirst({
     where: { id, ...liveWhere },
     include: {
-      images: { orderBy: { position: "asc" } }, author: { select: { id: true, name: true, bio: true, _count: { select: { packages: { where: liveWhere } } } } } },
+      images: { orderBy: { position: "asc" } }, author: { select: { id: true, name: true, slug: true, bio: true, _count: { select: { packages: { where: liveWhere } } } } } },
   });
   if (!book) notFound();
   const tiers = tiersFrom(await getSettings());
@@ -27,7 +28,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
         <div className="stack">
           <div className="eyebrow">{categoryLabel(book.category)}</div>
           <h1>{book.title}</h1>
-          <Link href={`/authors/${book.author.id}`} className="author-line">
+          <Link href={authorPath(book.author)} className="author-line">
             <Initials name={book.author.name} />
             <div>
               <b>{book.author.name}</b>
@@ -57,7 +58,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
           {book.author._count.packages > 0 && (
-            <Link className="btn btn-line" href={`/authors/${book.author.id}`}>
+            <Link className="btn btn-line" href={authorPath(book.author)}>
               Book {book.author.name.split(" ")[0]} for a visit →
             </Link>
           )}

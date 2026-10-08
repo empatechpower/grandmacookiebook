@@ -11,11 +11,11 @@ export default async function NewRequest() {
   const tomorrow = dayKey(addDays(fromDayKey(todayKey()), 1));
   return (
     <>
-      <PageHead title="Post a request" sub="Matching authors are emailed and can send you a proposal with their fee. You’re not committed until you accept a bid." />
+      <PageHead title="Post a request" sub="Matching authors are emailed and can send you a proposal with their fee. You’re not committed until you accept a proposal." />
       <form action={createRfp} className="panel" style={{ maxWidth: 760 }}>
         <div className="field">
           <label htmlFor="title">What are you looking for?</label>
-          <input id="title" name="title" required maxLength={120} placeholder="Author assembly for Literacy Week" />
+          <input id="title" name="title" required maxLength={120} placeholder="Author Visit" />
         </div>
         <div className="field">
           <label htmlFor="description">Details</label>
@@ -37,7 +37,7 @@ export default async function NewRequest() {
             <input id="eventDate" name="eventDate" type="date" min={tomorrow} required />
           </div>
           <div className="field">
-            <label htmlFor="deadline">Bids close on</label>
+            <label htmlFor="deadline">Proposals due by</label>
             <input id="deadline" name="deadline" type="date" min={todayKey()} required />
           </div>
         </div>

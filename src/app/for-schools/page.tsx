@@ -32,7 +32,7 @@ export default async function ForSchools() {
         title="Everything you need to plan an author visit"
         items={[
           ["Vetted authors, fast", "Every author and listing is reviewed. Filter by topic, grade level, budget, date, language and location."],
-          ["Get proposals", "Post a request with your date and budget — matching authors send you bids to compare."],
+          ["Get proposals", "Post a request with your date and budget — matching authors send you proposals to compare."],
           ["Talk it through", "Message authors privately to agree timing, content and travel before you book."],
           ["Pay safely", `Payment is held until your visit happens. If something goes wrong, report it within ${HOLD_DAYS} days for a full refund.`],
           ["Classroom sets", "Buy signed books directly from authors, with bulk pricing for larger orders."],
@@ -42,7 +42,7 @@ export default async function ForSchools() {
       <Steps
         title="How booking works"
         steps={[
-          ["Find or post", "Browse authors by topic and grade, or post a request and receive bids."],
+          ["Find or post", "Browse authors by topic and grade, or post a request and receive proposals."],
           ["Agree details", "Message the author, pick an open date, and receive a final quote."],
           ["Pay to confirm", "Your payment is held securely until after the visit."],
           ["Enjoy & review", "Confirm the visit happened and leave a review for other schools."],
