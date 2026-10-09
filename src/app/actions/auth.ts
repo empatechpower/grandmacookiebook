@@ -12,6 +12,7 @@ import { requireUser } from "@/lib/auth";
 import { appUrl } from "@/lib/url";
 import { linkReferredUser } from "@/lib/referrals";
 import { ensureAuthorSlug } from "@/lib/slugs";
+import { clearPendingGoogleSignup, readPendingGoogleSignup } from "@/lib/google";
 
 export type FormState = { error?: string } | undefined;
 
@@ -56,6 +57,40 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
       ...(role === "BUYER" ? { orgType: orgType || null, orgName: orgName || null } : {}),
     },
   });
+  await createSession(user.id, user.sessionVersion);
+  if (role === "AUTHOR") {
+    await ensureAuthorSlug(user);
+    await linkReferredUser(user);
+    await authorSignedUp(user);
+  }
+  await flash(role === "AUTHOR" ? "Studio created — an admin will review your account" : "Welcome to South Texas Book & Author");
+  redirect(dashboardPath(role));
+}
+
+const GoogleSignupSchema = SignupSchema.pick({ role: true, orgType: true, orgName: true });
+
+/** Last step of "Continue with Google" for a new email: create the account as a Guest or an Author. */
+export async function completeGoogleSignup(_: FormState, fd: FormData): Promise<FormState> {
+  const pending = await readPendingGoogleSignup();
+  if (!pending) return { error: "Your Google sign-in expired — please click “Continue with Google” again." };
+  const parsed = GoogleSignupSchema.safeParse(Object.fromEntries(fd));
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { role, orgType, orgName } = parsed.data;
+  if (await db.user.findFirst({ where: { OR: [{ email: pending.email }, { googleId: pending.sub }] } }))
+    return { error: "An account with this email already exists — log in instead." };
+  const user = await db.user.create({
+    data: {
+      name: pending.name,
+      email: pending.email,
+      googleId: pending.sub,
+      role,
+      // No password yet: a random one nobody knows. "Forgot password" can set a real one later.
+      passwordHash: await bcrypt.hash(randomBytes(32).toString("hex"), 10),
+      status: role === "AUTHOR" ? "PENDING" : "ACTIVE",
+      ...(role === "BUYER" ? { orgType: orgType || null, orgName: orgName || null } : {}),
+    },
+  });
+  await clearPendingGoogleSignup();
   await createSession(user.id, user.sessionVersion);
   if (role === "AUTHOR") {
     await ensureAuthorSlug(user);

@@ -918,3 +918,13 @@ button[data-pending], .btn[data-pending] { cursor: wait; }
   /* Inside the phone menu, dropdowns stay flat even when hovered/focused (no floating desktop panel). */
   .nav-panel .dd:hover .dd-menu, .nav-panel .dd:focus-within .dd-menu, .nav-panel .dd-menu { display: contents; position: static; }
 }
+
+/* ===== Continue with Google (follows Google's button guidelines: white, gray border, multicolor G) ===== */
+.google-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 11px 16px; border: 1px solid #747775; border-radius: 999px; background: #fff; color: #1f1f1f; font-family: Roboto, Arial, sans-serif; font-weight: 500; font-size: .95rem; text-decoration: none; transition: background .15s ease, box-shadow .15s ease; }
+.google-btn:hover { background: #f8faff; box-shadow: 0 1px 3px rgba(60,64,67,.25); }
+.google-btn:focus-visible { outline: 2px solid var(--sky-btn); outline-offset: 2px; }
+.google-btn.busy { pointer-events: none; opacity: .8; }
+.or-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--mute); font-size: .82rem; }
+.or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.google-who { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--sky-l); margin-bottom: 18px; }
+.google-who span { color: var(--ink-soft); font-size: .88rem; }

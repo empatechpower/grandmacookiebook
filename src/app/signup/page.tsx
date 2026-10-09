@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { googleEnabled } from "@/lib/google";
 import { currentUser, dashboardPath } from "@/lib/auth";
 import { SignupForm } from "@/components/AuthForms";
 
@@ -19,7 +20,7 @@ export default async function Signup({ searchParams }: { searchParams: Promise<{
       </div>
       <div className="auth-form">
         <h2 style={{ marginBottom: 20 }}>Create account</h2>
-        <SignupForm initialRole={role ?? "BUYER"} initialEmail={email} />
+        <SignupForm initialRole={role ?? "BUYER"} initialEmail={email} google={googleEnabled()} />
       </div>
     </div>
   );

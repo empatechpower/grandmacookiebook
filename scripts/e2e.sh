@@ -14,6 +14,7 @@ db_name="${TEST_DATABASE_URL%%\?*}"; db_name="${db_name##*/}"
 
 export DATABASE_URL="$TEST_DATABASE_URL" DATABASE_URL_UNPOOLED="$TEST_DATABASE_URL"
 export E2E_ARTIFACTS="tests/e2e/.artifacts" SERVER_LOG="tests/e2e/.artifacts/server.log"
+export GOOGLE_CLIENT_ID="e2e-google-client" GOOGLE_CLIENT_SECRET="e2e-google-secret"
 export CRON_SECRET="e2e-cron-secret" APP_URL="http://localhost:3917" BASE_URL="http://localhost:3917"
 unset STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET STRIPE_CONNECT_WEBHOOK_SECRET RESEND_API_KEY S3_BUCKET
 

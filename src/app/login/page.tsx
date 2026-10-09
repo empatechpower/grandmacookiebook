@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { googleEnabled } from "@/lib/google";
 import { currentUser, dashboardPath } from "@/lib/auth";
 import { LoginForm } from "@/components/AuthForms";
 
@@ -26,7 +27,7 @@ export default async function Login({ searchParams }: { searchParams: Promise<{ 
       <div className="auth-form">
         <h2>Log in</h2>
         <p style={{ color: "var(--mute)", margin: "8px 0 18px" }}>Welcome back — choose how you’re signing in.</p>
-        <LoginForm next={next} initialAs={as === "author" ? "AUTHOR" : "GUEST"} />
+        <LoginForm next={next} initialAs={as === "author" ? "AUTHOR" : "GUEST"} google={googleEnabled()} />
       </div>
     </div>
   );

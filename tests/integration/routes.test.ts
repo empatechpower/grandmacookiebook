@@ -65,3 +65,15 @@ test("scheduled jobs require the cron secret", async () => {
     assert.equal(ok.status, 200);
   }
 });
+
+test("Continue with Google signs in to the linked account, or links a matching verified email", async () => {
+  const { findUserForGoogle } = await import("../../src/lib/google");
+  const jeanette = await db.user.findUniqueOrThrow({ where: { email: "jeanette@atelier.test" } });
+  const first = await findUserForGoogle({ sub: "google-123", email: "jeanette@atelier.test", name: "Jeanette Gil" });
+  assert.equal(first?.id, jeanette.id, "same email → same account");
+  assert.equal((await db.user.findUniqueOrThrow({ where: { id: jeanette.id } })).googleId, "google-123", "and it's now linked");
+  const again = await findUserForGoogle({ sub: "google-123", email: "renamed@example.com", name: "Jeanette" });
+  assert.equal(again?.id, jeanette.id, "the link holds even if the Google email changes");
+  assert.equal(await findUserForGoogle({ sub: "google-999", email: "jeanette@atelier.test", name: "x" }), null, "a different Google account can't take over a linked email");
+  assert.equal(await findUserForGoogle({ sub: "google-new", email: "brand-new@example.com", name: "New" }), null, "unknown email → new sign-up");
+});
