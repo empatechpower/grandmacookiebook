@@ -31,7 +31,7 @@ export default async function ForBusiness() {
           ["Curated speakers", "Authors on leadership, wellbeing, inclusion, creativity and more — every profile reviewed."],
           ["Proposals on request", "Share your date, audience and budget, and compare proposals from interested authors."],
           ["One invoice-free checkout", "Pay securely by card; payment is held until the event happens."],
-          ["Heritage months & ERGs", "Find authors by community — #BlackOwned, #AAPIOwned, #HispanicOwned, #WomenOwned and more."],
+          ["Heritage months & ERGs", "Find authors by tag — #BilingualAuthors, #WomenAuthors, #MenAuthors, #SEL, #STEM and more."],
           ["Books for everyone", "Order signed copies in bulk for attendees or as gifts."],
           ["Hybrid-friendly", "Virtual and in-person formats for distributed teams."],
         ]}

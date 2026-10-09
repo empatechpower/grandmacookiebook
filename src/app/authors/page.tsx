@@ -58,7 +58,7 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
               <input id="location" name="location" defaultValue={f.location} placeholder="City or state" />
             </div>
             <Select name="language" label="Language" value={f.language} opts={LANGUAGES} />
-            <Select name="identity" label="Community" value={f.identity} opts={IDENTITIES} />
+            <Select name="identity" label="Author tags" value={f.identity} opts={IDENTITIES} />
             <Select
               name="sort"
               label="Sort by"
@@ -80,7 +80,7 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
 
           <div>
             <div className="filters" aria-label="Quick topics">
-              {IDENTITIES.slice(0, 4).concat(TOPICS.slice(0, 2).map((t) => ({ ...t, label: `#${t.label}` }))).map((t) => {
+              {TOPICS.slice(0, 2).map((t) => ({ ...t, label: `#${t.label}` })).concat(IDENTITIES).map((t) => {
                 const key = IDENTITIES.includes(t) ? "identity" : "topic";
                 const on = f[key as "identity" | "topic"] === t.value;
                 return (

@@ -21,11 +21,17 @@ const cases = [
   ["budget=500", "Jeanette Gil, Susan Friedland"],
   ["language=spanish", "Jeanette Gil, Miriam Bejerano"],
   ["identity=bilingual", "Jeanette Gil, Miriam Bejerano"],
+  ["identity=women-authors", "Jeanette Gil, Meena Julapalli, Susan Friedland"],
+  ["identity=men-authors", "Mike Crowder"],
   ["q=astronomy", "Allie Davis"],
   ["location=harlingen", "Meena Julapalli"],
   ["topic=sel&grade=prek", "Jeanette Gil"],
 ];
 for (const [qs, want] of cases) { await anon.goto(`${B}/authors?${qs}`); const got = await names(anon); ok(got === want, `filter ${qs} -> ${got}`); }
+await anon.goto(B + "/authors");
+ok(JSON.stringify(await anon.locator("[aria-label='Quick topics'] .filter").allInnerTexts()) === JSON.stringify(["#SEL", "#STEM", "#BilingualAuthors", "#WomenAuthors", "#MenAuthors"]), "Find Authors shows the five tags");
+await anon.goto(B + "/books"); ok((await anon.locator("body").innerText()).includes("Bulk book purchase") && !(await anon.locator("body").innerText()).includes("Gift sets"), "books filter renamed to Bulk book purchase");
+ok((await anon.locator(".topbar").getByRole("link", { name: "Author Visit" }).count()) === 1, "top menu says Author Visit");
 await anon.goto(B + "/authors?sort=price-asc"); ok((await anon.locator(".author-card h3").first().innerText()) === "Susan Friedland", "sort by price low→high");
 await anon.goto(B + "/books?q=night"); ok((await anon.locator(".card").count()) === 1, "book keyword search");
 await anon.goto(B + "/visits?format=VIRTUAL"); ok((await anon.locator(".card").count()) === 3, "virtual filter includes hybrid packages");

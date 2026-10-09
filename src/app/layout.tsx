@@ -9,15 +9,15 @@ import { SiteChrome } from "@/components/SiteChrome";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: `${BRAND.name} — Buy books. Book authors. Host talks.`, template: `%s · ${BRAND.name}` },
-  description: "Buy books directly from authors and book them for school visits, talks and keynotes.",
+  title: { default: `${BRAND.name} — Buy books. Book author visits.`, template: `%s · ${BRAND.name}` },
+  description: "Buy books directly from authors and book them for school visits, author visits and keynotes.",
 };
 
 const FOOTER: [string, [string, string][]][] = [
-  ["Marketplace", [["Find an author", "/authors"], ["Books", "/books"], ["Talks & visits", "/visits"], ["Collections", "/collections"], ["Post a request", "/dashboard/buyer/requests/new"]]],
+  ["Marketplace", [["Find an author", "/authors"], ["Books", "/books"], ["Author Visits", "/visits"], ["Collections", "/collections"], ["Post a request", "/dashboard/buyer/requests/new"]]],
   ["Solutions", [["For schools", "/for-schools"], ["For business", "/for-business"], ["For authors", "/for-authors"], ["Book fairs", "/book-fairs"], ["How it works", "/how-it-works"]]],
   ["Resources", [["Resources", "/resources"], ["Events", "/events"], ["Newsroom", "/news"], ["Book bank", "/book-bank"], ["Referral program", "/referral"]]],
-  ["Company", [["Pricing", "/pricing"], ["Contact us", "/contact"], ["Privacy", "/privacy"], ["Terms", "/terms"]]],
+  ["Company", [["Contact us", "/contact"], ["Privacy", "/privacy"], ["Terms", "/terms"]]],
 ];
 
 // Social links appear in the footer only when set (SOCIAL_FACEBOOK=https://… etc.).

@@ -40,6 +40,7 @@ const NAV: Record<string, { label: string; links: NavLink[] }> = {
       ["/dashboard/author/settings", "Settings"],
       ["/dashboard/author/payouts", "Payouts", "sub"],
       ["/dashboard/author/referrals", "Referrals", "sub"],
+      ["/dashboard/author/pricing", "Pricing", "sub"],
     ],
   },
   ADMIN: {

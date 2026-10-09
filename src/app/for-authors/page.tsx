@@ -12,7 +12,7 @@ export default async function ForAuthors() {
         eyebrow="For authors & publishers"
         title={<>Sell your books. <em>Get booked</em>.</>}
         lede="Reach schools, libraries and businesses looking for authors like you. List your books and visit packages, set your own prices, and get paid automatically."
-        ctas={[["Join free as an author", "/signup?role=AUTHOR"], ["See pricing", "/pricing"]]}
+        ctas={[["Join free as an author", "/signup?role=AUTHOR"], ["How it works", "/how-it-works"]]}
         aside={
           <aside className="poster">
             <div className="poster-kicker">You keep</div>

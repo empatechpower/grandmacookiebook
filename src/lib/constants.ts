@@ -13,7 +13,7 @@ export const CATEGORIES = [
   { value: "sel", label: "SEL" },
   { value: "fiction", label: "Fiction" },
   { value: "nonfiction", label: "Non-fiction" },
-  { value: "gifts", label: "Gift sets & merchandise" },
+  { value: "gifts", label: "Bulk book purchase" },
 ] as const;
 
 export const FORMATS = [
@@ -76,14 +76,11 @@ export const LANGUAGES: Opt[] = [
   { value: "asl", label: "American Sign Language" },
 ];
 
+// Author tags, picked by each author on their Storefront page (#SEL and #STEM are topics).
 export const IDENTITIES: Opt[] = [
-  { value: "black-owned", label: "#BlackOwned" },
-  { value: "aapi-owned", label: "#AAPIOwned" },
-  { value: "hispanic-owned", label: "#HispanicOwned" },
-  { value: "women-owned", label: "#WomenOwned" },
-  { value: "lgbtq-owned", label: "#LGBTQOwned" },
-  { value: "veteran-owned", label: "#VeteranOwned" },
-  { value: "bilingual", label: "#Bilingual" },
+  { value: "bilingual", label: "#BilingualAuthors" },
+  { value: "women-authors", label: "#WomenAuthors" },
+  { value: "men-authors", label: "#MenAuthors" },
 ];
 
 export const BUDGETS = [250, 500, 1000, 2000, 5000];

@@ -124,7 +124,7 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
           <Checks name="topics" legend="Topics you speak and write about" opts={TOPICS} selected={user.topics} hint="Schools filter by these." />
           <Checks name="grades" legend="Grade levels / audiences" opts={GRADES} selected={user.grades} />
           <Checks name="languages" legend="Languages you present in" opts={LANGUAGES} selected={user.languages} />
-          <Checks name="identities" legend="Community tags (optional)" opts={IDENTITIES} selected={user.identities} hint="Shown on your profile and used in discovery filters." />
+          <Checks name="identities" legend="Your tags (optional)" opts={IDENTITIES} selected={user.identities} hint="Pick the tags that describe you. They show on your storefront, and schools can filter authors by them on Find Authors." />
         </>
       )}
       <SubmitButton>Save profile</SubmitButton>

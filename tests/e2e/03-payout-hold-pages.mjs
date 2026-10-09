@@ -51,10 +51,15 @@ ok(true, "admin can release a held line early");
 
 // Public pages + contact form
 const anon = await ctx();
-for (const path of ["/pricing", "/privacy", "/terms", "/contact"]) { const r = await anon.goto(B + path); ok(r.status() === 200, `${path} loads`); }
-await anon.goto(B + "/pricing"); const pricing = await anon.locator("body").innerText();
-ok(pricing.includes("5%") && pricing.includes("15%"), "pricing shows 5% books / 15% visits from settings");
-await anon.screenshot({ path: `${S}/16-pricing.png`, fullPage: true });
+for (const path of ["/privacy", "/terms", "/contact"]) { const r = await anon.goto(B + path); ok(r.status() === 200, `${path} loads`); }
+await anon.goto(B + "/pricing"); ok(anon.url().includes("/login"), "pricing is private: guests are sent to log in");
+ok((await anon.locator(".topbar").getByRole("link", { name: "Pricing" }).count()) === 0 && (await anon.locator("footer").getByRole("link", { name: "Pricing" }).count()) === 0, "no Pricing link in the public menu or footer");
+const pricer = await (await browser.newContext()).newPage();
+await pricer.goto(B + "/login"); await pricer.fill("#email", "author@atelier.test"); await pricer.fill("#password", "atelier123"); await pricer.click("button[type=submit]"); await pricer.waitForURL("**/dashboard/**");
+await pricer.locator(".side").getByRole("link", { name: "Pricing" }).click(); await pricer.waitForURL("**/dashboard/author/pricing");
+const pricing = await pricer.locator("body").innerText();
+ok(pricing.includes("5%") && pricing.includes("15%"), "authors see pricing (5% books / 15% visits from settings) in their dashboard");
+await pricer.screenshot({ path: `${S}/16-pricing.png`, fullPage: true });
 await anon.goto(B + "/terms"); ok((await anon.locator("body").innerText()).includes("have a lawyer review"), "legal pages flag template status");
 ok((await anon.locator("footer").innerText()).includes("Privacy"), "footer has legal links");
 await anon.goto(B + "/contact");

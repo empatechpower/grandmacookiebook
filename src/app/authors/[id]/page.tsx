@@ -77,7 +77,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
             {tagRow("Topics", labelsFor(TOPICS, parseTags(author.topics)), "chip tag")}
             {tagRow("Audiences", labelsFor(GRADES, parseTags(author.grades)))}
             {tagRow("Languages", labelsFor(LANGUAGES, parseTags(author.languages)))}
-            {tagRow("Community", labelsFor(IDENTITIES, parseTags(author.identities)))}
+            {tagRow("Tags", labelsFor(IDENTITIES, parseTags(author.identities)))}
             <div className="row" style={{ marginTop: 18 }}>
               {user?.role !== "AUTHOR" && user?.role !== "ADMIN" && (
                 <form action={openConversation}>

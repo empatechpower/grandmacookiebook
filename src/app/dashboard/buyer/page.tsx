@@ -33,7 +33,7 @@ export default async function BuyerHome() {
         <Link className="btn btn-ink" href="/visits">Book a visit</Link>
       </div>
       <h3 className="h2-sm">Upcoming visits</h3>
-      <Table heads={["Date", "Visit", "Author", "Fee", "Status"]} empty="No upcoming visits. Browse talks to invite an author.">
+      <Table heads={["Date", "Visit", "Author", "Fee", "Status"]} empty="No upcoming visits. Browse author visits to invite an author.">
         {bookings.map((b) => (
           <tr key={b.id}>
             <td>{fmtWhen(b)}</td>

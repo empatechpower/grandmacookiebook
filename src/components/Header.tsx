@@ -25,7 +25,7 @@ export async function Header() {
         <nav className="nav" aria-label="Main">
           <Link href="/authors">Find authors</Link>
           <Link href="/books">Books</Link>
-          <Link href="/visits">Talks</Link>
+          <Link href="/visits">Author Visit</Link>
           <div className="dd">
             <button type="button" className="dd-btn" aria-haspopup="true">Solutions ▾</button>
             <div className="dd-menu">
@@ -46,7 +46,6 @@ export async function Header() {
               <Link href="/book-bank">Book bank</Link>
             </div>
           </div>
-          <Link href="/pricing">Pricing</Link>
         </nav>
         <div className="actions">
           {user ? (

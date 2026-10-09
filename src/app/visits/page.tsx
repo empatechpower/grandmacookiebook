@@ -3,7 +3,7 @@ import { VisitCard } from "@/components/Cards";
 import { livePackages } from "@/lib/catalog";
 import { FORMATS } from "@/lib/constants";
 
-export const metadata = { title: "Book a visit or speech" };
+export const metadata = { title: "Author Visit" };
 
 export default async function Visits({ searchParams }: { searchParams: Promise<{ format?: string; q?: string }> }) {
   const { format, q } = await searchParams;
@@ -15,11 +15,11 @@ export default async function Visits({ searchParams }: { searchParams: Promise<{
         <div className="sec-head">
           <div>
             <div className="eyebrow">Appearances</div>
-            <h2>Book a visit or speech</h2>
+            <h2>Author Visit</h2>
           </div>
           <form className="inline-form" action="/visits">
             {active && <input type="hidden" name="format" value={active} />}
-            <input name="q" defaultValue={q} placeholder="Search talks or authors" aria-label="Search visits" style={{ padding: "9px 12px", minWidth: 220 }} />
+            <input name="q" defaultValue={q} placeholder="Search author visits or authors" aria-label="Search visits" style={{ padding: "9px 12px", minWidth: 220 }} />
             <button className="btn btn-ink btn-sm">Search</button>
           </form>
         </div>
