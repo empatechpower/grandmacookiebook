@@ -859,3 +859,6 @@ th { background: #dff1ff; color: #12577f; }
   .poster-logo { width: 72px; height: 72px; }
   .poster h3 { font-size: 1.2rem; }
 }
+/* Space between the hero and the four number tiles */
+.hero + section.wrap { margin-top: 32px; }
+@media (max-width: 640px) { .hero + section.wrap { margin-top: 20px; } }
