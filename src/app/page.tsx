@@ -97,6 +97,7 @@ export default async function Home() {
         </div>
       </section>
 
+      {authorCount + bookCount > 0 && (
       <section className="wrap">
         <div className="stats">
           {([
@@ -112,6 +113,7 @@ export default async function Home() {
           ))}
         </div>
       </section>
+      )}
 
       <section className="pad">
         <div className="wrap grid-3">
@@ -163,11 +165,20 @@ export default async function Home() {
               Browse all authors →
             </Link>
           </div>
-          <div className="grid-4">
-            {authors.slice(0, 8).map((a) => (
-              <AuthorCard key={a.id} a={a} />
-            ))}
-          </div>
+          {authors.length ? (
+            <div className="grid-4">
+              {authors.slice(0, 8).map((a) => (
+                <AuthorCard key={a.id} a={a} />
+              ))}
+            </div>
+          ) : (
+            <HomeEmpty
+              icon="✍️"
+              title="Our first authors are joining now"
+              text="South Texas Book & Author is brand new. Authors from across the Rio Grande Valley are setting up their storefronts — check back soon, or tell us what your school is looking for."
+              actions={[["Are you an author? Join free", "/signup?role=AUTHOR"], ["Post a request", "/dashboard/buyer/requests/new"]]}
+            />
+          )}
         </div>
       </section>
 
@@ -223,11 +234,20 @@ export default async function Home() {
               Shop catalog →
             </Link>
           </div>
-          <div className="grid-4">
-            {books.map((b) => (
-              <BookCard key={b.id} b={b} />
-            ))}
-          </div>
+          {books.length ? (
+            <div className="grid-4">
+              {books.map((b) => (
+                <BookCard key={b.id} b={b} />
+              ))}
+            </div>
+          ) : (
+            <HomeEmpty
+              icon="📚"
+              title="Books are on their way"
+              text="Signed books, classroom sets and bulk orders will appear here as our authors list them. Schools get bulk discounts automatically."
+              actions={[["List your books", "/signup?role=AUTHOR"], ["Contact us", "/contact"]]}
+            />
+          )}
         </div>
       </section>
 
@@ -237,5 +257,23 @@ export default async function Home() {
         ctas={[["Host a book fair", "/book-fairs"], ["Join as an author", "/for-authors"]]}
       />
     </>
+  );
+}
+
+/** Friendly placeholder for home page sections before authors and books are listed. */
+function HomeEmpty({ icon, title, text, actions }: { icon: string; title: string; text: string; actions: [string, string][] }) {
+  return (
+    <div className="home-empty">
+      <span className="audience-icon" aria-hidden>{icon}</span>
+      <div>
+        <h3>{title}</h3>
+        <p>{text}</p>
+        <div className="row" style={{ marginTop: 14 }}>
+          {actions.map(([label, href], i) => (
+            <Link key={href} className={`btn ${i === 0 ? "btn-terra" : "btn-line"}`} href={href}>{label}</Link>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

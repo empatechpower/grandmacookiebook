@@ -40,7 +40,7 @@ export default async function Books({ searchParams }: { searchParams: Promise<{ 
             ))}
           </div>
         ) : (
-          <div className="empty">No books match. Try another search or category.</div>
+          <div className="empty">{active || q ? "No books match. Try another search or category." : <>Books are on their way — they appear here as our authors list them. Are you an author? <a href="/signup?role=AUTHOR" style={{ textDecoration: "underline" }}>List your books</a>.</>}</div>
         )}
       </div>
     </section>

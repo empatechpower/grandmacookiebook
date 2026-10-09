@@ -40,7 +40,7 @@ export default async function Visits({ searchParams }: { searchParams: Promise<{
             ))}
           </div>
         ) : (
-          <div className="empty">No visits match. Try another search or format — or <a href="/authors" style={{ textDecoration: "underline" }}>browse authors</a>.</div>
+          <div className="empty">{active || q ? <>No visits match. Try another search or format — or <a href="/authors" style={{ textDecoration: "underline" }}>browse authors</a>.</> : <>Author visits are being added now. You can <a href="/dashboard/buyer/requests/new" style={{ textDecoration: "underline" }}>post a request</a> and authors will send you proposals.</>}</div>
         )}
       </div>
     </section>

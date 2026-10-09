@@ -100,7 +100,7 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
                 ))}
               </div>
             ) : (
-              <div className="empty">No authors match these filters. Try removing one.</div>
+              <div className="empty">{active ? "No authors match these filters. Try removing one." : <>Our first authors are joining now — check back soon. Are you an author? <a href="/signup?role=AUTHOR" style={{ textDecoration: "underline" }}>Join free</a>.</>}</div>
             )}
           </div>
         </div>
