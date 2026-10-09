@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BRAND } from "@/lib/brand";
 import { authorPath } from "@/lib/storefront";
 import { db } from "@/lib/db";
 import { BookCard } from "@/components/Cards";
@@ -45,11 +46,11 @@ export default async function Home() {
       <section className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="eyebrow">For the Rio Grande Valley in South Texas</div>
+            <div className="rgv-ribbon">★ Proudly serving the Rio Grande Valley ★</div>
             <h1>
-              Books to own.
+              <span className="c-sky">Books</span> to <span className="c-leaf">own</span>.
               <br />
-              Voices to <em>invite</em>.
+              <span className="c-grape">Voices</span> to <em>invite</em>.
             </h1>
             <p className="lede">
               Find vetted authors for school visits, keynotes and workshops — and buy their books directly. Built for South Texas schools,
@@ -69,9 +70,16 @@ export default async function Home() {
             </p>
           </div>
           <aside className="poster">
-            <div className="poster-kicker">Book this term</div>
-            <h3>Visits schools are booking now</h3>
-            {visits.map((v) => (
+            <div className="poster-head">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="poster-logo" src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={96} height={96} />
+              <div>
+                <div className="poster-kicker">Book this term</div>
+                <h3>Author visits Rio Grande Valley schools are booking now</h3>
+              </div>
+            </div>
+            {visits.length === 0 && <p className="poster-empty">New author visits are being added. Browse our authors to find the right fit for your school.</p>}
+            {visits.slice(0, 2).map((v) => (
               <Link key={v.id} href={`/visits/${v.id}`} className="event-card" style={{ display: "block" }}>
                 <b>
                   {v.title} — {v.author.name}
@@ -81,8 +89,8 @@ export default async function Home() {
                 </small>
               </Link>
             ))}
-            <Link className="btn btn-terra" style={{ marginTop: 12, position: "relative", zIndex: 1 }} href="/visits">
-              See all visits
+            <Link className="btn btn-terra" style={{ marginTop: 12, position: "relative", zIndex: 1 }} href={visits.length ? "/visits" : "/authors"}>
+              {visits.length ? "See all visits" : "Browse authors"}
             </Link>
           </aside>
         </div>
@@ -107,12 +115,13 @@ export default async function Home() {
       <section className="pad">
         <div className="wrap grid-3">
           {[
-            ["For schools & libraries", "Assemblies, classroom visits, book fairs and classroom sets — with payment held until your visit happens.", "/for-schools"],
-            ["For business", "Keynotes, ERG and heritage-month events, book clubs and signed books for your team.", "/for-business"],
-            ["For authors", "Sell your books, get booked for visits, and get paid automatically. Free to join.", "/for-authors"],
-          ].map(([h, b, href]) => (
+            ["For schools & libraries", "Assemblies, classroom visits, book fairs and classroom sets — with payment held until your visit happens.", "/for-schools", "🏫"],
+            ["For business", "Keynotes, ERG and heritage-month events, book clubs and signed books for your team.", "/for-business", "💼"],
+            ["For authors", "Sell your books, get booked for visits, and get paid automatically. Free to join.", "/for-authors", "✍️"],
+          ].map(([h, b, href, icon]) => (
             <Link key={href} href={href} className="card audience-card">
               <div className="body">
+                <span className="audience-icon" aria-hidden>{icon}</span>
                 <h3>{h}</h3>
                 <p className="muted">{b}</p>
                 <span className="more">Learn more →</span>
@@ -145,7 +154,7 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="pad" style={{ paddingTop: 0 }}>
+      <section className="pad tint-sky">
         <div className="wrap">
           <div className="sec-head">
             <h2>Featured authors</h2>
@@ -182,7 +191,7 @@ export default async function Home() {
       </section>
 
       {reviews.length > 0 && (
-        <section className="pad">
+        <section className="pad tint-grape">
           <div className="wrap">
             <h2 style={{ marginBottom: 20 }}>What schools and readers say</h2>
             <div className="grid-3">
@@ -205,7 +214,7 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="pad" style={{ paddingTop: reviews.length ? 0 : undefined }}>
+      <section className="pad tint-leaf">
         <div className="wrap">
           <div className="sec-head">
             <h2>Books from the authors themselves</h2>

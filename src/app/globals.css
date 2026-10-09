@@ -716,3 +716,146 @@ footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 
 .cancel-box { margin-top: 8px; font-size: .82rem; }
 .cancel-box summary { cursor: pointer; color: var(--danger); font-weight: 600; }
 .cancel-box input { width: 100%; min-width: 180px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; font-size: .82rem; }
+
+/* ===== Brighter, kid-friendly look (round 2 — client: "still needs to be more colorful") ===== */
+:root {
+  --cta: #d6361f;      /* tomato — main call-to-action (4.8:1 with white text) */
+  --cta-d: #b52a16;
+  --sky-btn: #1769c2;  /* blue secondary buttons (5.5:1) */
+}
+
+/* Playful confetti dots on the page background */
+body {
+  background-color: #fffaf0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(31,143,209,.13) 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 60%, rgba(224,71,58,.12) 0 3px, transparent 4px),
+    radial-gradient(circle at 40% 80%, rgba(47,165,101,.13) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle at 85% 15%, rgba(246,180,34,.18) 0 3px, transparent 4px),
+    radial-gradient(circle at 55% 45%, rgba(124,86,184,.12) 0 2.5px, transparent 3.5px);
+  background-size: 140px 140px, 170px 170px, 120px 120px, 190px 190px, 150px 150px;
+}
+.dash, .main { background: transparent; }
+
+/* Much bigger logo */
+.topbar { background: rgba(255,255,255,.94); }
+.topbar-inner { height: 136px; }
+.topbar::after { height: 8px; }
+.mark-logo { width: 124px; height: 124px; padding: 5px; box-shadow: 0 0 0 4px #fff, 0 6px 18px rgba(20,40,90,.22); }
+.mark b { font-size: 1.45rem; }
+.mark small { font-size: .78rem; }
+.side .mark-logo { width: 104px; height: 104px; }
+.side .side-brand { flex-direction: column; align-items: flex-start; gap: 8px; }
+.side .side-brand b { font-size: 1.1rem; }
+.foot-logo { width: 170px; height: 170px; padding: 12px; }
+@media (max-width: 960px) {
+  .topbar-inner { height: auto; }
+  .mark-logo, .side .mark-logo { width: 84px; height: 84px; padding: 4px; }
+  .side .side-brand { flex-direction: row; align-items: center; }
+}
+
+/* Bright buttons */
+.btn-terra { background: var(--cta); color: #fff; box-shadow: 0 4px 0 var(--cta-d); }
+.btn-terra:hover { background: var(--cta-d); }
+.btn-ink { box-shadow: 0 4px 0 #0b1838; }
+.btn-line { border-width: 2px; border-color: var(--sky-btn); color: var(--sky-btn); }
+.btn-line:hover { background: var(--sky-l); }
+.btn-sage { background: var(--leaf); color: #fff; }
+a.btn-ghost, .btn-ghost { color: var(--sky-btn); }
+
+/* Hero: sunshine-to-sky background with big friendly shapes */
+.hero { background: linear-gradient(135deg, #fff1c9 0%, #ffe3ec 45%, #dff1ff 100%); padding-bottom: 48px; isolation: isolate; }
+.hero::before { width: 420px; height: 420px; left: -140px; top: -120px; background: radial-gradient(circle, rgba(246,180,34,.55), transparent 68%); filter: none; }
+.hero::after { width: 480px; height: 480px; right: -160px; bottom: -200px; top: auto; background: radial-gradient(circle, rgba(31,143,209,.38), transparent 68%); filter: none; }
+.hero h1 .c-sky { color: var(--sky-btn); }
+.hero h1 .c-leaf { color: var(--leaf); }
+.hero h1 .c-grape { color: var(--grape); }
+.hero h1 em { color: var(--cta); }
+.hero-search { border: 3px solid #fff; box-shadow: 0 10px 30px rgba(23,105,194,.18); }
+
+/* Stats: one bright tile per number */
+.stats { border: 0; background: transparent; gap: 12px; overflow: visible; }
+.stats > div { border: 0 !important; border-radius: 20px; }
+.stats > div:nth-child(1) { background: var(--sky-l); }
+.stats > div:nth-child(2) { background: var(--leaf-l); }
+.stats > div:nth-child(3) { background: var(--berry-l); }
+.stats > div:nth-child(4) { background: var(--grape-l); }
+@media (max-width: 960px) { .stats { gap: 10px; } }
+
+/* Audience cards: fully colored with a big icon */
+.audience-card { border-top-width: 0 !important; color: var(--ink); }
+.grid-3 > .audience-card:nth-child(1) { background: linear-gradient(160deg, #dff1ff, #bfe3fb); }
+.grid-3 > .audience-card:nth-child(2) { background: linear-gradient(160deg, #fff4d6, #ffe39a); }
+.grid-3 > .audience-card:nth-child(3) { background: linear-gradient(160deg, #e2f5ea, #bfe8cf); }
+.audience-card .muted { color: #33405e; }
+.audience-card .more { color: var(--cta); }
+.audience-icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: #fff; font-size: 1.9rem; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(20,40,90,.12); }
+
+/* Cards: thicker colored tops and soft tinted bodies, cycling through the palette */
+.card { border-top-width: 7px; border-radius: 20px; }
+:is(.grid-3, .grid-4) > :nth-child(5n+1) .card .body, :is(.grid-3, .grid-4) > .card:nth-child(5n+1):not(.audience-card) .body { background: linear-gradient(180deg, #f2f9ff, var(--card)); }
+:is(.grid-3, .grid-4) > :nth-child(5n+2) .card .body, :is(.grid-3, .grid-4) > .card:nth-child(5n+2):not(.audience-card) .body { background: linear-gradient(180deg, #fffaeb, var(--card)); }
+:is(.grid-3, .grid-4) > :nth-child(5n+3) .card .body, :is(.grid-3, .grid-4) > .card:nth-child(5n+3):not(.audience-card) .body { background: linear-gradient(180deg, #f1fbf5, var(--card)); }
+:is(.grid-3, .grid-4) > :nth-child(5n+4) .card .body, :is(.grid-3, .grid-4) > .card:nth-child(5n+4):not(.audience-card) .body { background: linear-gradient(180deg, #fff2f0, var(--card)); }
+:is(.grid-3, .grid-4) > :nth-child(5n+5) .card .body, :is(.grid-3, .grid-4) > .card:nth-child(5n+5):not(.audience-card) .body { background: linear-gradient(180deg, #f6f1fd, var(--card)); }
+
+/* Full-width colored sections */
+.tint-sky { background: linear-gradient(180deg, #e3f2fc, #f3f9ff); }
+.tint-leaf { background: linear-gradient(180deg, #e2f5ea, #f4fbf7); }
+.tint-grape { background: linear-gradient(180deg, #efe7fa, #f8f4fd); }
+.band { background: linear-gradient(180deg, #fff1c9, #fff8e6); }
+.steps .step-n, .step-n { width: 48px; height: 48px; font-size: 1.3rem; box-shadow: 0 4px 0 rgba(20,40,90,.18); }
+.quote { border: 0; border-left: 6px solid var(--grape); box-shadow: 0 8px 24px rgba(124,86,184,.12); }
+
+/* Eyebrow labels cycle colors per page section */
+.eyebrow { background: #fff; border: 2px solid var(--sun); color: #8a5a00; }
+
+/* Colorful footer */
+footer.site { background: linear-gradient(160deg, #1769c2 0%, #14285a 70%); color: #dbe7ff; }
+footer.site .foot-brand b, footer.site .foot-grid h4 { color: #fff; }
+footer.site a { color: #dbe7ff; }
+footer.site a:hover, footer.site .foot-grid a:hover { color: var(--sun); }
+footer.site .foot-contact a { color: var(--sun); }
+footer.site .foot-grid { border-bottom-color: rgba(255,255,255,.18); }
+
+/* Dashboard: brighter sidebar and tiles */
+.side { background: linear-gradient(180deg, #fff1c9 0%, #ffe3ec 45%, #dff1ff 100%); }
+.side a.on, .side a:hover { background: var(--sky-btn); color: #fff; }
+.kpi:nth-child(4n+1) { background: var(--sky-l); }
+.kpi:nth-child(4n+2) { background: var(--leaf-l); }
+.kpi:nth-child(4n+3) { background: var(--sun-l); }
+.kpi:nth-child(4n+4) { background: var(--grape-l); }
+th { background: #dff1ff; color: #12577f; }
+.panel { border-radius: 20px; }
+@media print { body { background: #fff; } footer.site { background: none; } }
+/* Accent links and highlights switch from muted gold to bright tomato (gold stays in the logo) */
+:root { --terracotta: #d6361f; --terracotta-d: #b52a16; }
+
+/* "How it works" numbers cycle colors wherever they appear */
+.grid-4 > .step:nth-child(4n+1) .step-n { background: var(--sky-btn); }
+.grid-4 > .step:nth-child(4n+2) .step-n { background: var(--leaf); }
+.grid-4 > .step:nth-child(4n+3) .step-n { background: var(--sun); color: var(--ink); }
+.grid-4 > .step:nth-child(4n+4) .step-n { background: var(--cta); }
+
+/* Call-to-action banner: purple-to-blue instead of plain navy */
+.cta-band { background: linear-gradient(120deg, #6a3fb0 0%, #1769c2 60%, #14285a 100%); }
+.cta-band::after { background: radial-gradient(circle, var(--sun), transparent 70%); opacity: .55; }
+.cta-band p { opacity: .9; }
+
+/* Home hero: compact visits box with the logo; Rio Grande Valley ribbon */
+.poster { min-height: 0; padding: 22px 24px; align-self: center; }
+.poster-head { display: flex; gap: 16px; align-items: center; margin-bottom: 14px; position: relative; z-index: 1; }
+.poster-logo { flex: none; width: 96px; height: 96px; border-radius: 50%; background: #fff; object-fit: contain; padding: 4px; box-shadow: 0 0 0 4px rgba(255,255,255,.35); }
+.poster h3 { font-size: 1.45rem; line-height: 1.15; margin: 6px 0 0; }
+.poster .event-card { padding: 11px 14px; margin-bottom: 8px; position: relative; z-index: 1; }
+.poster-empty { opacity: .85; margin: 4px 0 6px; position: relative; z-index: 1; }
+.rgv-ribbon {
+  display: inline-block; font-family: Fraunces, Georgia, serif; font-weight: 700; font-size: 1.15rem; letter-spacing: .01em;
+  color: #fff; background: linear-gradient(90deg, var(--cta), #e8558f 50%, var(--grape)); padding: 8px 18px; border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(214,54,31,.25); margin-bottom: 14px;
+}
+@media (max-width: 640px) {
+  .rgv-ribbon { font-size: 1rem; padding: 7px 14px; }
+  .poster-logo { width: 72px; height: 72px; }
+  .poster h3 { font-size: 1.2rem; }
+}

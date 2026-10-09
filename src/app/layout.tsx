@@ -45,7 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <div className="foot-grid">
                 <div className="foot-brand">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={128} height={128} className="foot-logo" />
+                <img src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={170} height={170} className="foot-logo" />
                 <b className="serif">{BRAND.name}</b>
                   <p>The marketplace for books and author visits — connecting schools, libraries and businesses with vetted authors.</p>
                   <p className="foot-contact">

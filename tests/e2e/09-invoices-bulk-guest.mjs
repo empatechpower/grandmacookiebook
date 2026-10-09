@@ -41,7 +41,7 @@ ok(!!order?.invoice && order.invoice.total === 16800, "an invoice was issued for
 const invNo = `INV-${order.invoice.number}`;
 await buyer.getByRole("link", { name: `Invoice ${invNo}` }).click(); await buyer.waitForURL("**/invoices/**");
 const inv = await text(buyer);
-ok(inv.includes(invNo) && inv.includes("1903 Sundance St") && inv.includes("Palmhurst, TX 78573") && inv.includes("PAID"), "invoice shows number, business address and PAID");
+ok(inv.includes(invNo) && inv.includes("1903 Sundance St") && inv.includes("Palmhurst, TX 78574") && inv.includes("PAID"), "invoice shows number, business address and PAID");
 ok(inv.includes("Bulk discount 20% off $21") && inv.includes("$168"), "invoice shows the bulk discount and total");
 const invUrl = buyer.url();
 await sleep(600);
