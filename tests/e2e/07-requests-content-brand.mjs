@@ -103,9 +103,13 @@ await admin.fill("#body", "Join us.\n\n- Readings\n- Signing"); await admin.fill
 await admin.getByRole("button", { name: "Create" }).click(); await admin.waitForURL("**/admin/articles/c*");
 await anon.goto(B + "/events"); ok((await text(anon)).includes("Author Q&A night"), "new event listed");
 
-// Mobile: dropdown links flatten into the nav row
+// Mobile: the Menu button opens every link (dropdowns flattened) and closes after navigating
 const m = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage();
 await m.goto(B); ok(await m.evaluate(() => document.documentElement.scrollWidth <= 390), "no horizontal scroll on mobile home");
-ok(await m.locator(".nav a", { hasText: "For business" }).isVisible(), "mobile nav exposes Solutions links");
+ok(!(await m.locator(".nav a", { hasText: "For business" }).isVisible()), "mobile menu starts closed");
+await m.getByRole("button", { name: /Menu/ }).click();
+ok(await m.locator(".nav a", { hasText: "For business" }).isVisible(), "mobile menu exposes Solutions links");
+await m.locator(".nav a", { hasText: "For business" }).click(); await m.waitForURL("**/for-business");
+ok(!(await m.locator(".nav a", { hasText: "For business" }).isVisible()), "mobile menu closes after navigating");
 ok(errors.length === 0, "no page errors" + (errors.length ? ": " + errors[0] : ""));
 await browser.close(); await db.$disconnect();

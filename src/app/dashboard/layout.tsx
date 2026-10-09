@@ -1,5 +1,6 @@
 import { requireUser } from "@/lib/auth";
 import Link from "next/link";
+import { MobileMenu } from "@/components/MobileMenu";
 import { SideNav, type NavLink } from "@/components/SideNav";
 import { BRAND } from "@/lib/brand";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
@@ -94,11 +95,13 @@ export default async function DashLayout({ children }: { children: React.ReactNo
             <span className={`chip-role ${chip}`}>{ROLE_LABEL[user.role as Role]}</span>
           </div>
         </div>
-        <SideNav
-          label={nav.label}
-          links={nav.links}
-          counts={{ "/dashboard/messages": unread, "/dashboard/admin/inbox": openContacts, "/dashboard/admin/issues": openIssues, "/dashboard/admin/referrals": pendingReferrals }}
-        />
+        <MobileMenu className="side-panel">
+          <SideNav
+            label={nav.label}
+            links={nav.links}
+            counts={{ "/dashboard/messages": unread, "/dashboard/admin/inbox": openContacts, "/dashboard/admin/issues": openIssues, "/dashboard/admin/referrals": pendingReferrals }}
+          />
+        </MobileMenu>
         <div className="side-foot">
           {user.role === "BUYER" && (
             <Link href="/cart">

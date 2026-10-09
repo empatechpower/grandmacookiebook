@@ -639,3 +639,77 @@ footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 
 .side .side-brand { gap: 12px; }
 .foot-logo { padding: 11px; }
 @media (max-width: 960px) { .mark-logo, .side .mark-logo { width: 58px; height: 58px; padding: 3px; } }
+
+/* ===== Phones: menu buttons, stacked forms, tables as cards ===== */
+.menu-btn { display: none; }
+.menu-panel { display: contents; }
+@media (max-width: 960px) {
+  /* Public header: logo + Menu on the first row, account buttons below; the menu opens as a panel. */
+  .topbar-inner { height: auto; flex-wrap: wrap; padding: 10px 0; row-gap: 8px; }
+  .topbar .mark { flex: 1; min-width: 0; order: 1; }
+  .topbar .mark b { font-size: 1.02rem; }
+  .menu-btn {
+    display: inline-flex; align-items: center; gap: 6px; order: 2;
+    border: 1.5px solid var(--ink); background: #fff; color: var(--ink); border-radius: 999px;
+    padding: 8px 14px; font: inherit; font-weight: 600; font-size: .9rem; cursor: pointer;
+  }
+  .topbar .actions { order: 3; width: 100%; justify-content: flex-end; }
+  .menu-panel { display: none; }
+  .menu-panel.open { display: block; }
+  .nav-panel { order: 4; width: 100%; }
+  .nav-panel .nav { display: flex; flex-direction: column; align-items: stretch; text-align: left; gap: 0; overflow: visible; padding: 4px 0 8px; white-space: normal; font-size: 1rem; }
+  .nav-panel .nav a, .nav-panel .dd-menu a { display: block; padding: 12px 4px; border-top: 1px solid var(--line); color: var(--ink); }
+  .nav-panel .dd, .nav-panel .dd-menu { display: contents; }
+
+  /* Dashboard: logo, Menu, Cart and Log out on one row; the full menu opens below. */
+  .side .menu-btn { order: 2; padding: 7px 12px; }
+  .side-foot { order: 2; }
+  .side-panel { order: 3; flex: 0 0 100%; }
+  .side-panel.open { display: block; max-height: 70vh; overflow-y: auto; padding-top: 6px; }
+  .side-panel .side-nav { display: block; overflow: visible; }
+  .side-panel .side-nav a { display: block; white-space: normal; }
+  .side-panel .side-nav a.sub { padding-left: 26px; font-size: .92rem; }
+  .side-panel .side-group { display: block; }
+}
+
+/* Search/filter rows and two-column forms stack instead of running off the screen. */
+@media (max-width: 640px) {
+  .sec-head { flex-wrap: wrap; align-items: start; }
+  .sec-head .inline-form, .sec-head form { width: 100%; flex-wrap: wrap; }
+  .sec-head .inline-form input, .sec-head .inline-form select { flex: 1 1 160px; min-width: 0; }
+  .field-row, .field-row.three { grid-template-columns: 1fr; }
+  .field input, .field select, .field textarea { min-width: 0; max-width: 100%; }
+
+  /* Tables become one card per row, each value labeled with its column heading. */
+  .table-wrap.cards-sm { overflow: visible; border: 0; background: transparent; }
+  .cards-sm table, .cards-sm tbody { display: block; background: transparent; }
+  .cards-sm thead { display: none; }
+  .cards-sm tr { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px 0; margin-bottom: 12px; border-top: 4px solid var(--sky); }
+  .cards-sm tr:nth-child(4n+2) { border-top-color: var(--leaf); }
+  .cards-sm tr:nth-child(4n+3) { border-top-color: var(--sun); }
+  .cards-sm tr:nth-child(4n+4) { border-top-color: var(--grape); }
+  /* Label floats left; the cell's content stacks on the right. */
+  .cards-sm td { display: block; border: 0; padding: 6px 14px; text-align: right; overflow: hidden; overflow-wrap: anywhere; }
+  .cards-sm td::before { content: attr(data-label); float: left; margin-right: 14px; max-width: 42%; text-align: left; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); padding-top: 3px; }
+  .cards-sm td[data-label=""]::before { display: none; }
+  .cards-sm td[data-label=""] { text-align: left; }
+  .cards-sm td:empty { display: none; }
+  .cards-sm td .row, .cards-sm td .inline-form { flex-wrap: wrap; justify-content: flex-end; }
+  .cards-sm td[data-label=""] .row, .cards-sm td[data-label=""] .inline-form { justify-content: flex-start; }
+  .cards-sm td .inline-form { margin-top: 4px; }
+}
+@media (max-width: 960px) {
+  /* Some pages set their two-column split inline; on phones every split stacks. */
+  .detail { grid-template-columns: 1fr !important; gap: 24px; }
+  .detail > *, .field-row > * { min-width: 0; }
+}
+@media (max-width: 640px) {
+  .cal { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal .dow { letter-spacing: 0; font-size: .62rem; }
+  .cal button, .cal .cell { border-radius: 8px; font-size: .82rem; }
+  .cal small { font-size: .5rem; }
+}
+@media (max-width: 960px) {
+  /* Short pages: the header row keeps its natural height instead of stretching to fill the screen. */
+  .dash { grid-template-rows: auto 1fr; align-content: start; }
+}

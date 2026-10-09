@@ -4,6 +4,7 @@ import { currentUser, dashboardPath } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
 import { logout } from "@/app/actions/auth";
+import { MobileMenu } from "./MobileMenu";
 
 export async function Header() {
   const user = await currentUser();
@@ -22,6 +23,7 @@ export async function Header() {
             <small>{BRAND.tagline}</small>
           </div>
         </Link>
+        <MobileMenu className="nav-panel">
         <nav className="nav" aria-label="Main">
           <Link href="/authors">Find authors</Link>
           <Link href="/books">Books</Link>
@@ -47,6 +49,7 @@ export async function Header() {
             </div>
           </div>
         </nav>
+        </MobileMenu>
         <div className="actions">
           {user ? (
             <>
