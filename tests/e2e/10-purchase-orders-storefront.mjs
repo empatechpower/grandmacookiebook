@@ -51,11 +51,22 @@ const inv = await db.invoice.findFirst({ where: { orderId: po.orderId } });
 ok(inv?.status === "DUE" && Math.round((inv.dueAt - inv.issuedAt) / 864e5) === 30, "invoice issued as due in 30 days");
 await admin.goto(B + `/invoices/${inv.id}`);
 const invText = await text(admin);
-ok(invText.includes("PO PO-E2E-77") && invText.includes("Net 30") && /remit payment to/i.test(invText) && invText.includes("1903 Sundance St"), "invoice shows PO#, terms and remit-to address");
+ok(invText.includes("PO PO-E2E-77") && invText.includes("Net 30") && invText.includes("payable to South Texas Book an Author") && invText.includes("Palmhurst, TX 78574"), "invoice shows PO#, terms and who checks are payable to");
 await admin.goto(B + "/dashboard/admin/purchase-orders?filter=APPROVED");
 await admin.locator("tr", { hasText: "PO-E2E-77" }).locator("input[name=note]").fill("Check #1042");
 await admin.locator("tr", { hasText: "PO-E2E-77" }).getByRole("button", { name: "Mark paid" }).click(); ok(await sees(admin, "Invoice marked paid"), "admin marked the invoice paid");
 ok((await db.invoice.findUnique({ where: { id: inv.id } })).status === "PAID", "invoice is paid");
+
+// The author cancels a paid booking (B-1041, 12 days out): the school is refunded in full
+const jeanette = await ctx(); await login(jeanette, "jeanette@atelier.test");
+await jeanette.goto(B + "/dashboard/author/requests");
+const paidRow = jeanette.locator("tr", { hasText: "B-1041" });
+await paidRow.locator("summary", { hasText: "Cancel booking" }).click();
+await paidRow.locator("input[name=reason]").fill("I'm unwell that week");
+await paidRow.getByRole("button", { name: "Cancel and refund in full" }).click(); ok(await sees(jeanette, "refunded in full"), "author canceled a paid booking");
+ok((await db.booking.findFirst({ where: { number: 1041 } })).status === "CANCELLED", "booking is canceled");
+await sleep(500);
+ok(/subject="Jeanette Gil canceled your booking/.test(log()), "the school is emailed about the author's cancellation");
 
 // Storefront links are automatic
 const anon = await ctx();

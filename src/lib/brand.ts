@@ -6,5 +6,7 @@ export const BRAND = {
   domain: "southtexasbookanauthor.com",
   email: "info@southtexasbookanauthor.com",
   // Business address on invoices (and where purchase orders are mailed).
-  address: ["1903 Sundance St", "Palmhurst, TX 78573"],
+  address: ["1903 Sundance St", "Palmhurst, TX 78574"],
+  // Purchase order invoices are paid by check only (no bank transfers).
+  checksPayableTo: "South Texas Book an Author",
 };

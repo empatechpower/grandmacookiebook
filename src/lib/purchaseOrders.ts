@@ -15,7 +15,7 @@ import * as notify from "./notify";
  *                                           back to awaiting payment
  *   APPROVED ─ admin marks the invoice paid ─> PAID: authors' shares are released (see releaseAfterPoPaid)
  *
- * The school pays the platform directly (check, ACH…), so author transfers come from the
+ * The school pays the platform directly by check, so author transfers come from the
  * platform's Stripe balance rather than a card charge.
  */
 

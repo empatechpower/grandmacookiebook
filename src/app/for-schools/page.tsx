@@ -63,7 +63,7 @@ export default async function ForSchools() {
         items={[
           ["How much does it cost to join?", "Nothing. School and library accounts are free — you only pay for the books and visits you book."],
           ["Do we need a contract?", "It's optional. Either side can attach one to a booking, and there's a sample agreement in our resources."],
-          ["What if we need to cancel?", `Cancel at least ${cancelNoticeDays} days before the event for a full refund. Later cancellations aren't refunded, because the author has kept the date for you.`],
+          ["What if we need to cancel?", `Cancel at least ${cancelNoticeDays} days before the event for a full refund. Later cancellations aren't refunded, because the author has kept the date for you. If the author cancels, you're refunded in full.`],
           ["Can authors visit virtually?", "Yes — many authors offer virtual assemblies and classroom sessions. Filter the directory by format."],
           ["Can we pay by invoice or purchase order?", "Card payment is supported today. Contact us if your school needs an invoice."],
         ]}

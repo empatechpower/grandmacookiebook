@@ -1,8 +1,8 @@
 import { db } from "@/lib/db";
-import { fmtWhen } from "@/lib/dates";
+import { dayKey, fmtWhen, todayKey } from "@/lib/dates";
 import { requireUser } from "@/lib/auth";
 import { money, net } from "@/lib/money";
-import { respondBooking } from "@/app/actions/author";
+import { authorCancelBooking, respondBooking } from "@/app/actions/author";
 import { openConversation } from "@/app/actions/messages";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { bookingMoneyStatus, moneyBadge } from "@/lib/shipping";
@@ -68,6 +68,18 @@ export default async function Requests() {
                 </span>
               )}
               {b.status === "COMPLETED" && <span className="muted" style={{ fontSize: ".8rem" }}>{b.transferId ? "Paid to you" : "Releasing…"}</span>}
+              {["ACCEPTED", "CONFIRMED"].includes(b.status) && !b.transferId && dayKey(b.eventDate) >= todayKey() && (
+                <details className="cancel-box">
+                  <summary>Cancel booking</summary>
+                  <form action={authorCancelBooking} className="stack" style={{ marginTop: 8 }}>
+                    <input type="hidden" name="id" value={b.id} />
+                    <input name="reason" required minLength={3} maxLength={300} placeholder="Reason (sent to the customer)" aria-label="Reason for canceling" />
+                    <SubmitButton className="btn btn-danger btn-sm" confirm={`Cancel B-${b.number}? ${b.status === "CONFIRMED" ? `${b.buyer.name} will be refunded the full ${money(b.fee)}.` : "The customer will be told."}`}>
+                      Cancel and refund in full
+                    </SubmitButton>
+                  </form>
+                </details>
+              )}
             </td>
           </tr>
         ))}

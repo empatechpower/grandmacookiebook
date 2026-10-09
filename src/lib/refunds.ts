@@ -32,8 +32,8 @@ export async function refundItem(itemId: string): Promise<{ ok: false; error: st
   return { ok: true, warning };
 }
 
-/** Cancels a booking, refunding the buyer if they had paid. */
-export async function cancelBooking(bookingId: string): Promise<{ ok: false; error: string } | { ok: true; warning: string | null; refunded: boolean }> {
+/** Cancels a booking, refunding the buyer in full if they had paid (also when the author cancels). */
+export async function cancelBooking(bookingId: string, byAuthor: { reason: string } | null = null): Promise<{ ok: false; error: string } | { ok: true; warning: string | null; refunded: boolean }> {
   const b = await db.booking.findUnique({ where: { id: bookingId } });
   if (!b || ["CANCELLED", "DECLINED"].includes(b.status) || (b.status === "COMPLETED" && b.transferId))
     return { ok: false, error: "This booking can't be canceled" };
@@ -48,8 +48,10 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: false; err
     : null;
   await db.booking.update({ where: { id: b.id }, data: { status: "CANCELLED" } });
   const po = await cancelPoFor({ bookingId: b.id });
-  if (po?.status === "PAID") warning = `Paid by purchase order ${po.poNumber}: refund ${b.organisation} directly (check or ACH).`;
+  if (po?.status === "PAID") warning = `Paid by purchase order ${po.poNumber}: mail ${b.organisation} a refund check.`;
   await voidReferralEarning("booking", b.id);
-  await notify.bookingCancelled(b.id, b.paymentRef ? "refunded" : "unpaid");
+  // For an author's cancellation, an approved or paid PO counts as paid (its invoice is voided or refunded).
+  const paid = !!b.paymentRef || (!!byAuthor && (po?.status === "PAID" || po?.status === "APPROVED"));
+  await notify.bookingCancelled(b.id, paid ? "refunded" : "unpaid", byAuthor ? { author: true, reason: byAuthor.reason } : null);
   return { ok: true, warning, refunded: !!b.paymentRef };
 }

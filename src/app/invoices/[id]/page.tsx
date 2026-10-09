@@ -134,10 +134,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
           {inv.status === "DUE" && (
             <div className="invoice-remit">
-              <div className="meta">Remit payment to</div>
-              <b>{BRAND.name}</b>
+              <div className="meta">Pay by check</div>
+              <div>Make checks payable to <b>{BRAND.checksPayableTo}</b> and mail to:</div>
               {BRAND.address.map((l) => <div key={l}>{l}</div>)}
-              <div className="muted">Make checks payable to {BRAND.name}. Please include {invoiceNo(inv.number)}{po ? ` and PO ${po.poNumber}` : ""} with your payment. For ACH details, email {LEGAL.email}.</div>
+              <div className="muted">Please write {invoiceNo(inv.number)}{po ? ` and PO ${po.poNumber}` : ""} on the check. Questions: {LEGAL.email}.</div>
             </div>
           )}
 

@@ -103,3 +103,21 @@ test("a booking paid by PO is confirmed on approval, voided on cancel, and paid 
   await markPoPaid(visit.purchaseOrder!.id, null);
   assert.ok((await db.booking.findUniqueOrThrow({ where: { id: visit.id } })).transferId?.startsWith("tr_mock_"));
 });
+
+test("when the author cancels, even a late cancellation is refunded in full", async () => {
+  const school = await db.user.findUniqueOrThrow({ where: { email: "school@atelier.test" } });
+  const pkg = await db.visitPackage.findFirstOrThrow({ where: { status: "APPROVED" } });
+  const b = await db.booking.create({
+    data: {
+      buyerId: school.id, authorId: pkg.authorId, packageId: pkg.id, fee: 42000, commissionPct: 15, status: "CONFIRMED",
+      eventDate: day(2), organisation: "St. Cloud Elementary", venue: "Gym", audienceSize: 100,
+      paymentRef: "pi_mock_authorcancel", chargeId: "ch_mock_authorcancel",
+    },
+  });
+  const r = await cancelBooking(b.id, { reason: "Family emergency" });
+  assert.equal(r.ok, true);
+  assert.equal(r.ok && r.refunded, true, "refunded although it's inside the late-cancellation window");
+  const after = await db.booking.findUniqueOrThrow({ where: { id: b.id } });
+  assert.equal(after.status, "CANCELLED");
+  assert.equal(after.transferId, null, "the author isn't paid");
+});

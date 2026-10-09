@@ -713,3 +713,6 @@ footer.site::before { content: ""; position: absolute; inset: 0 0 auto; height: 
   /* Short pages: the header row keeps its natural height instead of stretching to fill the screen. */
   .dash { grid-template-rows: auto 1fr; align-content: start; }
 }
+.cancel-box { margin-top: 8px; font-size: .82rem; }
+.cancel-box summary { cursor: pointer; color: var(--danger); font-weight: 600; }
+.cancel-box input { width: 100%; min-width: 180px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; font-size: .82rem; }

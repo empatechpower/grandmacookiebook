@@ -32,7 +32,7 @@ export default async function BuyerBookings() {
     <>
       <PageHead
         title="My bookings"
-        sub={`You pay only after the author accepts. Payment is held until you confirm the visit happened (or 14 days after the event). Cancel a paid booking at least ${cancelNoticeDays} days before the event for a full refund.`}
+        sub={`You pay only after the author accepts. Payment is held until you confirm the visit happened (or 14 days after the event). Cancel a paid booking at least ${cancelNoticeDays} days before the event for a full refund. If the author cancels, you’re always refunded in full.`}
         action={<Link className="btn btn-ink" href="/visits">Book a visit</Link>}
       />
       <Table heads={["ID", "Visit", "Date", "Venue", "Fee", "Status", ""]} empty="No bookings yet.">

@@ -12,6 +12,8 @@ import { hasFile, saveImage } from "@/lib/storage";
 import { redirect } from "next/navigation";
 import { createConnectedAccount, demoMode, fetchAccountReady, onboardingLink } from "@/lib/payments";
 import { toCents } from "@/lib/money";
+import { cancelBooking as cancelWithRefund } from "@/lib/refunds";
+import { fromDayKey, todayKey } from "@/lib/dates";
 
 // Our own uploads are stored as relative /uploads/… paths.
 const ownUpload = z.string().regex(/^\/uploads\/(avatars|covers|media)\/[0-9a-f-]{36}\.(jpg|png|webp)$/);
@@ -158,6 +160,24 @@ export async function respondBooking(fd: FormData) {
   });
   await notify.bookingResponded(b.id);
   await done(accept ? "Accepted — the buyer can now pay to confirm" : "Request declined");
+}
+
+/**
+ * The author cancels an accepted or paid booking before the event. The customer always gets a
+ * full refund when the author cancels (the late-cancellation rule only applies to customers).
+ */
+export async function authorCancelBooking(fd: FormData) {
+  const user = await requireUser("AUTHOR");
+  const reason = str(fd, "reason").slice(0, 300);
+  if (reason.length < 3) return fail("Tell the customer why you're canceling");
+  const b = await db.booking.findFirst({
+    where: { id: str(fd, "id"), authorId: user.id, status: { in: ["ACCEPTED", "CONFIRMED"] }, transferId: null, eventDate: { gte: fromDayKey(todayKey()) } },
+  });
+  if (!b) return fail("This booking can't be canceled here — please contact us");
+  await db.booking.update({ where: { id: b.id }, data: { authorNote: `Canceled by the author: ${reason}` } });
+  const r = await cancelWithRefund(b.id, { reason });
+  if (!r.ok) return fail(r.error);
+  await done(r.refunded ? "Booking canceled — the customer has been refunded in full" : "Booking canceled — the customer has been told");
 }
 
 /** Marks a line shipped (with optional tracking), or updates the tracking on a shipped line. */

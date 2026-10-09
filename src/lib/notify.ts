@@ -165,9 +165,39 @@ export async function bookingPaid(bookingId: string) {
   }));
 }
 
-export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "refunded" | "late") {
+export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "refunded" | "late", by: { author: true; reason: string } | null = null) {
   const b = await bookingWithPeople(bookingId);
   const base = await appUrl();
+  if (by?.author) {
+    const po = await db.purchaseOrder.findUnique({ where: { bookingId } });
+    const money_ = outcome !== "refunded" ? "" : po ? (po.status === "PAID" ? ` We'll refund the ${money(b.fee)} you paid on purchase order ${po.poNumber} by check.` : ` The invoice for purchase order ${po.poNumber} has been canceled — nothing is owed.`) : ` A full refund of ${money(b.fee)} is on its way to your card.`;
+    sendEmail([
+      {
+        to: b.buyer.email,
+        subject: `${b.author.name} canceled your booking on ${fmtWhen(b)}`,
+        lines: [
+          `We're sorry — ${b.author.name} had to cancel B-${b.number} (“${b.package.title}”, ${fmtWhen(b)}).`,
+          `Reason: ${by.reason}`,
+          `Because the author canceled, you're not charged.${money_}`,
+          "You can book another author for the same date from Author Visit.",
+        ],
+        cta: { label: "Find another author", url: `${base}/visits` },
+      },
+      {
+        to: b.author.email,
+        subject: `You canceled B-${b.number}: ${b.organisation} on ${fmtWhen(b)}`,
+        lines: [`B-${b.number} is canceled and ${b.buyer.name} has been told${outcome === "refunded" ? " and fully refunded" : ""}. The date is open again on your calendar.`],
+        cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
+      },
+    ]);
+    await toAdmins((to) => ({
+      to,
+      subject: `[Admin] Author canceled B-${b.number}`,
+      lines: [`${b.author.name} canceled B-${b.number} for ${b.organisation} (${fmtWhen(b)}). Reason: ${by.reason}`, outcome === "refunded" ? `The customer was refunded ${money(b.fee)} in full.${po?.status === "PAID" ? " It was paid by purchase order — send the refund check." : ""}` : "It hadn't been paid."],
+      cta: { label: "View bookings", url: `${base}/dashboard/admin/bookings` },
+    }));
+    return;
+  }
   const buyerLine = {
     unpaid: "",
     refunded: ` A refund of ${money(b.fee)} is on its way to your card.`,
@@ -581,7 +611,7 @@ export async function poReviewed(poId: string) {
     const invoiceLines = [
       `Invoice INV-${inv.number} for ${money(inv.total)} is due ${inv.dueAt ? fmtDate(inv.dueAt) : "on receipt"} (Net ${po.termsDays}).`,
       `Please reference PO ${po.poNumber} and INV-${inv.number} with payment.`,
-      `Remit to: ${BRAND.name}, ${BRAND.address.join(", ")}. Questions: ${LEGAL.email}.`,
+      `Pay by check, payable to ${BRAND.checksPayableTo}, mailed to ${BRAND.address.join(", ")}. Questions: ${LEGAL.email}.`,
     ];
     sendEmail([
       {

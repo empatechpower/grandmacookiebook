@@ -15,7 +15,7 @@ export default async function AuthorPricing() {
     ["Are there listing or membership fees?", "No. Joining and listing are free. The only charge is the commission on completed sales, taken out of the sale price."],
     ["When do I get paid?", `The customer's payment is held until they confirm the book arrived or the visit happened, or automatically ${HOLD_DAYS} days later (${HOLD_DAYS} days after the event, for visits). Your share is then sent to your Stripe account, and Stripe pays it out to your bank.`],
     ["What if a school pays by purchase order?", `Schools can pay by purchase order on Net ${poTermsDays} terms. Once the PO is approved, you ship the books or do the visit as usual, and your share is released after the school pays the invoice.`],
-    ["What if a booking is canceled?", `If the customer cancels at least ${cancelNoticeDays} days before the event, they're refunded. Later cancellations aren't refunded, and you're paid because you kept the date for them.`],
+    ["What if a booking is canceled?", `If the customer cancels at least ${cancelNoticeDays} days before the event, they're refunded. Later cancellations aren't refunded, and you're paid because you kept the date for them. If you cancel, the customer is always refunded in full, so please cancel only when you must.`],
     ["Can I charge for travel?", "Yes. Add travel and accommodation to your fee when you accept a request or submit a proposal. Agree it with the customer in messages first."],
     ["Do bulk discounts come out of my share?", "Bulk discounts lower the sale price, and commission is charged on the discounted price. You can turn bulk discounts off for any product under Products."],
   ];
