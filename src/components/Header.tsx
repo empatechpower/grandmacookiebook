@@ -24,6 +24,21 @@ export async function Header() {
           </div>
         </Link>
         <MobileMenu className="nav-panel">
+        {/* Phones: account buttons sit at the top of the menu instead of crowding the header. */}
+        <div className="menu-actions">
+          {user ? (
+            <>
+              {user.role === "BUYER" && <Link className="btn btn-line" href="/cart">Cart{cartCount ? ` (${cartCount})` : ""}</Link>}
+              <Link className="btn btn-terra" href={dashboardPath(user.role)}>My dashboard</Link>
+              <form action={logout}><button className="btn btn-line">Log out</button></form>
+            </>
+          ) : (
+            <>
+              <Link className="btn btn-line" href="/login">Log in</Link>
+              <Link className="btn btn-terra" href="/signup">Join free</Link>
+            </>
+          )}
+        </div>
         <nav className="nav" aria-label="Main">
           <Link href="/authors">Find authors</Link>
           <Link href="/books">Books</Link>

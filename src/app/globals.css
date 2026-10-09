@@ -886,3 +886,14 @@ th { background: #dff1ff; color: #12577f; }
 .home-empty p { color: var(--ink-soft); max-width: 60ch; }
 .home-empty .audience-icon { flex: none; background: var(--sun-l); }
 @media (max-width: 640px) { .home-empty { flex-direction: column; padding: 20px; } }
+/* Phone header: just the logo and Menu; Log in / Join free live at the top of the menu */
+.menu-actions { display: none; }
+@media (max-width: 960px) {
+  .topbar .actions { display: none; }
+  .topbar-inner { padding: 10px 0; }
+  .menu-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 0 6px; }
+  .menu-actions form, .menu-actions form .btn { width: 100%; }
+  .menu-actions .btn { width: 100%; padding: 12px 14px; font-size: 1rem; }
+}
+@media (max-width: 960px) { .menu-actions > :nth-child(3) { grid-column: 1 / -1; } }
+@media (max-width: 640px) { .rgv-ribbon { font-size: .86rem; padding: 7px 12px; letter-spacing: 0; } }
