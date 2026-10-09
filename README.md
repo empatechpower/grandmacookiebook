@@ -37,6 +37,9 @@ Demo accounts (password `atelier123`): `buyer@atelier.test`, `author@atelier.tes
 
 Vercel's Hobby plan is non-commercial only. The live marketplace needs Pro.
 
+**Launch (real data).** Create the owner's super admin on the live database, with no demo data:
+`DATABASE_URL="<live url>" ADMIN_EMAIL="owner@…" ADMIN_NAME="…" npm run launch`. It prints a temporary password to change under Settings. If the database already holds demo or test data, it stops. Add `-- --wipe` with `CONFIRM_WIPE=southtexasbookanauthor` to erase everything first.
+
 ## Key flows
 
 **Listing approval.** Author signs up → account `PENDING`. Their books/packages are `PENDING` too. Nothing is public until the admin approves the author **and** each listing **and** the author has finished Stripe onboarding (so there's always somewhere to send their money). Editing a live listing's content sends it back for review; price/stock edits go live immediately. Suspending an author hides all their listings and signs them out.

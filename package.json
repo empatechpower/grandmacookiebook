@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:up": "docker compose up -d db",
     "setup": "prisma migrate deploy && prisma db seed",
+    "launch": "tsx scripts/launch.ts",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma db seed",
