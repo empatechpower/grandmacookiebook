@@ -69,14 +69,14 @@ export default async function Home() {
               Know what you need? <Link href="/dashboard/buyer/requests/new" style={{ textDecoration: "underline" }}>Post a request</Link> and let authors send you proposals.
             </p>
           </div>
+          <div className="poster-wrap">
+          {/* The logo sits above the box, overlapping its top edge. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="poster-logo" src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={170} height={170} />
           <aside className="poster">
             <div className="poster-head">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="poster-logo" src="/brand/logo.jpg" alt={`${BRAND.name} logo`} width={96} height={96} />
-              <div>
-                <div className="poster-kicker">Book this term</div>
-                <h3>Author visits Rio Grande Valley schools are booking now</h3>
-              </div>
+              <div className="poster-kicker">Book this term</div>
+              <h3>Author visits Rio Grande Valley schools are booking now</h3>
             </div>
             {visits.length === 0 && <p className="poster-empty">New author visits are being added. Browse our authors to find the right fit for your school.</p>}
             {visits.slice(0, 2).map((v) => (
@@ -93,6 +93,7 @@ export default async function Home() {
               {visits.length ? "See all visits" : "Browse authors"}
             </Link>
           </aside>
+          </div>
         </div>
       </section>
 

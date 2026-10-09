@@ -17,7 +17,7 @@ export async function Header() {
       <div className="wrap topbar-inner">
         <Link className="mark" href="/">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="mark-logo" src="/brand/logo.jpg" alt="" width={124} height={124} />
+          <img className="mark-logo" src="/brand/logo.jpg" alt="" width={76} height={76} />
           <div>
             <b>{BRAND.name}</b>
             <small>{BRAND.tagline}</small>
