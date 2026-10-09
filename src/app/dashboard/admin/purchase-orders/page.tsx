@@ -84,7 +84,7 @@ export default async function PurchaseOrders({ searchParams }: { searchParams: P
                     <form action={reviewPurchaseOrder} className="inline-form">
                       <input type="hidden" name="id" value={po.id} />
                       <input type="hidden" name="decision" value="reject" />
-                      <input name="note" placeholder="Reason (optional)" aria-label="Reason" style={{ maxWidth: 150 }} />
+                      <input name="note" placeholder="Reason (optional)" aria-label="Reason" style={{ maxWidth: 150 }} maxLength={300} />
                       <SubmitButton className="btn btn-danger btn-sm" confirm={`Reject PO ${po.poNumber}?`}>Reject</SubmitButton>
                     </form>
                   </div>
@@ -92,7 +92,7 @@ export default async function PurchaseOrders({ searchParams }: { searchParams: P
                 {po.status === "APPROVED" && (
                   <form action={markPurchaseOrderPaid} className="inline-form">
                     <input type="hidden" name="id" value={po.id} />
-                    <input name="note" placeholder="e.g. Check #1042" aria-label="Payment reference" style={{ maxWidth: 140 }} />
+                    <input name="note" placeholder="e.g. Check #1042" aria-label="Payment reference" style={{ maxWidth: 140 }} maxLength={300} />
                     <SubmitButton className="btn btn-terra btn-sm" confirm={`Mark ${money(po.amount)} received for PO ${po.poNumber}? Authors' payouts will be released.`}>Mark paid</SubmitButton>
                   </form>
                 )}

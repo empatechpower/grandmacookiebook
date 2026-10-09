@@ -1,4 +1,5 @@
 import { getSettings } from "@/lib/settings";
+import { PasswordInput } from "@/components/PasswordInput";
 import { inviteAdmin, saveFees } from "@/app/actions/admin";
 import { PageHead } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -36,11 +37,11 @@ export default async function Settings() {
           <fieldset className="field">
             <legend>Bulk book discounts (authors can switch these off per product)</legend>
             <div className="field-row">
-              <div className="field"><label htmlFor="t1m">Tier 1 from (copies)</label><input id="t1m" name="bulkTier1Min" type="number" min={2} defaultValue={s.bulkTier1Min} /></div>
+              <div className="field"><label htmlFor="t1m">Tier 1 from (copies)</label><input id="t1m" name="bulkTier1Min" type="number" min={2} defaultValue={s.bulkTier1Min} max={1000} /></div>
               <div className="field"><label htmlFor="t1p">Tier 1 discount %</label><input id="t1p" name="bulkTier1Pct" type="number" min={0} max={90} defaultValue={s.bulkTier1Pct} /></div>
             </div>
             <div className="field-row">
-              <div className="field"><label htmlFor="t2m">Tier 2 from (copies)</label><input id="t2m" name="bulkTier2Min" type="number" min={3} defaultValue={s.bulkTier2Min} /></div>
+              <div className="field"><label htmlFor="t2m">Tier 2 from (copies)</label><input id="t2m" name="bulkTier2Min" type="number" min={3} defaultValue={s.bulkTier2Min} max={1000} /></div>
               <div className="field"><label htmlFor="t2p">Tier 2 discount %</label><input id="t2p" name="bulkTier2Pct" type="number" min={0} max={90} defaultValue={s.bulkTier2Pct} /></div>
             </div>
           </fieldset>
@@ -60,15 +61,15 @@ export default async function Settings() {
           <h3 style={{ marginBottom: 12 }}>Add a super admin</h3>
           <div className="field">
             <label htmlFor="n">Name</label>
-            <input id="n" name="name" required />
+            <input id="n" name="name" required minLength={2} maxLength={80} />
           </div>
           <div className="field">
             <label htmlFor="e">Email</label>
-            <input id="e" name="email" type="email" required />
+            <input id="e" name="email" type="email" required maxLength={160} />
           </div>
           <div className="field">
             <label htmlFor="p">Temporary password</label>
-            <input id="p" name="password" type="text" minLength={8} required />
+            <PasswordInput id="p" name="password" minLength={8} maxLength={200} required autoComplete="new-password" />
             <div className="hint">Share it securely.</div>
           </div>
           <SubmitButton className="btn btn-terra">Add admin</SubmitButton>

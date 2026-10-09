@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SubmitButton } from "./SubmitButton";
 import { BRAND } from "@/lib/brand";
 import { currentUser, dashboardPath } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -30,7 +31,7 @@ export async function Header() {
             <>
               {user.role === "BUYER" && <Link className="btn btn-line" href="/cart">Cart{cartCount ? ` (${cartCount})` : ""}</Link>}
               <Link className="btn btn-terra" href={dashboardPath(user.role)}>My dashboard</Link>
-              <form action={logout}><button className="btn btn-line">Log out</button></form>
+              <form action={logout}><SubmitButton className="btn btn-line" pendingText="Logging out…">Log out</SubmitButton></form>
             </>
           ) : (
             <>
@@ -78,7 +79,7 @@ export async function Header() {
                 {user.name.split(" ")[0]} desk
               </Link>
               <form action={logout}>
-                <button className="btn btn-line">Log out</button>
+                <SubmitButton className="btn btn-line" pendingText="Logging out…">Log out</SubmitButton>
               </form>
             </>
           ) : (

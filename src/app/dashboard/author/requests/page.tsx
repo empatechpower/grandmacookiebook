@@ -55,8 +55,8 @@ export default async function Requests() {
               {b.status === "PENDING" && (
                 <form action={respondBooking} className="inline-form" style={{ flexWrap: "wrap", maxWidth: 300 }}>
                   <input type="hidden" name="id" value={b.id} />
-                  <input name="fee" type="number" step="0.01" min="1" defaultValue={(b.fee / 100).toString()} aria-label="Final quote (USD)" title="Final quote in USD — add travel costs here" style={{ width: 90 }} />
-                  <input name="note" placeholder="Note, e.g. incl. travel" aria-label="Note to buyer" style={{ flex: 1 }} />
+                  <input name="fee" type="number" step="0.01" min="1" defaultValue={(b.fee / 100).toString()} aria-label="Final quote (USD)" title="Final quote in USD — add travel costs here" style={{ width: 90 }} max={100000} />
+                  <input name="note" placeholder="Note, e.g. incl. travel" aria-label="Note to buyer" style={{ flex: 1 }} maxLength={300} />
                   <SubmitButton name="decision" value="accept" className="btn btn-sage btn-sm">Accept</SubmitButton>
                   <SubmitButton name="decision" value="decline" className="btn btn-danger btn-sm">Decline</SubmitButton>
                 </form>

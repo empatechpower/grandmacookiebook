@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { PHONE_PATTERN } from "@/lib/validation";
 import { SubmitButton } from "./SubmitButton";
 
 type Billing = { name: string; email: string; phone: string; address: string };
@@ -14,21 +15,21 @@ export function PoFields({ billing, termsDays }: { billing: Billing; termsDays: 
       </div>
       <div className="field">
         <label htmlFor="billingName">Billing contact (accounts payable)</label>
-        <input id="billingName" name="billingName" required defaultValue={billing.name} autoComplete="name" />
+        <input id="billingName" name="billingName" required defaultValue={billing.name} autoComplete="name" maxLength={120} />
       </div>
       <div className="field-row">
         <div className="field">
           <label htmlFor="billingEmail">Billing email</label>
-          <input id="billingEmail" name="billingEmail" type="email" required defaultValue={billing.email} />
+          <input id="billingEmail" name="billingEmail" type="email" required defaultValue={billing.email} maxLength={160} />
         </div>
         <div className="field">
           <label htmlFor="billingPhone">Billing phone</label>
-          <input id="billingPhone" name="billingPhone" type="tel" defaultValue={billing.phone} />
+          <input id="billingPhone" name="billingPhone" type="tel" defaultValue={billing.phone} pattern={PHONE_PATTERN} title="10-digit US phone number, e.g. (956) 555-0142" maxLength={30} />
         </div>
       </div>
       <div className="field">
         <label htmlFor="billingAddress">Billing address</label>
-        <textarea id="billingAddress" name="billingAddress" required defaultValue={billing.address} placeholder="District / organization, street, city, state, ZIP" />
+        <textarea id="billingAddress" name="billingAddress" required defaultValue={billing.address} placeholder="District / organization, street, city, state, ZIP" minLength={8} maxLength={400} />
       </div>
       <div className="field">
         <label htmlFor="poFile">Signed purchase order (PDF, optional)</label>

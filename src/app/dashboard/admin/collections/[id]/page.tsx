@@ -39,7 +39,7 @@ export default async function EditCollection({ params }: { params: Promise<{ id:
           <optgroup label="Authors">{authors.map((a) => <option key={a.id} value={`author:${a.id}`}>{a.name}</option>)}</optgroup>
           <optgroup label="Books">{books.map((b) => <option key={b.id} value={`book:${b.id}`}>{b.title} — {b.author.name}</option>)}</optgroup>
         </select>
-        <input name="note" placeholder="Curator's note (optional)" style={{ flex: 1, minWidth: 200 }} />
+        <input name="note" placeholder="Curator's note (optional)" style={{ flex: 1, minWidth: 200 }} maxLength={300} />
         <SubmitButton className="btn btn-sage btn-sm">Add</SubmitButton>
       </form>
       <Table heads={["#", "Item", "Note", ""]} empty="Nothing in this collection yet.">

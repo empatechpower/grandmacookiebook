@@ -5,6 +5,8 @@ import { LEGAL } from "@/lib/legal";
 import { cookies } from "next/headers";
 import { Header } from "@/components/Header";
 import { Toast } from "@/components/Toast";
+import { NavProgress } from "@/components/NavProgress";
+import { Suspense } from "react";
 import { SiteChrome } from "@/components/SiteChrome";
 import "./globals.css";
 
@@ -37,6 +39,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body>
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <SiteChrome
           header={<Header />}
           footer={

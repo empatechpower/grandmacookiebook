@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/SubmitButton";
+import Form from "next/form";
 import { VisitCard } from "@/components/Cards";
 import { livePackages } from "@/lib/catalog";
 import { FORMATS } from "@/lib/constants";
@@ -17,11 +19,11 @@ export default async function Visits({ searchParams }: { searchParams: Promise<{
             <div className="eyebrow">Appearances</div>
             <h2>Author Visit</h2>
           </div>
-          <form className="inline-form" action="/visits">
+          <Form className="inline-form" action="/visits">
             {active && <input type="hidden" name="format" value={active} />}
-            <input name="q" defaultValue={q} placeholder="Search author visits or authors" aria-label="Search visits" style={{ padding: "9px 12px", minWidth: 220 }} />
-            <button className="btn btn-ink btn-sm">Search</button>
-          </form>
+            <input name="q" defaultValue={q} placeholder="Search author visits or authors" aria-label="Search visits" style={{ padding: "9px 12px", minWidth: 220 }} maxLength={100} />
+            <SubmitButton className="btn btn-ink btn-sm" pendingText="Searching…">Search</SubmitButton>
+          </Form>
         </div>
         <div className="filters">
           <Link className={`filter${!active ? " active" : ""}`} href="/visits">

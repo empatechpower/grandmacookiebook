@@ -7,7 +7,7 @@ export function SubmitButton({
   pendingText,
   confirm,
   ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { pendingText?: string; confirm?: string }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { pendingText?: string | null; confirm?: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -18,8 +18,11 @@ export function SubmitButton({
       onClick={(e) => {
         if (confirm && !window.confirm(confirm)) e.preventDefault();
       }}
+      aria-busy={pending || undefined}
+      data-pending={pending || undefined}
     >
-      {pending ? pendingText ?? "Working…" : children}
+      {pending && pendingText !== null && <span className="spin" aria-hidden />}
+      {pending && pendingText !== null ? pendingText ?? "Working…" : children}
     </button>
   );
 }

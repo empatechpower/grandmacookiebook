@@ -19,7 +19,7 @@ export default async function Media() {
           <div className="field"><label htmlFor="p-file">Upload</label><input id="p-file" name="file" type="file" accept="image/jpeg,image/png,image/webp" /></div>
           <div className="field"><label htmlFor="p-url">…or image link</label><input id="p-url" name="url" placeholder="https://" /></div>
           <div className="field-row">
-            <div className="field"><label htmlFor="p-title">Title</label><input id="p-title" name="title" required placeholder="Reading at Lincoln Elementary" /></div>
+            <div className="field"><label htmlFor="p-title">Title</label><input id="p-title" name="title" required placeholder="Reading at Lincoln Elementary" maxLength={120} /></div>
             <div className="field"><label htmlFor="p-cat">Category</label>
               <select id="p-cat" name="category" defaultValue="SCHOOL_VISITS">{MEDIA_CATEGORIES.filter((c) => c.value !== "VIDEOS").map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}</select>
             </div>
@@ -32,7 +32,7 @@ export default async function Media() {
           <input type="hidden" name="kind" value="VIDEO" />
           <div className="field"><label htmlFor="v-url">Video link</label><input id="v-url" name="url" required placeholder="YouTube, Vimeo or any video page" /></div>
           <div className="field-row">
-            <div className="field"><label htmlFor="v-title">Title</label><input id="v-title" name="title" required placeholder="Interview on KSAT 12" /></div>
+            <div className="field"><label htmlFor="v-title">Title</label><input id="v-title" name="title" required placeholder="Interview on KSAT 12" maxLength={120} /></div>
             <div className="field"><label htmlFor="v-cat">Category</label>
               <select id="v-cat" name="category" defaultValue="VIDEOS">{MEDIA_CATEGORIES.filter((c) => c.value !== "PHOTOS").map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}</select>
             </div>

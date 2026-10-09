@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/SubmitButton";
+import Form from "next/form";
 import { searchAuthors, type DirectoryFilters } from "@/lib/directory";
 import { BUDGETS, FORMATS, GRADES, IDENTITIES, LANGUAGES, TOPICS } from "@/lib/constants";
 import { money } from "@/lib/money";
@@ -40,10 +42,10 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
 
         <div className="directory">
           <FiltersDisclosure active={active}>
-          <form className="panel filters-panel" action="/authors">
+          <Form className="panel filters-panel" action="/authors">
             <div className="field">
               <label htmlFor="q">Search</label>
-              <input id="q" name="q" defaultValue={f.q} placeholder="Name, topic or book title" />
+              <input id="q" name="q" defaultValue={f.q} placeholder="Name, topic or book title" maxLength={100} />
             </div>
             <Select name="topic" label="Topic" value={f.topic} opts={TOPICS} />
             <Select name="grade" label="Grade level / audience" value={f.grade} opts={GRADES} />
@@ -55,7 +57,7 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
             </div>
             <div className="field">
               <label htmlFor="location">Location</label>
-              <input id="location" name="location" defaultValue={f.location} placeholder="City or state" />
+              <input id="location" name="location" defaultValue={f.location} placeholder="City or state" maxLength={80} />
             </div>
             <Select name="language" label="Language" value={f.language} opts={LANGUAGES} />
             <Select name="identity" label="Author tags" value={f.identity} opts={IDENTITIES} />
@@ -72,10 +74,10 @@ export default async function Authors({ searchParams }: { searchParams: Promise<
               ]}
             />
             <div className="row">
-              <button className="btn btn-terra">Search</button>
+              <SubmitButton className="btn btn-terra" pendingText="Searching…">Search</SubmitButton>
               {active && <Link className="btn btn-ghost" href="/authors">Clear</Link>}
             </div>
-          </form>
+          </Form>
           </FiltersDisclosure>
 
           <div>

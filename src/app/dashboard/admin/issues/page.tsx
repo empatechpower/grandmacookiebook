@@ -59,7 +59,7 @@ export default async function Issues({ searchParams }: { searchParams: Promise<{
                 {i.status === "OPEN" ? (
                   <form action={resolveIssue} className="inline-form" style={{ flexWrap: "wrap", maxWidth: 280 }}>
                     <input type="hidden" name="id" value={i.id} />
-                    <input name="note" placeholder="Note to both sides (optional)" aria-label="Resolution note" style={{ flex: "1 1 100%" }} />
+                    <input name="note" placeholder="Note to both sides (optional)" aria-label="Resolution note" style={{ flex: "1 1 100%" }} maxLength={300} />
                     <SubmitButton name="decision" value="refund" className="btn btn-danger btn-sm" confirm={`Refund ${money(amount)} to the buyer?`}>Refund buyer</SubmitButton>
                     <SubmitButton name="decision" value="release" className="btn btn-sage btn-sm" confirm="Reject the claim and release payment to the author?">Release to author</SubmitButton>
                   </form>

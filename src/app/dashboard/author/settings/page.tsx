@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PHONE_PATTERN } from "@/lib/validation";
 import { requireUser } from "@/lib/auth";
 import { updateAccount } from "@/app/actions/author";
 import { PageHead } from "@/components/ui";
@@ -14,7 +15,7 @@ export default async function Settings() {
         <form action={updateAccount} className="panel">
           <h3 style={{ marginBottom: 12 }}>Account</h3>
           <div className="field"><label>Email (sign-in)</label><input value={user.email} disabled /></div>
-          <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" /><div className="hint">Only shown to the platform team, never on your storefront.</div></div>
+          <div className="field"><label htmlFor="phone">Phone</label><input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" pattern={PHONE_PATTERN} title="10-digit US phone number, e.g. (956) 555-0142" maxLength={30} /><div className="hint">Only shown to the platform team, never on your storefront.</div></div>
           <SubmitButton>Save</SubmitButton>
         </form>
         <div className="panel">

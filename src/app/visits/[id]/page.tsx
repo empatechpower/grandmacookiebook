@@ -60,7 +60,7 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
               <input type="hidden" name="packageId" value={v.id} />
               <div className="field">
                 <label htmlFor="organisation">School / organization</label>
-                <input id="organisation" name="organisation" required placeholder="St. Cloud Elementary" defaultValue={user?.orgName ?? undefined} />
+                <input id="organisation" name="organisation" required placeholder="St. Cloud Elementary" defaultValue={user?.orgName ?? undefined} maxLength={150} />
               </div>
               {dates.length > 0 ? (
                 <fieldset className="field">
@@ -89,16 +89,16 @@ export default async function VisitPage({ params }: { params: Promise<{ id: stri
               </div>
               <div className="field">
                 <label htmlFor="audienceSize">Audience size</label>
-                <input id="audienceSize" name="audienceSize" type="number" min={1} required placeholder="120" />
+                <input id="audienceSize" name="audienceSize" type="number" min={1} required placeholder="120" max={100000} />
               </div>
               </div>
               <div className="field">
                 <label htmlFor="venue">{v.format === "VIRTUAL" ? "Platform / link" : "Venue address"}</label>
-                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "1200 N 10th St, McAllen, TX"} />
+                <input id="venue" name="venue" required placeholder={v.format === "VIRTUAL" ? "Zoom" : "1200 N 10th St, McAllen, TX"} maxLength={200} />
               </div>
               <div className="field">
                 <label htmlFor="message">Anything the author should know?</label>
-                <textarea id="message" name="message" placeholder="Age group, theme, timing…" />
+                <textarea id="message" name="message" placeholder="Age group, theme, timing…" maxLength={2000} />
               </div>
               <SubmitButton className="btn btn-terra" pendingText="Sending…">
                 {user ? "Send request" : "Log in to request"}

@@ -33,7 +33,7 @@ export default async function AdminReferrals() {
             <td>
               <form action={reviewReferral} className="inline-form">
                 <input type="hidden" name="id" value={r.id} />
-                <input name="note" placeholder="Note (optional)" aria-label="Note" />
+                <input name="note" placeholder="Note (optional)" aria-label="Note" maxLength={300} />
                 <SubmitButton name="decision" value="approve" className="btn btn-sage btn-sm">Verify</SubmitButton>
                 <SubmitButton name="decision" value="reject" className="btn btn-danger btn-sm">Reject</SubmitButton>
               </form>

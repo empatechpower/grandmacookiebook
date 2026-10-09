@@ -32,9 +32,9 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
 }
 
 const SignupSchema = z.object({
-  name: z.string().trim().min(2, "Enter your full name"),
-  email: z.string().trim().toLowerCase().email("Enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  name: z.string().trim().min(2, "Enter your full name").max(80, "Name is too long"),
+  email: z.string().trim().toLowerCase().email("Enter a valid email").max(160),
+  password: z.string().min(8, "Password must be at least 8 characters").max(200, "Password is too long"),
   // Super admins are never self-registered; they are seeded or invited by another admin.
   role: z.enum(["BUYER", "AUTHOR"]),
   orgType: z.union([z.literal(""), z.enum(["SCHOOL", "LIBRARY", "BUSINESS", "NONPROFIT", "INDIVIDUAL"])]).optional(),

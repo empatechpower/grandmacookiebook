@@ -50,7 +50,7 @@ export default async function Listings({ searchParams }: { searchParams: Promise
                 <form action={reviewListing} className="inline-form">
                   <input type="hidden" name="kind" value={r.kind} />
                   <input type="hidden" name="id" value={r.id} />
-                  <input name="note" placeholder="Note to author" aria-label="Review note" />
+                  <input name="note" placeholder="Note to author" aria-label="Review note" maxLength={300} />
                   {r.status !== "APPROVED" && <SubmitButton name="decision" value="approve" className="btn btn-sage btn-sm">Approve</SubmitButton>}
                   {r.status !== "REJECTED" && <SubmitButton name="decision" value="reject" className="btn btn-danger btn-sm">{r.status === "APPROVED" ? "Unpublish" : "Reject"}</SubmitButton>}
                 </form>

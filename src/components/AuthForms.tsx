@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { login, signup } from "@/app/actions/auth";
+import { PasswordInput } from "./PasswordInput";
 import { SubmitButton } from "./SubmitButton";
 import { ORG_TYPES } from "@/lib/constants";
 
@@ -27,11 +28,11 @@ export function LoginForm({ next, initialAs = "GUEST" }: { next?: string; initia
       {next && <input type="hidden" name="next" value={next} />}
       <div className="field">
         <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" autoComplete="email" required defaultValue="buyer@atelier.test" />
+        <input id="email" name="email" type="email" autoComplete="email" required defaultValue="buyer@atelier.test" maxLength={160} />
       </div>
       <div className="field">
         <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" autoComplete="current-password" required />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required />
         <div className="hint">
           <Link href="/forgot-password" style={{ textDecoration: "underline" }}>Forgot password?</Link>
         </div>
@@ -60,15 +61,15 @@ export function SignupForm({ initialRole, initialEmail }: { initialRole: string;
       {state?.error && <div className="alert alert-err">{state.error}</div>}
       <div className="field">
         <label htmlFor="name">Full name</label>
-        <input id="name" name="name" required placeholder="Jordan Taylor" autoComplete="name" />
+        <input id="name" name="name" required placeholder="Jordan Taylor" autoComplete="name" minLength={2} maxLength={80} />
       </div>
       <div className="field">
         <label htmlFor="email">Email</label>
-        <input id="email" name="email" type="email" required placeholder="you@email.com" autoComplete="email" defaultValue={initialEmail} />
+        <input id="email" name="email" type="email" required placeholder="you@email.com" autoComplete="email" defaultValue={initialEmail} maxLength={160} />
       </div>
       <div className="field">
         <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" />
+        <PasswordInput id="password" name="password" required minLength={8} maxLength={200} autoComplete="new-password" />
         <div className="hint">At least 8 characters.</div>
       </div>
       <div className="field">
@@ -96,7 +97,7 @@ export function SignupForm({ initialRole, initialEmail }: { initialRole: string;
           </div>
           <div className="field">
             <label htmlFor="orgName">Organization name <span className="muted">(optional)</span></label>
-            <input id="orgName" name="orgName" placeholder="St. Cloud Elementary" />
+            <input id="orgName" name="orgName" placeholder="St. Cloud Elementary" maxLength={120} />
           </div>
         </div>
       )}

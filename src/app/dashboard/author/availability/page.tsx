@@ -53,11 +53,11 @@ export default async function Availability({ searchParams }: { searchParams: Pro
             const booked = bookedSet.has(k);
             const cls = past ? "past" : booked ? "booked" : openSet.has(k) ? "open" : "";
             return (
-              <button key={k} name="day" value={k} className={cls} disabled={past || booked} aria-pressed={openSet.has(k)}
+              <SubmitButton key={k} name="day" value={k} className={cls} disabled={past || booked} aria-pressed={openSet.has(k)} pendingText={null}
                 title={booked ? "Booked" : openSet.has(k) ? "Open — click to close" : "Closed — click to open"}>
                 {d.getUTCDate()}
                 {booked ? <small>Booked</small> : requestedSet.has(k) ? <small>Request</small> : openSet.has(k) ? <small>Open</small> : null}
-              </button>
+              </SubmitButton>
             );
           })}
         </form>

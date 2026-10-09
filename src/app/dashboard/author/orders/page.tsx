@@ -57,7 +57,7 @@ export default async function AuthorOrders() {
                     <select name="carrier" defaultValue={i.carrier ?? "USPS"} aria-label="Carrier">
                       {CARRIERS.map((c) => <option key={c}>{c}</option>)}
                     </select>
-                    <input name="trackingNumber" defaultValue={i.trackingNumber ?? ""} placeholder="Tracking #" aria-label="Tracking number" style={{ width: 130 }} />
+                    <input name="trackingNumber" defaultValue={i.trackingNumber ?? ""} placeholder="Tracking #" aria-label="Tracking number" style={{ width: 130 }} maxLength={60} pattern="[A-Za-z0-9 \-]{4,60}" title="Letters, numbers and dashes" />
                     <SubmitButton className={`btn btn-sm ${i.status === "PAID" ? "btn-sage" : "btn-line"}`}>{i.status === "PAID" ? "Mark shipped" : "Update"}</SubmitButton>
                     {url && <a href={url} target="_blank" rel="noreferrer" style={{ fontSize: ".78rem", textDecoration: "underline" }}>Track ↗</a>}
                   </form>

@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { done, fail, str } from "@/lib/actions";
+import { done, fail, phoneOk, str } from "@/lib/actions";
 import { CATEGORIES, FORMATS, GRADES, IDENTITIES, LANGUAGES, ORG_TYPES, TOPICS } from "@/lib/constants";
 import { serializeTags } from "@/lib/tags";
 import * as notify from "@/lib/notify";
@@ -20,11 +20,11 @@ const ownUpload = z.string().regex(/^\/uploads\/(avatars|covers|media)\/[0-9a-f-
 const url = z.union([z.literal(""), ownUpload, z.string().url("Cover must be a full URL (https://…)")]);
 
 const BookSchema = z.object({
-  title: z.string().trim().min(2, "Title is required"),
-  description: z.string().trim().min(10, "Add a short description (10+ characters)"),
+  title: z.string().trim().min(2, "Title is required").max(150, "Title is too long (150 characters max)"),
+  description: z.string().trim().min(10, "Add a short description (10+ characters)").max(5000, "Description is too long (5,000 characters max)"),
   category: z.enum(CATEGORIES.map((c) => c.value) as [string, ...string[]]),
-  price: z.number().int().min(100, "Price must be at least 1.00"),
-  stock: z.number().int().min(0),
+  price: z.number().int().min(100, "Price must be at least 1.00").max(1_000_000, "Price can be at most $10,000"),
+  stock: z.number().int().min(0, "Stock can't be negative").max(100_000, "Stock can be at most 100,000"),
   coverUrl: url,
   bulkEnabled: z.boolean(),
 });
@@ -83,12 +83,12 @@ export async function saveBook(fd: FormData) {
 }
 
 const PackageSchema = z.object({
-  title: z.string().trim().min(2, "Name is required"),
-  description: z.string().trim().min(10, "Describe what the audience gets (10+ characters)"),
+  title: z.string().trim().min(2, "Name is required").max(150, "Name is too long (150 characters max)"),
+  description: z.string().trim().min(10, "Describe what the audience gets (10+ characters)").max(5000, "Description is too long (5,000 characters max)"),
   format: z.enum(FORMATS.map((f) => f.value) as [string, ...string[]]),
-  durationMins: z.number().int().min(10, "Duration must be at least 10 minutes"),
-  fee: z.number().int().min(100, "Fee must be at least 1.00"),
-  region: z.string().trim(),
+  durationMins: z.number().int().min(10, "Duration must be at least 10 minutes").max(600, "Duration can be at most 10 hours"),
+  fee: z.number().int().min(100, "Fee must be at least 1.00").max(10_000_000, "Fee can be at most $100,000"),
+  region: z.string().trim().max(120, "Region is too long"),
 });
 
 export async function savePackage(fd: FormData) {
@@ -277,7 +277,9 @@ export async function updateProfile(fd: FormData) {
 
 export async function updateAccount(fd: FormData) {
   const user = await requireUser("AUTHOR", "BUYER");
-  await db.user.update({ where: { id: user.id }, data: { phone: str(fd, "phone").slice(0, 30) || null } });
+  const phone = str(fd, "phone");
+  if (!phoneOk(phone)) return fail("Enter a 10-digit US phone number, e.g. (956) 555-0142");
+  await db.user.update({ where: { id: user.id }, data: { phone: phone.slice(0, 30) || null } });
   await done("Settings saved");
 }
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PHONE_PATTERN } from "@/lib/validation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
@@ -74,11 +75,11 @@ export default async function Cart() {
               </div>
               <div className="field">
                 <label htmlFor="phone">Phone (for delivery questions, optional)</label>
-                <input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" />
+                <input id="phone" name="phone" type="tel" defaultValue={user.phone ?? ""} autoComplete="tel" pattern={PHONE_PATTERN} title="10-digit US phone number, e.g. (956) 555-0142" maxLength={30} />
               </div>
               <div className="field">
                 <label htmlFor="address">Shipping address</label>
-                <textarea id="address" name="address" required defaultValue={user.location ?? ""} placeholder="Street, city, state" />
+                <textarea id="address" name="address" required defaultValue={user.location ?? ""} placeholder="Street, city, state" minLength={8} maxLength={400} />
               </div>
               <PayMethod
                 total={money(total)}

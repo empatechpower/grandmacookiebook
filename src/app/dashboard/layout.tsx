@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth";
+import { SubmitButton } from "@/components/SubmitButton";
 import Link from "next/link";
 import { MobileMenu } from "@/components/MobileMenu";
 import { SideNav, type NavLink } from "@/components/SideNav";
@@ -110,7 +111,7 @@ export default async function DashLayout({ children }: { children: React.ReactNo
           )}
           <Link href="/">← Back to website</Link>
           <form action={logout}>
-            <button className="side-logout">Log out</button>
+            <SubmitButton className="side-logout" pendingText="Logging out…">Log out</SubmitButton>
           </form>
         </div>
       </aside>

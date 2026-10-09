@@ -20,11 +20,11 @@ export function BookForm({ book }: { book?: Book }) {
       {book && <input type="hidden" name="id" value={book.id} />}
       <div className="field">
         <label htmlFor="title">Title</label>
-        <input id="title" name="title" required defaultValue={book?.title} placeholder="Working title" />
+        <input id="title" name="title" required defaultValue={book?.title} placeholder="Working title" minLength={2} maxLength={150} />
       </div>
       <div className="field">
         <label htmlFor="description">Description</label>
-        <textarea id="description" name="description" required defaultValue={book?.description} />
+        <textarea id="description" name="description" required defaultValue={book?.description} minLength={10} maxLength={5000} />
       </div>
       <div className="field-row">
         <div className="field">
@@ -35,13 +35,13 @@ export function BookForm({ book }: { book?: Book }) {
         </div>
         <div className="field">
           <label htmlFor="price">Price (USD)</label>
-          <input id="price" name="price" type="number" step="0.01" min="1" required defaultValue={dollars(book?.price) || "18"} />
+          <input id="price" name="price" type="number" step="0.01" min="1" required defaultValue={dollars(book?.price) || "18"} max={10000} />
         </div>
       </div>
       <div className="field-row">
         <div className="field">
           <label htmlFor="stock">Copies in stock</label>
-          <input id="stock" name="stock" type="number" min="0" required defaultValue={book?.stock ?? 10} />
+          <input id="stock" name="stock" type="number" min="0" required defaultValue={book?.stock ?? 10} max={100000} />
         </div>
         <div className="field">
           <label htmlFor="coverFile">Cover image</label>
@@ -85,11 +85,11 @@ export function PackageForm({ pkg }: { pkg?: VisitPackage }) {
       {pkg && <input type="hidden" name="id" value={pkg.id} />}
       <div className="field">
         <label htmlFor="title">Package name</label>
-        <input id="title" name="title" required defaultValue={pkg?.title} placeholder="Keynote / classroom hour" />
+        <input id="title" name="title" required defaultValue={pkg?.title} placeholder="Keynote / classroom hour" minLength={2} maxLength={150} />
       </div>
       <div className="field">
         <label htmlFor="description">What the audience gets</label>
-        <textarea id="description" name="description" required defaultValue={pkg?.description} />
+        <textarea id="description" name="description" required defaultValue={pkg?.description} minLength={10} maxLength={5000} />
       </div>
       <div className="field-row">
         <div className="field">
@@ -100,17 +100,17 @@ export function PackageForm({ pkg }: { pkg?: VisitPackage }) {
         </div>
         <div className="field">
           <label htmlFor="durationMins">Duration (minutes)</label>
-          <input id="durationMins" name="durationMins" type="number" min="10" required defaultValue={pkg?.durationMins ?? 45} />
+          <input id="durationMins" name="durationMins" type="number" min="10" required defaultValue={pkg?.durationMins ?? 45} max={600} />
         </div>
       </div>
       <div className="field-row">
         <div className="field">
           <label htmlFor="fee">Fee (USD)</label>
-          <input id="fee" name="fee" type="number" step="0.01" min="1" required defaultValue={dollars(pkg?.fee) || "500"} />
+          <input id="fee" name="fee" type="number" step="0.01" min="1" required defaultValue={dollars(pkg?.fee) || "500"} max={100000} />
         </div>
         <div className="field">
           <label htmlFor="region">Travel region</label>
-          <input id="region" name="region" defaultValue={pkg?.region ?? ""} placeholder="e.g. Rio Grande Valley, South Texas, or Anywhere" />
+          <input id="region" name="region" defaultValue={pkg?.region ?? ""} placeholder="e.g. Rio Grande Valley, South Texas, or Anywhere" maxLength={120} />
         </div>
       </div>
       <div className="row">

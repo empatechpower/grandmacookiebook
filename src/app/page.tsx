@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/SubmitButton";
+import Form from "next/form";
 import { BRAND } from "@/lib/brand";
 import { authorPath } from "@/lib/storefront";
 import { db } from "@/lib/db";
@@ -56,10 +58,10 @@ export default async function Home() {
               Find vetted authors for school visits, keynotes and workshops — and buy their books directly. Built for South Texas schools,
               libraries, businesses and the authors who inspire them.
             </p>
-            <form action="/authors" className="hero-search" role="search">
-              <input name="q" placeholder="Search authors, topics or books…" aria-label="Search authors, topics or books" />
-              <button className="btn btn-terra">Find an author</button>
-            </form>
+            <Form action="/authors" className="hero-search" role="search">
+              <input name="q" placeholder="Search authors, topics or books…" aria-label="Search authors, topics or books" maxLength={100} />
+              <SubmitButton className="btn btn-terra" pendingText="Searching…">Find an author</SubmitButton>
+            </Form>
             <div className="filters" style={{ marginTop: 12 }}>
               {QUICK.map(([label, href]) => (
                 <Link key={href} className="filter" href={href}>{label}</Link>

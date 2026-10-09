@@ -59,12 +59,12 @@ export default async function Opportunity({ params }: { params: Promise<{ id: st
               </div>
               <div className="field">
                 <label htmlFor="fee">Fee ($)</label>
-                <input id="fee" name="fee" type="number" min={1} step="0.01" required defaultValue={bid ? bid.fee / 100 : packages[0] ? packages[0].fee / 100 : ""} />
+                <input id="fee" name="fee" type="number" min={1} step="0.01" required defaultValue={bid ? bid.fee / 100 : packages[0] ? packages[0].fee / 100 : ""} max={100000} />
                 <div className="hint">The fee you’re charging, including any travel.</div>
               </div>
               <div className="field">
                 <label htmlFor="message">Your pitch</label>
-                <textarea id="message" name="message" required minLength={20} defaultValue={bid?.status === "PENDING" ? bid.message : ""} placeholder="What you'd do for this audience, and why you're a good fit." />
+                <textarea id="message" name="message" required minLength={20} defaultValue={bid?.status === "PENDING" ? bid.message : ""} placeholder="What you'd do for this audience, and why you're a good fit." maxLength={2000} />
               </div>
               <SubmitButton className="btn btn-terra">{bid?.status === "PENDING" ? "Update Proposal" : "Submit Proposal"}</SubmitButton>
             </form>

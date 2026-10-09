@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { PasswordInput } from "./PasswordInput";
 import { changePassword, requestPasswordReset, resetPassword } from "@/app/actions/auth";
 import { SubmitButton } from "./SubmitButton";
 
@@ -27,17 +28,26 @@ export function ForgotForm() {
   );
 }
 
+/** New password + confirmation; the browser blocks submitting until they match. */
 function NewPasswordFields() {
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const mismatch = confirm.length > 0 && pw !== confirm;
   return (
     <>
       <div className="field">
         <label htmlFor="password">New password</label>
-        <input id="password" name="password" type="password" required minLength={8} autoComplete="new-password" />
+        <PasswordInput id="password" name="password" required minLength={8} maxLength={200} autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} />
         <div className="hint">At least 8 characters.</div>
       </div>
       <div className="field">
         <label htmlFor="confirm">Confirm new password</label>
-        <input id="confirm" name="confirm" type="password" required minLength={8} autoComplete="new-password" />
+        <PasswordInput
+          id="confirm" name="confirm" required minLength={8} maxLength={200} autoComplete="new-password" value={confirm}
+          onChange={(e) => { setConfirm(e.target.value); e.target.setCustomValidity(e.target.value && e.target.value !== pw ? "Passwords don't match" : ""); }}
+          aria-invalid={mismatch || undefined} aria-describedby="confirm-hint"
+        />
+        {mismatch && <div id="confirm-hint" className="field-err">Passwords don’t match</div>}
       </div>
     </>
   );
@@ -67,7 +77,7 @@ export function ChangePasswordForm() {
       {state?.error && <div className="alert alert-err">{state.error}</div>}
       <div className="field">
         <label htmlFor="current">Current password</label>
-        <input id="current" name="current" type="password" required autoComplete="current-password" />
+        <PasswordInput id="current" name="current" required autoComplete="current-password" />
       </div>
       <NewPasswordFields />
       <SubmitButton className="btn btn-line" pendingText="Saving…">Change password</SubmitButton>

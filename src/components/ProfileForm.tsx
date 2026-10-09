@@ -34,7 +34,7 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
       <div className={showBio ? "field-row" : undefined}>
         <div className="field">
           <label htmlFor="name">{showBio ? "Display name" : "Your name"}</label>
-          <input id="name" name="name" defaultValue={user.name} required />
+          <input id="name" name="name" defaultValue={user.name} required minLength={2} maxLength={80} />
         </div>
         <div className="field">
           <label>Email</label>
@@ -68,19 +68,19 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
           </div>
           <div className="field">
             <label htmlFor="orgName">Organization name</label>
-            <input id="orgName" name="orgName" defaultValue={user.orgName ?? ""} placeholder="Shown to authors on your requests" />
+            <input id="orgName" name="orgName" defaultValue={user.orgName ?? ""} placeholder="Shown to authors on your requests" maxLength={120} />
           </div>
         </div>
       )}
       <div className="field">
         <label htmlFor="location">{showBio ? "Based in" : "Default shipping address"}</label>
-        <input id="location" name="location" defaultValue={user.location ?? ""} />
+        <input id="location" name="location" defaultValue={user.location ?? ""} maxLength={120} />
       </div>
       {showBio && (
         <>
           <div className="field">
             <label htmlFor="bio">Bio</label>
-            <textarea id="bio" name="bio" defaultValue={user.bio ?? ""} placeholder="Shown on your public author page" />
+            <textarea id="bio" name="bio" defaultValue={user.bio ?? ""} placeholder="Shown on your public author page" maxLength={3000} />
           </div>
           <div className="field">
             <label htmlFor="avatarFile">Photo</label>

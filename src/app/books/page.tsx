@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SubmitButton } from "@/components/SubmitButton";
+import Form from "next/form";
 import { BookCard } from "@/components/Cards";
 import { liveBooks } from "@/lib/catalog";
 import { CATEGORIES } from "@/lib/constants";
@@ -17,11 +19,11 @@ export default async function Books({ searchParams }: { searchParams: Promise<{ 
             <div className="eyebrow">Catalog</div>
             <h2>Buy the book</h2>
           </div>
-          <form className="inline-form" action="/books">
+          <Form className="inline-form" action="/books">
             {active && <input type="hidden" name="cat" value={active} />}
-            <input name="q" defaultValue={q} placeholder="Search title or author" aria-label="Search books" style={{ padding: "9px 12px", minWidth: 220 }} />
-            <button className="btn btn-ink btn-sm">Search</button>
-          </form>
+            <input name="q" defaultValue={q} placeholder="Search title or author" aria-label="Search books" style={{ padding: "9px 12px", minWidth: 220 }} maxLength={100} />
+            <SubmitButton className="btn btn-ink btn-sm" pendingText="Searching…">Search</SubmitButton>
+          </Form>
         </div>
         <div className="filters">
           <Link className={`filter${!active ? " active" : ""}`} href="/books">

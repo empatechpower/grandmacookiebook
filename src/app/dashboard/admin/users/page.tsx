@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Form from "next/form";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { backfillAuthorSlugs } from "@/lib/slugs";
@@ -40,11 +41,11 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
             <Link key={v} className={`filter${filter === v ? " active" : ""}`} href={`?filter=${v}`}>{l}</Link>
           ))}
         </div>
-        <form className="inline-form">
+        <Form className="inline-form" action="/dashboard/admin/users">
           <input type="hidden" name="filter" value={filter} />
-          <input name="q" defaultValue={q} placeholder="Search name or email" />
-          <button className="btn btn-line btn-sm">Search</button>
-        </form>
+          <input name="q" defaultValue={q} placeholder="Search name or email" aria-label="Search name or email" maxLength={100} />
+          <SubmitButton className="btn btn-line btn-sm" pendingText="Searching…">Search</SubmitButton>
+        </Form>
       </div>
       <Table heads={["Name", "Role", "Activity", "Joined", "Status", ""]} empty="No users match.">
         {users.map((u) => (

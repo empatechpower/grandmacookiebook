@@ -11,7 +11,7 @@ export function ArticleForm({ a, kind }: { a?: Article; kind?: string }) {
       <div className="field-row">
         <div className="field">
           <label htmlFor="title">Title</label>
-          <input id="title" name="title" required defaultValue={a?.title} />
+          <input id="title" name="title" required defaultValue={a?.title} maxLength={150} />
         </div>
         <div className="field">
           <label htmlFor="kind">Section</label>
@@ -26,7 +26,7 @@ export function ArticleForm({ a, kind }: { a?: Article; kind?: string }) {
       </div>
       <div className="field">
         <label htmlFor="body">Body</label>
-        <textarea id="body" name="body" required defaultValue={a?.body} style={{ minHeight: 280, fontFamily: "ui-monospace, monospace", fontSize: ".88rem" }} />
+        <textarea id="body" name="body" required defaultValue={a?.body} style={{ minHeight: 280, fontFamily: "ui-monospace, monospace", fontSize: ".88rem" }} maxLength={50000} />
         <div className="hint">Blank line = new paragraph. Start a line with <code>## </code> for a heading or <code>- </code> for a bullet. Links are clickable automatically.</div>
       </div>
       <div className="field-row">
@@ -59,7 +59,7 @@ export function ArticleForm({ a, kind }: { a?: Article; kind?: string }) {
       <div className="field-row">
         <div className="field">
           <label htmlFor="slug">Web address</label>
-          <input id="slug" name="slug" defaultValue={a?.slug} placeholder="auto from title" />
+          <input id="slug" name="slug" defaultValue={a?.slug} placeholder="auto from title" maxLength={80} pattern="[a-z0-9\-]*" title="Lowercase letters, numbers and dashes" />
         </div>
         <label className="row" style={{ gap: 6, alignSelf: "end", marginBottom: 20 }}>
           <input type="checkbox" name="published" defaultChecked={a?.published} style={{ width: "auto" }} /> Published

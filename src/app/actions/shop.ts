@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { currentUser, requireUser } from "@/lib/auth";
-import { done, fail, str, int } from "@/lib/actions";
+import { done, fail, phoneOk, str, int } from "@/lib/actions";
 import { getSettings } from "@/lib/settings";
 import { createCheckoutSession, demoMode, demoPayment } from "@/lib/payments";
 import { fulfillBooking, fulfillOrder, releaseBooking, releaseItem } from "@/lib/fulfillment";
@@ -28,6 +28,7 @@ async function readPoForm(fd: FormData, user: { orgType: string | null }, back: 
   };
   if (!po.poNumber) return fail("Enter your PO number", back);
   if (!po.billingName) return fail("Enter the billing contact (accounts payable)", back);
+  if (po.billingPhone && !phoneOk(po.billingPhone)) return fail("Enter a 10-digit US billing phone number", back);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(po.billingEmail)) return fail("Enter a valid billing email", back);
   if (po.billingAddress.length < 8) return fail("Enter the billing address", back);
   const file = fd.get("poFile");
@@ -85,6 +86,8 @@ export async function checkout(fd: FormData) {
   const user = await requireUser("BUYER");
   const address = str(fd, "address");
   if (address.length < 8) return fail("Enter a full shipping address", "/cart");
+  if (address.length > 400) return fail("Shipping address is too long", "/cart");
+  if (!phoneOk(str(fd, "phone"))) return fail("Enter a 10-digit US phone number, e.g. (956) 555-0142", "/cart");
   const byPo = str(fd, "payment") === "po";
   const po = byPo ? await readPoForm(fd, user, "/cart") : null;
 
@@ -196,6 +199,8 @@ export async function requestBooking(fd: FormData) {
   const audienceSize = int(fd, "audienceSize");
   if (isNaN(eventDate.getTime()) || key <= todayKey()) return fail("Pick an event date from tomorrow onwards");
   if (!organisation || !venue) return fail("Organization and venue are required");
+  if (organisation.length > 150 || venue.length > 200) return fail("Organization or venue is too long");
+  if (str(fd, "message").length > 2000) return fail("Message is too long (2,000 characters max)");
   const eventTime = str(fd, "eventTime");
   if (!isTime(eventTime)) return fail("Choose a start time");
   // If the author publishes availability, the date must be one of their open days and not already taken.
@@ -205,7 +210,7 @@ export async function requestBooking(fd: FormData) {
     const taken = await db.booking.count({ where: { authorId: pkg.authorId, eventDate, status: { in: ["ACCEPTED", "CONFIRMED"] } } });
     if (!open || taken) return fail("That date isn't available — pick one of the author's open dates");
   }
-  if (audienceSize < 1) return fail("Enter an estimated audience size");
+  if (audienceSize < 1 || audienceSize > 100_000) return fail("Enter an estimated audience size (1–100,000)");
 
   const { visitCommissionPct } = await getSettings();
   const booking = await db.booking.create({

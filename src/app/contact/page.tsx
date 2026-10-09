@@ -28,11 +28,11 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
             <div className="field-row">
               <div className="field">
                 <label htmlFor="name">Name</label>
-                <input id="name" name="name" required defaultValue={user?.name} autoComplete="name" />
+                <input id="name" name="name" required defaultValue={user?.name} autoComplete="name" maxLength={80} />
               </div>
               <div className="field">
                 <label htmlFor="email">Email</label>
-                <input id="email" name="email" type="email" required defaultValue={user?.email} autoComplete="email" />
+                <input id="email" name="email" type="email" required defaultValue={user?.email} autoComplete="email" maxLength={160} />
               </div>
             </div>
             <div className="field">

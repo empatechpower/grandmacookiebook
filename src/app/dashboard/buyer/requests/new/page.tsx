@@ -19,16 +19,16 @@ export default async function NewRequest() {
         </div>
         <div className="field">
           <label htmlFor="description">Details</label>
-          <textarea id="description" name="description" required minLength={20} placeholder="Goals, theme, schedule, anything authors should know…" />
+          <textarea id="description" name="description" required minLength={20} placeholder="Goals, theme, schedule, anything authors should know…" maxLength={5000} />
         </div>
         <div className="field-row">
           <div className="field">
             <label htmlFor="audience">Audience</label>
-            <input id="audience" name="audience" required placeholder="Grades 3–5 assembly" />
+            <input id="audience" name="audience" required placeholder="Grades 3–5 assembly" maxLength={120} />
           </div>
           <div className="field">
             <label htmlFor="audienceSize">Approx. number of people</label>
-            <input id="audienceSize" name="audienceSize" type="number" min={1} required placeholder="200" />
+            <input id="audienceSize" name="audienceSize" type="number" min={1} required placeholder="200" max={100000} />
           </div>
         </div>
         <div className="field-row">
@@ -50,7 +50,7 @@ export default async function NewRequest() {
           </div>
           <div className="field">
             <label htmlFor="location">Location (for in-person)</label>
-            <input id="location" name="location" placeholder="City, venue" />
+            <input id="location" name="location" placeholder="City, venue" maxLength={120} />
           </div>
         </div>
         <div className="field-row">
@@ -71,7 +71,7 @@ export default async function NewRequest() {
         </div>
         <div className="field" style={{ maxWidth: 280 }}>
           <label htmlFor="budgetMax">Budget up to (USD, optional)</label>
-          <input id="budgetMax" name="budgetMax" type="number" min={1} step="1" placeholder="800" />
+          <input id="budgetMax" name="budgetMax" type="number" min={1} step="1" placeholder="800" max={100000} />
         </div>
         <SubmitButton className="btn btn-terra" pendingText="Posting…">Post request</SubmitButton>
       </form>

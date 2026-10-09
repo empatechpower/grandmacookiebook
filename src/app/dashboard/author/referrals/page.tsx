@@ -41,11 +41,11 @@ export default async function Referrals() {
         <div className="field-row">
           <div className="field">
             <label htmlFor="name">Their name</label>
-            <input id="name" name="name" required />
+            <input id="name" name="name" required minLength={2} maxLength={80} />
           </div>
           <div className="field">
             <label htmlFor="email">Their email</label>
-            <input id="email" name="email" type="email" required />
+            <input id="email" name="email" type="email" required maxLength={160} />
           </div>
         </div>
         <p className="hint" style={{ marginBottom: 12 }}>We’ll email them an invitation. The first referral submitted for a person counts.</p>

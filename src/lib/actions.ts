@@ -25,3 +25,5 @@ export async function fail(message: string, fallback = "/"): Promise<never> {
 
 export const str = (fd: FormData, k: string) => String(fd.get(k) ?? "").trim();
 export const int = (fd: FormData, k: string) => Math.trunc(Number(fd.get(k) ?? 0));
+
+export { phoneOk, PHONE_PATTERN } from "./validation";
