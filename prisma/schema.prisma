@@ -22,6 +22,9 @@ model User {
   sessionVersion  Int      @default(0)
   // "Continue with Google": Google's stable account id (sub), set on first Google sign-in.
   googleId        String?  @unique
+  // Email verification: set when the user clicks the link we email (or signs in with Google / resets their password by email).
+  emailVerifiedAt   DateTime?
+  verifyEmailSentAt DateTime?
   role            String   @default("BUYER") // BUYER | AUTHOR | ADMIN
   status          String   @default("ACTIVE") // ACTIVE | PENDING | SUSPENDED
   bio             String?

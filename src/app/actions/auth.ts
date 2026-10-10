@@ -13,6 +13,8 @@ import { appUrl } from "@/lib/url";
 import { linkReferredUser } from "@/lib/referrals";
 import { ensureAuthorSlug } from "@/lib/slugs";
 import { clearPendingGoogleSignup, readPendingGoogleSignup } from "@/lib/google";
+import { resendVerificationEmail, sendVerificationEmail } from "@/lib/verify";
+import { headers } from "next/headers";
 
 export type FormState = { error?: string } | undefined;
 
@@ -58,13 +60,23 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
     },
   });
   await createSession(user.id, user.sessionVersion);
+  await sendVerificationEmail(user);
   if (role === "AUTHOR") {
     await ensureAuthorSlug(user);
     await linkReferredUser(user);
     await authorSignedUp(user);
   }
-  await flash(role === "AUTHOR" ? "Studio created — an admin will review your account" : "Welcome to South Texas Book & Author");
+  await flash(role === "AUTHOR" ? "Studio created — confirm your email (check your inbox); an admin will then review your account" : "Account created — check your inbox to confirm your email");
   redirect(dashboardPath(role));
+}
+
+/** "Resend email" on the confirm-your-email banner. */
+export async function resendVerification() {
+  const user = await requireUser();
+  const r = await resendVerificationEmail(user);
+  await flash(r === "sent" ? `We sent a new link to ${user.email}` : r === "wait" ? "We just sent one — please wait a minute before asking again" : "Your email is already confirmed");
+  const ref = (await headers()).get("referer");
+  redirect(ref ? new URL(ref).pathname : dashboardPath(user.role));
 }
 
 const GoogleSignupSchema = SignupSchema.pick({ role: true, orgType: true, orgName: true });
@@ -83,6 +95,7 @@ export async function completeGoogleSignup(_: FormState, fd: FormData): Promise<
       name: pending.name,
       email: pending.email,
       googleId: pending.sub,
+      emailVerifiedAt: new Date(), // Google has verified this email
       role,
       // No password yet: a random one nobody knows. "Forgot password" can set a real one later.
       passwordHash: await bcrypt.hash(randomBytes(32).toString("hex"), 10),
@@ -148,7 +161,8 @@ export async function resetPassword(_: FormState, fd: FormData): Promise<FormSta
     db.passwordResetToken.deleteMany({ where: { userId: row.userId, expiresAt: { lt: new Date(Date.now() - 7 * 86400_000) } } }),
     db.user.update({
       where: { id: row.userId },
-      data: { passwordHash: await bcrypt.hash(password.data, 10), sessionVersion: { increment: 1 } },
+      // Clicking the emailed reset link also proves they own the address.
+      data: { passwordHash: await bcrypt.hash(password.data, 10), sessionVersion: { increment: 1 }, emailVerifiedAt: row.user.emailVerifiedAt ?? new Date() },
     }),
   ]);
   await passwordChanged(user);

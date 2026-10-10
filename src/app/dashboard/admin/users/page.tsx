@@ -50,7 +50,11 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
       <Table heads={["Name", "Role", "Activity", "Joined", "Status", ""]} empty="No users match.">
         {users.map((u) => (
           <tr key={u.id}>
-            <td><b>{u.name}</b><div className="muted" style={{ fontSize: ".8rem" }}>{u.email}</div></td>
+            <td>
+              <b>{u.name}</b>
+              <div className="muted" style={{ fontSize: ".8rem" }}>{u.email}</div>
+              {u.emailVerifiedAt ? <span className="badge b-ok" title={`Confirmed ${fmtDate(u.emailVerifiedAt)}`}>✓ Email verified</span> : <span className="badge b-wait" title="Hasn't clicked the confirmation link yet">Email not verified</span>}
+            </td>
             <td>{ROLE_LABEL[u.role as Role]}</td>
             <td style={{ fontSize: ".82rem" }}>
               {u.role === "AUTHOR" && (

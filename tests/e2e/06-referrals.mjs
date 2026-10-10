@@ -7,6 +7,16 @@ process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 const { PrismaClient } = require("@prisma/client");
 const db = new PrismaClient();
 const B = process.env.BASE_URL ?? "http://localhost:3917", S = process.env.E2E_ARTIFACTS ?? "tests/e2e/.artifacts";
+// New accounts confirm their email by clicking the link we send (read from the server log).
+const confirmEmail = async (page, email) => {
+  for (let i = 0; i < 20; i++) {
+    const blocks = readFileSync(process.env.SERVER_LOG ?? `${S}/server.log`, "utf8").split("[email] ").filter((b) => b.startsWith(`to=${email} subject="Confirm your email`));
+    const link = blocks.at(-1)?.match(/(http:\/\/\S+verify-email\?token=\S+)/)?.[1];
+    if (link) { await page.goto(link); await page.waitForURL("**/dashboard/**"); return; }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`no confirmation email for ${email}`);
+};
 const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process.exitCode = 1; };
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" });
 const errors = [];
@@ -49,6 +59,7 @@ const link = invite.match(/(http:\/\/\S+signup\?role=AUTHOR&email=\S+)/)[1];
 const nu = await ctx(); await nu.goto(link);
 ok((await nu.locator("#email").inputValue()) === refEmail, "invite link prefills email");
 await nu.fill("#name", "Ngozi Writes"); await nu.fill("#password", "password123"); await nu.click("button[type=submit]"); await nu.waitForURL("**/dashboard/author");
+await confirmEmail(nu, refEmail);
 const newUser = await db.user.findUniqueOrThrow({ where: { email: refEmail } });
 ok((await db.referral.findUnique({ where: { referredEmail: refEmail } })).referredUserId === newUser.id, "signup linked to the referral");
 

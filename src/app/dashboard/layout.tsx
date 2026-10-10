@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth";
+import { VerifyBanner } from "@/components/VerifyBanner";
 import { SubmitButton } from "@/components/SubmitButton";
 import Link from "next/link";
 import { MobileMenu } from "@/components/MobileMenu";
@@ -115,7 +116,10 @@ export default async function DashLayout({ children }: { children: React.ReactNo
           </form>
         </div>
       </aside>
-      <div className="main">{children}</div>
+      <div className="main">
+        <VerifyBanner user={user} />
+        {children}
+      </div>
     </div>
   );
 }

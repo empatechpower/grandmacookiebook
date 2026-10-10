@@ -44,7 +44,7 @@ async function main() {
   }
 
   const password = randomBytes(9).toString("base64url");
-  await db.user.create({ data: { name, email, role: "ADMIN", status: "ACTIVE", passwordHash: await bcrypt.hash(password, 10) } });
+  await db.user.create({ data: { name, email, role: "ADMIN", status: "ACTIVE", emailVerifiedAt: new Date(), passwordHash: await bcrypt.hash(password, 10) } });
   console.log(`\nSuper admin created.\n  Email:              ${email}\n  Temporary password: ${password}\n`);
   console.log("Sign in at /login, then change the password under Settings. Commission and other settings use the defaults until changed in Settings.");
 }

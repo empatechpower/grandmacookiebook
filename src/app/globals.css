@@ -928,3 +928,6 @@ button[data-pending], .btn[data-pending] { cursor: wait; }
 .or-divider::before, .or-divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .google-who { display: grid; gap: 2px; padding: 12px 14px; border-radius: 14px; background: var(--sky-l); margin-bottom: 18px; }
 .google-who span { color: var(--ink-soft); font-size: .88rem; }
+.verify-banner { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: var(--sun-l); border: 2px solid var(--sun); border-radius: 16px; padding: 12px 16px; margin-bottom: 20px; font-size: .92rem; }
+.verify-banner > div { flex: 1 1 260px; }
+.verify-banner > span { font-size: 1.4rem; }

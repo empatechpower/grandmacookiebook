@@ -105,7 +105,7 @@ export async function inviteAdmin(fd: FormData) {
   if (!p.success) return fail(p.error.issues[0].message);
   if (await db.user.findUnique({ where: { email: p.data.email } })) return fail("That email is already registered");
   await db.user.create({
-    data: { name: p.data.name, email: p.data.email, role: "ADMIN", passwordHash: await bcrypt.hash(p.data.password, 10) },
+    data: { name: p.data.name, email: p.data.email, role: "ADMIN", emailVerifiedAt: new Date(), passwordHash: await bcrypt.hash(p.data.password, 10) },
   });
   await done(`${p.data.name} added as super admin`);
 }

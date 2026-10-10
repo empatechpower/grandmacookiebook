@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { VerifyBanner } from "@/components/VerifyBanner";
 import { PHONE_PATTERN } from "@/lib/validation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -26,6 +27,7 @@ export default async function Cart() {
   return (
     <section className="pad">
       <div className="wrap">
+        <VerifyBanner user={user} />
         <div className="sec-head">
           <div>
             <div className="eyebrow">Checkout</div>

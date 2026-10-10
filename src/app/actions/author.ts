@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { done, fail, phoneOk, str } from "@/lib/actions";
+import { done, fail, phoneOk, str, requireVerified } from "@/lib/actions";
 import { CATEGORIES, FORMATS, GRADES, IDENTITIES, LANGUAGES, ORG_TYPES, TOPICS } from "@/lib/constants";
 import { serializeTags } from "@/lib/tags";
 import * as notify from "@/lib/notify";
@@ -31,6 +31,7 @@ const BookSchema = z.object({
 
 export async function saveBook(fd: FormData) {
   const user = await requireUser("AUTHOR");
+  await requireVerified(user);
   const id = str(fd, "id");
   const parsed = BookSchema.safeParse({
     title: str(fd, "title"),
@@ -93,6 +94,7 @@ const PackageSchema = z.object({
 
 export async function savePackage(fd: FormData) {
   const user = await requireUser("AUTHOR");
+  await requireVerified(user);
   const id = str(fd, "id");
   const parsed = PackageSchema.safeParse({
     title: str(fd, "title"),

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { currentUser, requireUser } from "@/lib/auth";
-import { done, fail, phoneOk, str, int } from "@/lib/actions";
+import { done, fail, phoneOk, str, int, requireVerified } from "@/lib/actions";
 import { getSettings } from "@/lib/settings";
 import { createCheckoutSession, demoMode, demoPayment } from "@/lib/payments";
 import { fulfillBooking, fulfillOrder, releaseBooking, releaseItem } from "@/lib/fulfillment";
@@ -84,6 +84,7 @@ export async function updateCartItem(fd: FormData) {
 
 export async function checkout(fd: FormData) {
   const user = await requireUser("BUYER");
+  await requireVerified(user, "/cart");
   const address = str(fd, "address");
   if (address.length < 8) return fail("Enter a full shipping address", "/cart");
   if (address.length > 400) return fail("Shipping address is too long", "/cart");
@@ -189,6 +190,7 @@ export async function confirmVisit(fd: FormData) {
 
 export async function requestBooking(fd: FormData) {
   const user = await requireBuyer("book authors");
+  await requireVerified(user);
   const pkg = await db.visitPackage.findFirst({ where: { id: str(fd, "packageId"), ...liveWhere } });
   if (!pkg) return fail("This visit package is no longer available");
 
@@ -234,6 +236,7 @@ export async function requestBooking(fd: FormData) {
 
 export async function payBooking(fd: FormData) {
   const user = await requireUser("BUYER");
+  await requireVerified(user, "/dashboard/buyer/bookings");
   const b = await db.booking.findFirst({ where: { id: str(fd, "id"), buyerId: user.id, status: "ACCEPTED" }, include: { package: true, purchaseOrder: true } });
   if (!b) return fail("This booking can't be paid right now");
   if (b.purchaseOrder?.status === "PENDING") return fail("Your purchase order for this booking is being reviewed");
@@ -254,6 +257,7 @@ export async function payBooking(fd: FormData) {
 /** Pay for an accepted booking with a purchase order instead of a card. */
 export async function payBookingByPo(fd: FormData) {
   const user = await requireUser("BUYER");
+  await requireVerified(user, "/dashboard/buyer/bookings");
   const back = `/dashboard/buyer/bookings/po?id=${encodeURIComponent(str(fd, "id"))}`;
   const b = await db.booking.findFirst({ where: { id: str(fd, "id"), buyerId: user.id, status: "ACCEPTED", paymentRef: null }, include: { purchaseOrder: true } });
   if (!b) return fail("This booking can't be paid right now", "/dashboard/buyer/bookings");

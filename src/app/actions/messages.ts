@@ -2,7 +2,7 @@
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { done, fail, str } from "@/lib/actions";
+import { done, fail, str, requireVerified } from "@/lib/actions";
 import { findConversation, side } from "@/lib/messages";
 import { bookableAuthor } from "@/lib/directory";
 import { newMessage } from "@/lib/notify";
@@ -14,6 +14,7 @@ import { newMessage } from "@/lib/notify";
  */
 export async function openConversation(fd: FormData) {
   const user = await requireUser("BUYER", "AUTHOR");
+  await requireVerified(user);
   const otherId = str(fd, "with");
   let buyerId: string, authorId: string;
   if (user.role === "BUYER") {
@@ -38,6 +39,7 @@ export async function openConversation(fd: FormData) {
 
 export async function sendMessage(fd: FormData) {
   const user = await requireUser("BUYER", "AUTHOR");
+  await requireVerified(user);
   const convo = await findConversation(str(fd, "conversationId"), user);
   if (!convo) return fail("Conversation not found");
   const body = str(fd, "body");

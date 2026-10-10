@@ -37,7 +37,7 @@ async function main() {
 
   const passwordHash = await bcrypt.hash("atelier123", 10);
   const user = (name: string, email: string, role: string, extra: object = {}) =>
-    db.user.create({ data: { name, email, role, passwordHash, ...extra } });
+    db.user.create({ data: { name, email, role, passwordHash, emailVerifiedAt: new Date(), ...extra } });
 
   await user("Sarah Mitchell", "admin@atelier.test", "ADMIN");
   const buyer = await user("Ada Brooks", "buyer@atelier.test", "BUYER", { location: "1200 N 10th St, McAllen, TX 78501", orgType: "SCHOOL", orgName: "Oxbridge Preschool" });

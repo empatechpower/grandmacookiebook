@@ -1,6 +1,17 @@
 // Run via `npm run test:e2e` (scripts/e2e.sh), which builds, starts the app and reseeds before each suite.
 import { chromium } from "playwright-core";
+import { readFileSync } from "fs";
 const B = process.env.BASE_URL ?? "http://localhost:3917", S = process.env.E2E_ARTIFACTS ?? "tests/e2e/.artifacts";
+// New accounts confirm their email by clicking the link we send (read from the server log).
+const confirmEmail = async (page, email) => {
+  for (let i = 0; i < 20; i++) {
+    const blocks = readFileSync(process.env.SERVER_LOG ?? `${S}/server.log`, "utf8").split("[email] ").filter((b) => b.startsWith(`to=${email} subject="Confirm your email`));
+    const link = blocks.at(-1)?.match(/(http:\/\/\S+verify-email\?token=\S+)/)?.[1];
+    if (link) { await page.goto(link); await page.waitForURL("**/dashboard/**"); return; }
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`no confirmation email for ${email}`);
+};
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" });
 const errors = [];
 const ctx = async () => { const c = await browser.newContext({ viewport: { width: 1280, height: 860 } }); const p = await c.newPage();
@@ -22,6 +33,7 @@ await author.goto(B + "/signup?role=AUTHOR");
 await author.fill("#name", "Test Author " + stamp); await author.fill("#email", `ta${stamp}@x.test`); await author.fill("#password", "password123");
 await author.click("button[type=submit]"); await author.waitForURL("**/dashboard/author"); await settle(author);
 ok((await text(author)).includes("awaiting admin approval"), "new author sees pending banner");
+await confirmEmail(author, `ta${stamp}@x.test`); await settle(author);
 await author.goto(B + "/dashboard/author/books/new");
 await author.fill("#title", "Rainforest " + stamp); await author.fill("#description", "A long description of the rainforest."); await author.fill("#price", "25"); await author.fill("#stock", "5");
 await author.click("text=Submit for review"); await author.waitForURL("**/dashboard/author/books"); await settle(author);
@@ -58,11 +70,12 @@ const buyer = await ctx();
 await buyer.goto(B + "/signup");
 await buyer.fill("#name", "Test Buyer " + stamp); await buyer.fill("#email", `tb${stamp}@x.test`); await buyer.fill("#password", "password123");
 await buyer.click("button[type=submit]"); await buyer.waitForURL("**/dashboard/buyer");
+await confirmEmail(buyer, `tb${stamp}@x.test`);
 await buyer.goto(B + "/books"); await buyer.locator(".card", { hasText: "Rainforest " + stamp }).getByRole("link").first().click();
 await buyer.fill("input[name=qty]", "2"); await buyer.click("text=Add to cart"); await buyer.waitForURL("**/cart"); await settle(buyer);
 ok((await text(buyer)).includes("$50"), "cart total $50");
 await buyer.screenshot({ path: `${S}/04-cart.png`, fullPage: true });
-await buyer.fill("#address", "5 Test Street, Lagos"); await buyer.click("text=Pay $50"); await buyer.waitForURL("**/dashboard/buyer/orders"); await settle(buyer);
+await buyer.fill("#address", "5 Test Street, McAllen, TX 78501"); await buyer.click("text=Pay $50"); await buyer.waitForURL("**/dashboard/buyer/orders"); await settle(buyer);
 ok((await text(buyer)).includes("Rainforest " + stamp), "order appears for buyer");
 await buyer.goto(B + "/visits"); await buyer.locator(".card", { hasText: "Rainforest talk " + stamp }).getByRole("link", { name: "Request booking" }).click();
 const d = new Date(Date.now() + 10 * 864e5).toISOString().slice(0, 10);

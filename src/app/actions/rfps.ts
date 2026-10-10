@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { done, fail, str } from "@/lib/actions";
+import { done, fail, str, requireVerified } from "@/lib/actions";
 import { GRADES, TOPICS } from "@/lib/constants";
 import { fromDayKey, isDayKey, todayKey } from "@/lib/dates";
 import { toCents } from "@/lib/money";
@@ -23,6 +23,7 @@ const RfpSchema = z.object({
 
 export async function createRfp(fd: FormData) {
   const user = await requireUser("BUYER");
+  await requireVerified(user);
   const p = RfpSchema.safeParse({
     title: str(fd, "title"),
     description: str(fd, "description"),
@@ -62,6 +63,7 @@ export async function closeRfp(fd: FormData) {
 /** Authors bid with one of their live packages; one bid per request, editable until decided. */
 export async function submitBid(fd: FormData) {
   const user = await requireUser("AUTHOR");
+  await requireVerified(user);
   if (user.status !== "ACTIVE" || !user.payoutsReady) return fail("Your account must be approved and connected to Stripe before submitting proposals");
   const rfp = await db.rfp.findFirst({ where: { id: str(fd, "rfpId"), status: "OPEN", deadline: { gte: fromDayKey(todayKey()) } } });
   if (!rfp) return fail("This request is no longer accepting proposals");
