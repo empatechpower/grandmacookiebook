@@ -7,10 +7,16 @@ import { demoMode, expressDashboardLink } from "@/lib/payments";
 import { connectStripe, refreshStripeStatus } from "@/app/actions/author";
 import { Kpis, PageHead, Table, fmtDate } from "@/components/ui";
 import { HOLD_DAYS } from "@/lib/fulfillment";
+import { syncAuthorStripe } from "@/lib/stripeSync";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function Payouts() {
-  const user = await requireUser("AUTHOR");
+  let user = await requireUser("AUTHOR");
+  // Returning from Stripe (or just visiting): pick up the latest account status without waiting for the webhook.
+  if (user.stripeAccountId && !user.payoutsReady) {
+    const status = await syncAuthorStripe(user).catch(() => null);
+    if (status === "ready" || status === "missing") user = { ...user, payoutsReady: status === "ready", stripeAccountId: status === "missing" ? null : user.stripeAccountId };
+  }
   const [e, fees] = await Promise.all([authorEarnings(user.id), getSettings()]);
 
   return (

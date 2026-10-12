@@ -12,6 +12,7 @@ import { hasFile, saveImage } from "@/lib/storage";
 import { redirect } from "next/navigation";
 import { createConnectedAccount, demoMode, fetchAccountReady, onboardingLink } from "@/lib/payments";
 import { toCents } from "@/lib/money";
+import { syncAuthorStripe } from "@/lib/stripeSync";
 import { isbnOk, normalizeIsbn } from "@/lib/validation";
 import { cancelBooking as cancelWithRefund } from "@/lib/refunds";
 import { fromDayKey, todayKey } from "@/lib/dates";
@@ -221,10 +222,9 @@ export async function connectStripe() {
 /** Re-checks onboarding status with Stripe (also kept in sync by the account.updated webhook). */
 export async function refreshStripeStatus() {
   const user = await requireUser("AUTHOR");
-  if (!user.stripeAccountId) return;
-  const ready = await fetchAccountReady(user.stripeAccountId);
-  await db.user.update({ where: { id: user.id }, data: { payoutsReady: ready } });
-  await done(ready ? "Stripe connected — you'll be paid automatically" : "Stripe still needs a few details from you");
+  const status = await syncAuthorStripe(user);
+  if (!status) return;
+  await done(status === "ready" ? "Stripe connected — you'll be paid automatically" : status === "missing" ? "Please connect Stripe again — your earlier connection is no longer valid" : "Stripe still needs a few details from you — click Continue setup");
 }
 
 const optionalUrl = z.union([z.literal(""), z.string().url()]);
@@ -298,9 +298,10 @@ export async function toggleFeatured(fd: FormData) {
   await done(book.featured ? "No longer featured" : "Featured — shown first on your storefront");
 }
 
-export async function removeBookImage(fd: FormData) {
+/** Removes one extra photo. Bound to the photo's id: removeBookImage.bind(null, imageId). */
+export async function removeBookImage(imageId: string) {
   const user = await requireUser("AUTHOR");
-  await db.bookImage.deleteMany({ where: { id: str(fd, "id"), book: { authorId: user.id } } });
+  await db.bookImage.deleteMany({ where: { id: String(imageId), book: { authorId: user.id } } });
   await done("Photo removed");
 }
 

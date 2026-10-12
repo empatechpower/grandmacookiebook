@@ -9,6 +9,7 @@ import { releaseBooking, releaseDue, releaseItem } from "@/lib/fulfillment";
 import { cancelBooking, refundItem } from "@/lib/refunds";
 import * as notify from "@/lib/notify";
 import { ensureAuthorSlug } from "@/lib/slugs";
+import { syncAuthorStripe } from "@/lib/stripeSync";
 import { approvePo, markPoPaid, rejectPo } from "@/lib/purchaseOrders";
 
 export async function setUserStatus(fd: FormData) {
@@ -126,4 +127,26 @@ export async function markPurchaseOrderPaid(fd: FormData) {
   const r = await markPoPaid(str(fd, "id"), str(fd, "note").slice(0, 200) || null);
   if (!r.ok) return fail(r.error);
   await done("Invoice marked paid — author payouts are on their way");
+}
+
+// ---------- Support tools ----------
+
+/** For when someone's confirmation email never arrived and the admin knows the address is theirs. */
+export async function adminVerifyEmail(fd: FormData) {
+  await requireUser("ADMIN");
+  const r = await db.user.updateMany({ where: { id: str(fd, "id"), emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } });
+  await done(r.count ? "Email marked as verified" : "Already verified");
+}
+
+/** Asks Stripe for the author's current account status (in case a webhook was missed). */
+export async function adminRecheckStripe(fd: FormData) {
+  await requireUser("ADMIN");
+  const user = await db.user.findUnique({ where: { id: str(fd, "id") } });
+  if (!user) return fail("User not found");
+  const status = await syncAuthorStripe(user).catch((e) => fail(`Stripe check failed: ${e instanceof Error ? e.message : e}`));
+  await done(
+    status === "ready" ? `${user.name}: Stripe is ready — their listings can show` :
+    status === "missing" ? `${user.name}: that Stripe account doesn't exist in the current Stripe mode — they need to connect again` :
+    status === "incomplete" ? `${user.name}: Stripe still needs details from them (identity or bank)` : `${user.name} hasn't connected Stripe`,
+  );
 }

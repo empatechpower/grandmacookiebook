@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { backfillAuthorSlugs } from "@/lib/slugs";
 import { ROLE_LABEL, type Role } from "@/lib/constants";
-import { setUserStatus } from "@/app/actions/admin";
+import { adminRecheckStripe, adminVerifyEmail, setUserStatus } from "@/app/actions/admin";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
@@ -53,14 +53,38 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
             <td>
               <b>{u.name}</b>
               <div className="muted" style={{ fontSize: ".8rem" }}>{u.email}</div>
-              {u.emailVerifiedAt ? <span className="badge b-ok" title={`Confirmed ${fmtDate(u.emailVerifiedAt)}`}>✓ Email verified</span> : <span className="badge b-wait" title="Hasn't clicked the confirmation link yet">Email not verified</span>}
+              {u.emailVerifiedAt ? (
+                <span className="badge b-ok" title={`Confirmed ${fmtDate(u.emailVerifiedAt)}`}>✓ Email verified</span>
+              ) : (
+                <div className="row" style={{ gap: 6, marginTop: 2 }}>
+                  <span className="badge b-wait" title="Hasn't clicked the confirmation link yet — they can't publish, buy, book or message until they do">Email not verified</span>
+                  <form action={adminVerifyEmail}>
+                    <input type="hidden" name="id" value={u.id} />
+                    <SubmitButton className="btn btn-ghost btn-sm" confirm={`Mark ${u.email} as verified? Only do this if you know it's their real email.`} pendingText="…">Mark verified</SubmitButton>
+                  </form>
+                </div>
+              )}
             </td>
             <td>{ROLE_LABEL[u.role as Role]}</td>
             <td style={{ fontSize: ".82rem" }}>
               {u.role === "AUTHOR" && (
                 <>
                   {u._count.books} books · {u._count.packages} packages
-                  <div>{u.payoutsReady ? <span className="badge b-ok">Stripe ready</span> : <span className="badge b-wait">No Stripe</span>}</div>
+                  <div className="row" style={{ gap: 6, marginTop: 2 }}>
+                    {u.payoutsReady ? (
+                      <span className="badge b-ok">Stripe ready</span>
+                    ) : u.stripeAccountId ? (
+                      <span className="badge b-wait" title="Started Stripe setup but Stripe hasn't confirmed it's complete">Stripe setup unfinished</span>
+                    ) : (
+                      <span className="badge b-wait" title="Hasn't started Stripe setup">Stripe not connected</span>
+                    )}
+                    {u.stripeAccountId && (
+                      <form action={adminRecheckStripe}>
+                        <input type="hidden" name="id" value={u.id} />
+                        <SubmitButton className="btn btn-ghost btn-sm" pendingText="Checking…">Re-check</SubmitButton>
+                      </form>
+                    )}
+                  </div>
                 </>
               )}
               {u.role === "BUYER" && `${u._count.orders} orders · ${u._count.bookingsMade} bookings`}

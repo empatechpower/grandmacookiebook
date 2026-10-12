@@ -12,6 +12,7 @@
     "setup": "prisma migrate deploy && prisma db seed",
     "launch": "tsx scripts/launch.ts",
     "fix-image-urls": "tsx scripts/fix-image-urls.ts",
+    "stripe-go-live": "tsx scripts/stripe-go-live.ts",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:reset": "prisma db seed",

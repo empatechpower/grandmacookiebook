@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ImageInput } from "./ImageInput";
-import type { Book, VisitPackage } from "@prisma/client";
-import { saveBook, savePackage } from "@/app/actions/author";
+import type { Book, BookImage, VisitPackage } from "@prisma/client";
+import { removeBookImage, saveBook, savePackage } from "@/app/actions/author";
 import { CATEGORIES, FORMATS } from "@/lib/constants";
 import { SubmitButton } from "./SubmitButton";
 
@@ -18,7 +18,8 @@ function ReviewNote({ status, note, instant = false }: { status?: string; note?:
   return null;
 }
 
-export function BookForm({ book }: { book?: Book }) {
+export function BookForm({ book }: { book?: Book & { images?: BookImage[] } }) {
+  const saved = book?.images ?? [];
   return (
     <form action={saveBook} className="panel" style={{ maxWidth: 720 }}>
       <ReviewNote status={book?.status} note={book?.reviewNote} instant />
@@ -56,8 +57,24 @@ export function BookForm({ book }: { book?: Book }) {
       </div>
       <div className="field">
         <label htmlFor="images">More photos (optional)</label>
-        <ImageInput id="images" name="images" multiple max={8} />
-        <div className="hint">Back cover, inside pages, merchandise shots — up to 8 extra photos.</div>
+        {saved.length > 0 && (
+          <div className="image-previews saved-photos">
+            {saved.map((im) => (
+              <figure key={im.id}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={im.url} alt="Saved photo" />
+                {/* Removes just this photo (its own action; the rest of the form isn't saved). */}
+                <SubmitButton className="btn btn-danger btn-sm" formAction={removeBookImage.bind(null, im.id)} formNoValidate confirm="Remove this photo?" pendingText="Removing…">
+                  Remove
+                </SubmitButton>
+              </figure>
+            ))}
+          </div>
+        )}
+        {saved.length < 8 && <ImageInput id="images" name="images" multiple max={8 - saved.length} />}
+        <div className="hint">
+          Back cover, inside pages, merchandise shots — up to 8 extra photos{saved.length ? ` (${saved.length} saved, ${8 - saved.length} more allowed)` : ""}.
+        </div>
       </div>
       <label className="check-line">
         <input type="checkbox" name="bulkEnabled" defaultChecked={book?.bulkEnabled ?? true} />

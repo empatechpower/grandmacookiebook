@@ -49,6 +49,16 @@ ok(await sees(stranger, "invalid or has expired"), "a forged link is rejected");
 ok((await db.user.count({ where: { email: { endsWith: "@atelier.test" }, emailVerifiedAt: null } })) === 0, "existing (seeded) accounts count as verified");
 const admin = await ctx(); await login(admin, "admin@atelier.test"); await admin.goto(B + `/dashboard/admin/users?q=${encodeURIComponent(nEmail)}`);
 ok((await admin.locator("tr", { hasText: nEmail }).innerText()).includes("Email verified"), "admin users list shows the verified badge");
+// Admin can verify someone whose confirmation email never arrived
+const lost = `lost${Date.now()}@example.com`;
+const lostUser = await ctx(); await lostUser.goto(B + "/signup"); await lostUser.fill("#name", "Lou St"); await lostUser.fill("#email", lost); await lostUser.fill("#password", "atelier123");
+await lostUser.click("button[type=submit]"); await lostUser.waitForURL("**/dashboard/buyer");
+await admin.goto(B + `/dashboard/admin/users?q=${encodeURIComponent(lost)}`);
+await admin.locator("tr", { hasText: lost }).getByRole("button", { name: "Mark verified" }).click();
+ok(await sees(admin, "Email marked as verified"), "admin marked the email verified");
+ok(!!(await db.user.findUnique({ where: { email: lost } })).emailVerifiedAt, "the account is now verified");
+await admin.goto(B + "/dashboard/admin/users?filter=AUTHOR");
+ok((await admin.locator("tr", { hasText: "jeanette@atelier.test" }).innerText()).includes("Stripe ready"), "admin sees which authors are Stripe-ready");
 
 ok(errors.length === 0, "no page errors" + (errors.length ? ": " + errors.join(" | ") : ""));
 await browser.close(); await db.$disconnect();

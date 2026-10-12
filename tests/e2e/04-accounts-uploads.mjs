@@ -97,6 +97,15 @@ await au.fill("#isbn", "978-1-4028-9462-7"); await au.getByRole("button", { name
 ok(await au.locator(".toast.on", { hasText: "ISBN doesn't look right" }).waitFor({ timeout: 10000 }).then(() => true, () => false), "an ISBN with a wrong check digit is rejected");
 await editBook(); await au.fill("#isbn", "978-1-4028-9462-6"); await au.getByRole("button", { name: "Save changes" }).click(); await au.waitForURL("**/dashboard/author/books");
 await editBook(); ok((await au.locator("#isbn").inputValue()) === "9781402894626", "valid ISBN saved (hyphens removed)");
+// Extra photos: saved ones show inside "More photos" with Remove; new picks preview beside them
+await au.setInputFiles("#images", [`${S}/cover.png`, `${S}/avatar.png`]);
+ok((await au.locator('.field:has(#images) .image-previews img[src^="blob:"]').count()) === 2, "chosen extra photos preview before saving");
+await au.getByRole("button", { name: "Save changes" }).click(); await au.waitForURL("**/dashboard/author/books");
+await editBook();
+ok((await au.locator(".saved-photos figure").count()) === 2, "saved extra photos show inside the More photos field");
+await au.locator(".saved-photos figure").first().getByRole("button", { name: "Remove" }).click(); await au.getByText("Photo removed").waitFor();
+ok((await au.locator(".saved-photos figure").count()) === 1, "Remove deletes just that photo");
+ok(Number(await au.locator("#price").inputValue()) === 18.5, "the rest of the book is left as it was");
 for (const bad of ["/uploads/..%2F..%2F.env", "/uploads/avatars/..%2F..%2Fpackage.json", "/uploads/other/x.png", "/uploads/avatars/not-a-uuid.png"]) {
   ok((await fetch(B + bad)).status === 404, `blocked ${bad}`);
 }

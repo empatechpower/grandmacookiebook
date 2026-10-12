@@ -939,3 +939,5 @@ button[data-pending], .btn[data-pending] { cursor: wait; }
 .image-previews img { width: 120px; height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); background: #fff; box-shadow: 0 4px 12px rgba(20,40,90,.10); }
 .image-previews.square img { height: 120px; border-radius: 50%; }
 .image-previews figcaption { font-size: .72rem; color: var(--mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-photos figure { gap: 6px; }
+.saved-photos .btn { justify-content: center; }

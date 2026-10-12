@@ -140,8 +140,22 @@ export function accountIsReady(a: Stripe.Account) {
 }
 
 export async function fetchAccountReady(accountId: string) {
-  if (!stripe || accountId.startsWith("acct_mock")) return true;
-  return accountIsReady(await stripe.accounts.retrieve(accountId));
+  return (await fetchAccountStatus(accountId)) === "ready";
+}
+
+/**
+ * "ready" (can be paid), "incomplete" (onboarding unfinished), or "missing" — the account doesn't exist
+ * under the current Stripe key, e.g. it was connected in test mode and the site has since switched to live.
+ */
+export async function fetchAccountStatus(accountId: string): Promise<"ready" | "incomplete" | "missing"> {
+  if (!stripe || accountId.startsWith("acct_mock")) return accountId.startsWith("acct_mock") || !stripe ? "ready" : "missing";
+  try {
+    return accountIsReady(await stripe.accounts.retrieve(accountId)) ? "ready" : "incomplete";
+  } catch (e) {
+    const err = e as { code?: string; statusCode?: number; type?: string };
+    if (err.code === "resource_missing" || err.statusCode === 404 || err.type === "StripePermissionError") return "missing";
+    throw e;
+  }
 }
 
 /** One-time link into the author's Stripe Express dashboard (balances, bank payouts). */
