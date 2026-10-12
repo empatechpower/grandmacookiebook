@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
 import { csvResponse } from "@/lib/csv";
-import { net } from "@/lib/money";
+import { authorShare, net } from "@/lib/money";
 import { lineMoneyStatus } from "@/lib/shipping";
 import { dayKey } from "@/lib/dates";
 
@@ -16,11 +16,11 @@ export async function GET() {
   });
   const $ = (cents: number) => (cents / 100).toFixed(2);
   return csvResponse(`all-orders-${dayKey(new Date())}.csv`, [
-    ["Order", "Date", "Author", "Product", "Unit price", "Qty", "Total", "Commission %", "Platform fee", "Author share", "Status", "Payment", "Customer", "Organization", "Email", "Phone", "Ship to", "Carrier", "Tracking #"],
+    ["Order", "Date", "Author", "Product", "Unit price", "Qty", "Total", "Commission %", "Platform fee", "Stripe fee", "Author share", "Status", "Payment", "Customer", "Organization", "Email", "Phone", "Ship to", "Carrier", "Tracking #"],
     ...items.map((i) => {
-      const gross = i.unitPrice * i.qty, share = net(gross, i.commissionPct);
+      const gross = i.unitPrice * i.qty, commission = gross - net(gross, i.commissionPct), share = authorShare(gross, i.commissionPct, i.stripeFee);
       return [
-        `O-${i.order.number}`, dayKey(i.order.createdAt), i.author.name, i.title, $(i.unitPrice), i.qty, $(gross), i.commissionPct, $(gross - share), $(share),
+        `O-${i.order.number}`, dayKey(i.order.createdAt), i.author.name, i.title, $(i.unitPrice), i.qty, $(gross), i.commissionPct, $(commission), i.stripeFee === null ? "" : $(i.stripeFee), $(share),
         i.status, lineMoneyStatus(i), i.order.buyer.name, i.order.buyer.orgName, i.order.buyer.email, i.order.phone || i.order.buyer.phone, i.order.shippingAddress, i.carrier, i.trackingNumber,
       ];
     }),

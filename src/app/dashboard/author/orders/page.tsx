@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
-import { money, net } from "@/lib/money";
+import { money, authorShare, net } from "@/lib/money";
 import { CARRIERS, lineMoneyStatus, moneyBadge, trackingUrl } from "@/lib/shipping";
 import { shipItem } from "@/app/actions/author";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
@@ -36,7 +36,10 @@ export default async function AuthorOrders() {
               <td>{i.title}</td>
               <td style={{ whiteSpace: "nowrap" }}>
                 {money(i.unitPrice)} × {i.qty}
-                <div className="muted" style={{ fontSize: ".78rem" }}>You earn {money(net(i.unitPrice * i.qty, i.commissionPct))}</div>
+                <div className="muted" style={{ fontSize: ".78rem" }}>
+                  You earn {money(authorShare(i.unitPrice * i.qty, i.commissionPct, i.stripeFee))}
+                  {i.stripeFee ? ` (after ${money(i.stripeFee)} Stripe fee)` : i.stripeFee === null ? " before Stripe's fee" : ""}
+                </div>
               </td>
               <td style={{ fontSize: ".85rem", maxWidth: 240 }}>
                 <b>{i.order.buyer.orgName || i.order.buyer.name}</b>

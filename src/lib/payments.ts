@@ -70,6 +70,17 @@ export async function readPaidSession(session: Stripe.Checkout.Session | string)
   };
 }
 
+/**
+ * Stripe's processing fee on a charge, in cents (from its balance transaction), or null if Stripe
+ * hasn't settled it yet. Simulated payments use Stripe's standard US card pricing (2.9% + 30¢).
+ */
+export async function chargeFee(chargeId: string, amount: number): Promise<number | null> {
+  if (!stripe || chargeId.includes("_mock_")) return Math.round(amount * 0.029) + 30;
+  const charge = await stripe.charges.retrieve(chargeId, { expand: ["balance_transaction"] });
+  const bt = charge.balance_transaction;
+  return bt && typeof bt !== "string" ? bt.fee : null;
+}
+
 export const demoPayment = (): PaidPayment => ({ paymentIntentId: mockId("pi"), chargeId: mockId("ch") });
 
 /**

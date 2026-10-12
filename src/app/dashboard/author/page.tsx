@@ -2,7 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { authorEarnings } from "@/lib/earnings";
-import { money, net } from "@/lib/money";
+import { money, authorShare, net } from "@/lib/money";
 import { fmtDate, fmtWhen } from "@/lib/dates";
 import { bookingMoneyStatus, lineMoneyStatus, moneyBadge, trackingUrl } from "@/lib/shipping";
 import { Badge, Kpis, Table } from "@/components/ui";
@@ -56,7 +56,7 @@ export default async function AuthorDashboard() {
             <td>B-{b.number} · {b.package.title}</td>
             <td>{fmtWhen(b)}</td>
             <td>{b.organisation}</td>
-            <td>{money(net(b.fee, b.commissionPct))}</td>
+            <td>{money(authorShare(b.fee, b.commissionPct, b.stripeFee))}</td>
             <td><Badge status={b.status} /></td>
             <td><span className={`badge ${moneyBadge(bookingMoneyStatus(b))}`}>{bookingMoneyStatus(b)}</span></td>
           </tr>

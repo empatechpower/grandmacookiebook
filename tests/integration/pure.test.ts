@@ -54,3 +54,14 @@ test("ISBN check accepts real ISBN-10/13 (any hyphens/spaces) and rejects typos"
   for (const bad of ["978-1-4028-9462-7", "12345", "0-306-40615-3", "abcdefghij", "97910000000000"]) assert.equal(isbnOk(bad), false, bad);
   assert.equal(normalizeIsbn("978 1-4028 9462 6"), "9781402894626");
 });
+
+test("Stripe's fee is split across a cart's lines exactly, and comes out of the author's share", async () => {
+  const { allocateFee, authorShare } = await import("../../src/lib/money");
+  const parts = allocateFee(161, [5000, 2500, 1000]);
+  assert.equal(parts.reduce((a, b) => a + b, 0), 161, "the split adds up to the whole fee");
+  assert.deepEqual(parts, [95, 47, 19]);
+  assert.deepEqual(allocateFee(0, [100, 200]), [0, 0]);
+  assert.equal(authorShare(50000, 15, 1480), 50000 - 7500 - 1480, "$500 visit: $75 commission and $14.80 Stripe fee");
+  assert.equal(authorShare(2000, 5, null), 1900, "fee not known yet → commission only");
+  assert.equal(authorShare(100, 5, 500), 0, "never negative");
+});

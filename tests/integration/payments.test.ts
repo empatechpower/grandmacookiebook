@@ -45,7 +45,10 @@ test("releasing pays the author once, and earnings reflect it", async () => {
   assert.ok(after.transferId?.startsWith("tr_mock_"));
   const e = await authorEarnings(item.authorId);
   const row = e.rows.find((r) => r.id === item.id)!;
-  assert.equal(row.net, Math.round(item.unitPrice * item.qty * 0.95));
+  const gross = item.unitPrice * item.qty;
+  const fee = (await db.orderItem.findUniqueOrThrow({ where: { id: item.id } })).stripeFee!;
+  assert.equal(fee, Math.round(gross * 0.029) + 30, "Stripe's fee was recorded for the sale (2.9% + 30¢ on simulated payments)");
+  assert.equal(row.net, Math.round(gross * 0.95) - fee, "the author's share is the sale minus 5% commission minus Stripe's fee");
 });
 
 test("the daily job releases due holds but skips sales with an open problem report", async () => {

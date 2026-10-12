@@ -23,7 +23,7 @@ export default async function Payouts() {
     <>
       <PageHead
         title="Payouts"
-        sub={`You're paid automatically. After a buyer pays, your share is held until they confirm the book arrived or the visit happened — or ${HOLD_DAYS} days after (after the event, for visits) — then sent to your Stripe account.`}
+        sub={`You're paid automatically. After a buyer pays, your share is held until they confirm the book arrived or the visit happened — or ${HOLD_DAYS} days after (after the event, for visits) — then sent to your Stripe account. Your share is the sale price minus our commission and Stripe's card processing fee.`}
       />
 
       <div className="panel" style={{ marginBottom: 24 }}>
@@ -74,7 +74,8 @@ export default async function Payouts() {
         ]}
       />
       <p className="muted" style={{ fontSize: ".85rem", marginBottom: 16 }}>
-        Amounts are after commission (books {fees.bookCommissionPct}%, visits {fees.visitCommissionPct}%). If a sale is refunded, your share
+        Amounts are after our commission (books {fees.bookCommissionPct}%, visits {fees.visitCommissionPct}%) and Stripe&apos;s card processing fee
+        (about 2.9% + 30¢ per card payment; none on purchase orders paid by check), which is deducted from your share. If a sale is refunded, your share
         is reversed from your Stripe balance.
       </p>
 

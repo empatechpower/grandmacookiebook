@@ -10,9 +10,12 @@ export const metadata = { title: "Pricing" };
 export default async function AuthorPricing() {
   await requireUser("AUTHOR", "ADMIN");
   const { bookCommissionPct, visitCommissionPct, cancelNoticeDays, poTermsDays } = await getSettings();
-  const keep = (amount: number, pct: number) => `$${((amount * (100 - pct)) / 100).toFixed(2).replace(/\.00$/, "")}`;
+  // Stripe's standard US card pricing, passed on to authors (no fee on purchase orders paid by check).
+  const stripeFee = (amount: number) => amount * 0.029 + 0.3;
+  const keep = (amount: number, pct: number) => `$${((amount * (100 - pct)) / 100 - stripeFee(amount)).toFixed(2)}`;
   const faqs: [string, string][] = [
-    ["Are there listing or membership fees?", "No. Joining and listing are free. The only charge is the commission on completed sales, taken out of the sale price."],
+    ["Are there listing or membership fees?", "No. Joining and listing are free. The only charges are our commission on completed sales and Stripe's card processing fee, both taken out of the sale price."],
+    ["Who pays Stripe's processing fee?", "You do, out of your share. Stripe charges about 2.9% + 30¢ per card payment; it's deducted before your share is sent to you. Purchase orders paid by check have no Stripe fee. Your Orders and Payouts pages show the exact fee on each sale."],
     ["When do I get paid?", `The customer's payment is held until they confirm the book arrived or the visit happened, or automatically ${HOLD_DAYS} days later (${HOLD_DAYS} days after the event, for visits). Your share is then sent to your Stripe account, and Stripe pays it out to your bank.`],
     ["What if a school pays by purchase order?", `Schools can pay by purchase order on Net ${poTermsDays} terms. Once the PO is approved, you ship the books or do the visit as usual, and your share is released after the school pays the invoice.`],
     ["What if a booking is canceled?", `If the customer cancels at least ${cancelNoticeDays} days before the event, they're refunded. Later cancellations aren't refunded, and you're paid because you kept the date for them. If you cancel, the customer is always refunded in full, so please cancel only when you must.`],
@@ -26,13 +29,13 @@ export default async function AuthorPricing() {
         <article className="card"><div className="body stack">
           <div className="meta">Book sales</div>
           <div className="price-lg">{bookCommissionPct}%</div>
-          <p>Commission on each book sold. You set your price and ship directly; you keep {100 - bookCommissionPct}% of every sale.</p>
+          <p>Commission on each book sold. You set your price and ship directly; you keep {100 - bookCommissionPct}% of every sale, minus Stripe&apos;s card processing fee.</p>
           <Link className="btn btn-line" href="/dashboard/author/books">Your products</Link>
         </div></article>
         <article className="card"><div className="body stack">
           <div className="meta">Author visits & speeches</div>
           <div className="price-lg">{visitCommissionPct}%</div>
-          <p>Commission on each booking. You set your fee (travel can be included); you keep {100 - visitCommissionPct}%.</p>
+          <p>Commission on each booking. You set your fee (travel can be included); you keep {100 - visitCommissionPct}%, minus Stripe&apos;s card processing fee.</p>
           <Link className="btn btn-line" href="/dashboard/author/visits">Your listings</Link>
         </div></article>
         <article className="card"><div className="body stack">
@@ -46,7 +49,7 @@ export default async function AuthorPricing() {
       <div className="panel" style={{ marginTop: 20 }}>
         <h3>Example</h3>
         <p className="muted" style={{ marginTop: 6 }}>
-          A school books your $500 visit: you receive {keep(500, visitCommissionPct)}. A reader buys your $20 book: you receive {keep(20, bookCommissionPct)}.
+          A school books your $500 visit by card: you receive {keep(500, visitCommissionPct)} (after {visitCommissionPct}% commission and Stripe&apos;s fee of about $14.80). A reader buys your $20 book: you receive {keep(20, bookCommissionPct)} (after {bookCommissionPct}% commission and about $0.88 Stripe fee).
         </p>
       </div>
 

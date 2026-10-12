@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "./db";
 import { sendEmail, type Email } from "./email";
-import { money, net } from "./money";
+import { authorShare, money, net } from "./money";
 import { appUrl } from "./url";
 import { fmtDate, fmtWhen } from "./dates";
 import { trackingUrl } from "./shipping";
@@ -143,7 +143,7 @@ export async function bookingPaid(bookingId: string) {
       subject: `Confirmed by purchase order: ${b.organisation} on ${fmtWhen(b)}`,
       lines: [
         `${b.buyer.name} booked “${b.package.title}” on ${fmtWhen(b)}, paying by purchase order ${po.poNumber} (approved).`,
-        `Your share, ${money(net(b.fee, b.commissionPct))}, is released after the visit once they've paid the invoice.`,
+        `Your share, ${money(authorShare(b.fee, b.commissionPct, b.stripeFee))}, is released after the visit once they've paid the invoice.`,
       ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     });
@@ -164,7 +164,7 @@ export async function bookingPaid(bookingId: string) {
       subject: `Confirmed and paid: ${b.organisation} on ${fmtWhen(b)}`,
       lines: [
         `${b.buyer.name} paid for “${b.package.title}” on ${fmtWhen(b)}.`,
-        `Your share, ${money(net(b.fee, b.commissionPct))}, is released when they confirm the visit happened, or automatically 14 days after the event.`,
+        `Your share, ${money(authorShare(b.fee, b.commissionPct, b.stripeFee))} (after our ${b.commissionPct}% commission and Stripe's processing fee), is released when they confirm the visit happened, or automatically 14 days after the event.`,
       ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     },
@@ -221,7 +221,7 @@ export async function bookingCancelled(bookingId: string, outcome: "unpaid" | "r
       subject: `Booking canceled: ${b.organisation} on ${fmtWhen(b)}`,
       lines: [
         `B-${b.number} (“${b.package.title}”) has been canceled. The date is open again on your calendar.`,
-        ...(outcome === "late" ? [`It was a late cancellation, so your fee of ${money(net(b.fee, b.commissionPct))} has been released to you.`] : []),
+        ...(outcome === "late" ? [`It was a late cancellation, so your share of ${money(authorShare(b.fee, b.commissionPct, b.stripeFee))} has been released to you.`] : []),
       ],
       cta: { label: "View bookings", url: `${base}/dashboard/author/requests` },
     },
@@ -274,7 +274,7 @@ export async function orderPaid(orderId: string) {
         `Ship to: ${o.shippingAddress}`,
         po
           ? `Paid by purchase order ${po.poNumber} (approved) — please ship now. Your share is released once they've paid the invoice.`
-          : "Mark each line shipped in your studio. Your share is released when the buyer confirms receipt, or automatically after 14 days.",
+          : "Mark each line shipped in your studio. Your share (after commission and Stripe's processing fee) is released when the buyer confirms receipt, or automatically after 14 days.",
       ],
       cta: { label: "View orders", url: `${base}/dashboard/author/orders` },
     });

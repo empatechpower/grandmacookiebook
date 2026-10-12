@@ -96,7 +96,7 @@ await author.locator("tr", { hasText: "Rainforest " + stamp }).getByRole("button
 await author.goto(B + "/dashboard/author/books"); ok((await author.locator("tr", { hasText: "Rainforest " + stamp }).innerText()).includes("\t3\t"), "stock decremented to 3");
 await author.goto(B + "/dashboard/author/payouts"); await settle(author);
 const payRow = await author.locator("tr", { hasText: "Rainforest " + stamp }).innerText();
-ok(payRow.includes("$47.50") && payRow.includes("Held until"), "author's $47.50 share ($50 - 5%) held after payment");
+ok(payRow.includes("$45.75") && payRow.includes("Held until"), "author's $45.75 share ($50 − 5% commission − $1.75 Stripe fee) held after payment");
 
 // 6. Buyer pays booking
 await buyer.goto(B + "/dashboard/buyer/bookings");
@@ -105,7 +105,7 @@ ok((await buyer.locator("tr", { hasText: "Test School" }).innerText()).includes(
 await author.goto(B + "/dashboard/author/payouts"); await settle(author);
 ok((await text(author)).includes("books 5%, visits 15%"), "payouts page states 5% books / 15% visits");
 const bRow = await author.locator("tr", { hasText: "Rainforest talk " + stamp }).innerText();
-ok(bRow.includes("$255") && bRow.includes("Held until"), "booking share $255 (300 - 15%) held until after the event");
+ok(bRow.includes("$246") && bRow.includes("Held until"), "booking share $246 ($300 − 15% commission − $9.00 Stripe fee) held until after the event");
 buyer.on("dialog", d => d.accept());
 await buyer.goto(B + "/dashboard/buyer/orders");
 await buyer.locator("tr", { hasText: "Rainforest " + stamp }).getByRole("button", { name: "Mark received" }).click();

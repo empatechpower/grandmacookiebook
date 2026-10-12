@@ -172,6 +172,8 @@ model OrderItem {
   status         String    @default("PENDING") // PENDING | PAID | SHIPPED | DELIVERED | REFUNDED | CANCELLED
   // Author's share is held until the buyer confirms receipt or releaseAt passes.
   releaseAt      DateTime?
+  // This line's part of Stripe's processing fee, deducted from the author's share (null = not known yet; 0 for purchase orders).
+  stripeFee      Int?
   transferId     String? // Stripe transfer of the author's share
   transferError  String?
   carrier        String?
@@ -209,6 +211,7 @@ model Booking {
   chargeId        String?
   // Author's share is held until the buyer confirms the visit or releaseAt passes.
   releaseAt       DateTime?
+  stripeFee       Int? // Stripe's processing fee, deducted from the author's share (null = not known yet; 0 for purchase orders)
   transferId      String?
   transferError   String?
   // Optional contract attached by either side (stored privately; see /api/contracts).

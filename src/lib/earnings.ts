@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { net } from "./money";
+import { authorShare } from "./money";
 
 export type EarningRow = {
   id: string;
@@ -15,7 +15,7 @@ export type EarningRow = {
 };
 
 /**
- * An author's paid sales and bookings, net of commission. Each is held after payment
+ * An author's paid sales and bookings, net of commission and their part of Stripe's processing fee. Each is held after payment
  * and transferred when the buyer confirms, or automatically when releaseAt passes.
  */
 export async function authorEarnings(authorId: string) {
@@ -35,7 +35,7 @@ export async function authorEarnings(authorId: string) {
       date: i.order.createdAt,
       label: `O-${i.order.number} · ${i.title} × ${i.qty}`,
       gross: i.unitPrice * i.qty,
-      net: net(i.unitPrice * i.qty, i.commissionPct),
+      net: authorShare(i.unitPrice * i.qty, i.commissionPct, i.stripeFee),
       transferId: i.transferId,
       transferError: i.transferError,
       releaseAt: i.releaseAt,
@@ -46,7 +46,7 @@ export async function authorEarnings(authorId: string) {
       date: b.createdAt,
       label: `B-${b.number} · ${b.package.title}`,
       gross: b.fee,
-      net: net(b.fee, b.commissionPct),
+      net: authorShare(b.fee, b.commissionPct, b.stripeFee),
       transferId: b.transferId,
       transferError: b.transferError,
       releaseAt: b.releaseAt,

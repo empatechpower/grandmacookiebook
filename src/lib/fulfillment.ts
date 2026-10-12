@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "./db";
-import { net } from "./money";
-import { refundPayment, reverseTransfer, transferToAuthor, type PaidPayment } from "./payments";
+import { allocateFee, authorShare } from "./money";
+import { chargeFee, refundPayment, reverseTransfer, transferToAuthor, type PaidPayment } from "./payments";
 import { addDays } from "./dates";
 import * as notify from "./notify";
 import { accrueReferral } from "./referrals";
@@ -16,6 +16,41 @@ import { issueInvoice } from "./invoices";
  * from Checkout can both deliver the same payment, possibly more than once.
  */
 export const HOLD_DAYS = 14;
+
+/**
+ * Records Stripe's processing fee for a card-paid order, split across its lines by amount — each
+ * author's share is reduced by their part (client decision: authors pay the Stripe fee). Purchase
+ * orders have no Stripe fee. Returns false if Stripe hasn't settled the fee yet.
+ */
+export async function recordOrderFees(orderId: string) {
+  const order = await db.order.findUnique({ where: { id: orderId }, include: { items: { orderBy: { id: "asc" } }, purchaseOrder: true } });
+  if (!order) return false;
+  if (order.items.every((i) => i.stripeFee !== null)) return true;
+  if (order.purchaseOrder || !order.chargeId) {
+    if (order.purchaseOrder) await db.orderItem.updateMany({ where: { orderId, stripeFee: null }, data: { stripeFee: 0 } });
+    return !!order.purchaseOrder;
+  }
+  const fee = await chargeFee(order.chargeId, order.total).catch(() => null);
+  if (fee === null) return false;
+  const parts = allocateFee(fee, order.items.map((i) => i.unitPrice * i.qty));
+  await db.$transaction(order.items.map((i, k) => db.orderItem.update({ where: { id: i.id }, data: { stripeFee: parts[k] } })));
+  return true;
+}
+
+export async function recordBookingFee(bookingId: string) {
+  const b = await db.booking.findUnique({ where: { id: bookingId }, include: { purchaseOrder: true } });
+  if (!b) return false;
+  if (b.stripeFee !== null) return true;
+  if (b.purchaseOrder) {
+    await db.booking.update({ where: { id: b.id }, data: { stripeFee: 0 } });
+    return true;
+  }
+  if (!b.chargeId) return false;
+  const fee = await chargeFee(b.chargeId, b.fee).catch(() => null);
+  if (fee === null) return false;
+  await db.booking.update({ where: { id: b.id }, data: { stripeFee: fee } });
+  return true;
+}
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 300);
 
@@ -32,6 +67,7 @@ export async function fulfillOrder(orderId: string, payment: PaidPayment, sessio
     include: { items: true },
   });
   await db.cartItem.deleteMany({ where: { userId: order.buyerId, bookId: { in: order.items.map((i) => i.bookId) } } });
+  await recordOrderFees(order.id);
   await issueInvoice({ orderId: order.id });
   await notify.orderPaid(order.id);
 }
@@ -44,6 +80,7 @@ export async function fulfillBooking(bookingId: string, payment: PaidPayment, se
   if (claimed.count) {
     const b = await db.booking.findUniqueOrThrow({ where: { id: bookingId } });
     await db.booking.update({ where: { id: bookingId }, data: { releaseAt: addDays(b.eventDate, HOLD_DAYS) } });
+    await recordBookingFee(bookingId);
     await issueInvoice({ bookingId });
     return notify.bookingPaid(bookingId);
   }
@@ -65,8 +102,11 @@ export async function releaseItem(itemId: string) {
   if (po ? po.status !== "PAID" : !item.order.chargeId) return;
   try {
     if (!item.author.stripeAccountId) throw new Error("Author has no connected Stripe account");
+    if (!(await recordOrderFees(item.orderId))) throw new Error("Waiting for Stripe to confirm its processing fee — will retry");
+    const fee = (await db.orderItem.findUniqueOrThrow({ where: { id: itemId }, select: { stripeFee: true } })).stripeFee;
+    const share = authorShare(item.unitPrice * item.qty, item.commissionPct, fee);
     const transferId = await transferToAuthor({
-      amount: net(item.unitPrice * item.qty, item.commissionPct),
+      amount: share,
       destination: item.author.stripeAccountId,
       chargeId: item.order.chargeId ?? undefined,
       transferGroup: `order_${item.orderId}`,
@@ -74,7 +114,7 @@ export async function releaseItem(itemId: string) {
     });
     await db.orderItem.update({ where: { id: itemId }, data: { transferId, transferError: null } });
     await accrueReferral("item", itemId);
-    await notify.payoutReleased(item.author, net(item.unitPrice * item.qty, item.commissionPct), `${item.title} × ${item.qty} (O-${item.order.number})`);
+    await notify.payoutReleased(item.author, share, `${item.title} × ${item.qty} (O-${item.order.number})`);
   } catch (e) {
     await db.orderItem.update({ where: { id: itemId }, data: { transferError: errMsg(e) } });
   }
@@ -86,8 +126,11 @@ export async function releaseBooking(bookingId: string) {
   if (b.purchaseOrder ? b.purchaseOrder.status !== "PAID" : !b.chargeId) return;
   try {
     if (!b.author.stripeAccountId) throw new Error("Author has no connected Stripe account");
+    if (!(await recordBookingFee(b.id))) throw new Error("Waiting for Stripe to confirm its processing fee — will retry");
+    const fee = (await db.booking.findUniqueOrThrow({ where: { id: b.id }, select: { stripeFee: true } })).stripeFee;
+    const share = authorShare(b.fee, b.commissionPct, fee);
     const transferId = await transferToAuthor({
-      amount: net(b.fee, b.commissionPct),
+      amount: share,
       destination: b.author.stripeAccountId,
       chargeId: b.chargeId ?? undefined,
       transferGroup: `booking_${b.id}`,
@@ -95,7 +138,7 @@ export async function releaseBooking(bookingId: string) {
     });
     await db.booking.update({ where: { id: bookingId }, data: { transferId, transferError: null } });
     await accrueReferral("booking", bookingId);
-    await notify.payoutReleased(b.author, net(b.fee, b.commissionPct), `booking B-${b.number} (${b.organisation})`);
+    await notify.payoutReleased(b.author, share, `booking B-${b.number} (${b.organisation})`);
   } catch (e) {
     await db.booking.update({ where: { id: bookingId }, data: { transferError: errMsg(e) } });
   }

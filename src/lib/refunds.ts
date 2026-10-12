@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "./db";
-import { net } from "./money";
+import { authorShare } from "./money";
 import { refundWithClawback } from "./fulfillment";
 import * as notify from "./notify";
 import { voidReferralEarning } from "./referrals";
@@ -18,7 +18,7 @@ export async function refundItem(itemId: string): Promise<{ ok: false; error: st
     paymentIntentId: item.order.paymentRef,
     gross,
     transferId: item.transferId,
-    authorShare: net(gross, item.commissionPct),
+    authorShare: authorShare(gross, item.commissionPct, item.stripeFee),
     key: `item_${item.id}`,
   });
   await db.$transaction([
@@ -42,7 +42,7 @@ export async function cancelBooking(bookingId: string, byAuthor: { reason: strin
         paymentIntentId: b.paymentRef,
         gross: b.fee,
         transferId: b.transferId,
-        authorShare: net(b.fee, b.commissionPct),
+        authorShare: authorShare(b.fee, b.commissionPct, b.stripeFee),
         key: `booking_${b.id}`,
       })
     : null;

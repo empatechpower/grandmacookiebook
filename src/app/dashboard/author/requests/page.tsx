@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { dayKey, fmtWhen, todayKey } from "@/lib/dates";
 import { requireUser } from "@/lib/auth";
-import { money, net } from "@/lib/money";
+import { money, authorShare, net } from "@/lib/money";
 import { authorCancelBooking, respondBooking } from "@/app/actions/author";
 import { openConversation } from "@/app/actions/messages";
 import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
@@ -45,7 +45,7 @@ export default async function Requests() {
                 <SubmitButton className="btn btn-ghost btn-sm" style={{ paddingLeft: 0 }}>Message →</SubmitButton>
               </form>
             </td>
-            <td>{money(net(b.fee, b.commissionPct))}<div className="muted" style={{ fontSize: ".75rem" }}>of {money(b.fee)}</div></td>
+            <td>{money(authorShare(b.fee, b.commissionPct, b.stripeFee))}<div className="muted" style={{ fontSize: ".75rem" }}>of {money(b.fee)}{b.stripeFee ? `, after ${money(b.stripeFee)} Stripe fee` : b.stripeFee === null ? ", before Stripe's fee" : ""}</div></td>
             <td>
               <Badge status={b.status} />
               {b.issues.length > 0 && <div><span className="badge b-off" title="Payment paused while South Texas Book & Author reviews it">Problem reported</span></div>}
