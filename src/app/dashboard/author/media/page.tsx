@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { ImageInput } from "@/components/ImageInput";
 import { requireUser } from "@/lib/auth";
 import { MEDIA_CATEGORIES } from "@/lib/storefront";
 import { addMedia, deleteMedia, moveMedia } from "@/app/actions/media";
@@ -16,7 +17,7 @@ export default async function Media() {
         <form action={addMedia} className="panel">
           <h3 style={{ marginBottom: 10 }}>Add a photo</h3>
           <input type="hidden" name="kind" value="PHOTO" />
-          <div className="field"><label htmlFor="p-file">Upload</label><input id="p-file" name="file" type="file" accept="image/jpeg,image/png,image/webp" /></div>
+          <div className="field"><label htmlFor="p-file">Upload</label><ImageInput id="p-file" name="file" /></div>
           <div className="field"><label htmlFor="p-url">…or image link</label><input id="p-url" name="url" placeholder="https://" /></div>
           <div className="field-row">
             <div className="field"><label htmlFor="p-title">Title</label><input id="p-title" name="title" required placeholder="Reading at Lincoln Elementary" maxLength={120} /></div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ImageInput } from "./ImageInput";
 import type { Book, VisitPackage } from "@prisma/client";
 import { saveBook, savePackage } from "@/app/actions/author";
 import { CATEGORIES, FORMATS } from "@/lib/constants";
@@ -49,19 +50,13 @@ export function BookForm({ book }: { book?: Book }) {
         </div>
         <div className="field">
           <label htmlFor="coverFile">Cover image</label>
-          <div className="row" style={{ alignItems: "center", flexWrap: "nowrap" }}>
-            {book?.coverUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={book.coverUrl} alt="Current cover" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flex: "none" }} />
-            )}
-            <input id="coverFile" name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" style={{ minWidth: 0 }} />
-          </div>
+          <ImageInput id="coverFile" name="coverFile" current={book?.coverUrl} />
           <div className="hint">{book?.coverUrl ? "Choose a file only to replace the current cover. " : ""}JPEG, PNG or WebP, up to 5 MB.</div>
         </div>
       </div>
       <div className="field">
         <label htmlFor="images">More photos (optional)</label>
-        <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple />
+        <ImageInput id="images" name="images" multiple max={8} />
         <div className="hint">Back cover, inside pages, merchandise shots — up to 8 extra photos.</div>
       </div>
       <label className="check-line">

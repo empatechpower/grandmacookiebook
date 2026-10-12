@@ -79,7 +79,9 @@ ok((await au.locator(".field:has(#avatarFile) img").getAttribute("src")) === ava
 await anon.goto(B + "/authors"); ok((await anon.locator(`.author-card img[src="${avatar}"]`).count()) === 1, "photo shows in directory");
 await au.goto(B + "/dashboard/author/books");
 await au.locator("tr", { hasText: "Nature Sketchbook" }).getByRole("link", { name: "Edit" }).click(); await au.waitForURL("**/books/**");
-await au.setInputFiles("#coverFile", `${S}/cover.png`); await au.getByRole("button", { name: "Save changes" }).click();
+await au.setInputFiles("#coverFile", `${S}/cover.png`);
+ok(await au.locator('.field:has(#coverFile) .image-previews img[src^="blob:"]').isVisible(), "the chosen cover shows as a preview before saving");
+await au.getByRole("button", { name: "Save changes" }).click();
 await au.waitForURL("**/dashboard/author/books");
 ok((await au.locator("tr", { hasText: "Nature Sketchbook" }).innerText()).includes("Live"), "a new cover goes live straight away (no re-review)");
 // Client's case: open a saved book (with a cover), change only the price, save — must work

@@ -1,4 +1,5 @@
 import { updateProfile } from "@/app/actions/author";
+import { ImageInput } from "./ImageInput";
 import type { CurrentUser } from "@/lib/auth";
 import { GRADES, IDENTITIES, LANGUAGES, ORG_TYPES, TOPICS } from "@/lib/constants";
 import { parseTags } from "@/lib/tags";
@@ -84,13 +85,7 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
           </div>
           <div className="field">
             <label htmlFor="avatarFile">Photo</label>
-            <div className="row" style={{ alignItems: "center" }}>
-              {user.avatarUrl && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.avatarUrl} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover" }} />
-              )}
-              <input id="avatarFile" name="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" style={{ flex: 1 }} />
-            </div>
+            <ImageInput id="avatarFile" name="avatarFile" current={user.avatarUrl} shape="square" />
             <div className="hint">JPEG, PNG or WebP, up to 5 MB. Square photos look best.</div>
           </div>
           <div className="field-row">

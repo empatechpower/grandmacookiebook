@@ -1,4 +1,5 @@
 import type { Article } from "@prisma/client";
+import { ImageInput } from "./ImageInput";
 import { saveArticle } from "@/app/actions/content";
 import { ARTICLE_KINDS } from "@/lib/content";
 import { dayKey } from "@/lib/dates";
@@ -32,7 +33,7 @@ export function ArticleForm({ a, kind }: { a?: Article; kind?: string }) {
       <div className="field-row">
         <div className="field">
           <label htmlFor="coverFile">Cover image</label>
-          <input id="coverFile" name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" />
+          <ImageInput id="coverFile" name="coverFile" current={a?.coverUrl} />
         </div>
         <div className="field">
           <label htmlFor="coverUrl">…or cover image URL</label>
