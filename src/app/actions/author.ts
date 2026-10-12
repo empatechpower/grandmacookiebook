@@ -207,16 +207,34 @@ export async function shipItem(fd: FormData) {
 /** Starts (or resumes) Stripe Connect onboarding so the author can be paid automatically. */
 export async function connectStripe() {
   const user = await requireUser("AUTHOR");
-  let accountId = user.stripeAccountId;
-  if (!accountId) {
-    accountId = await createConnectedAccount({ email: user.email, userId: user.id });
-    await db.user.update({ where: { id: user.id }, data: { stripeAccountId: accountId } });
+  const start = async (existing: string | null) => {
+    let accountId = existing;
+    if (!accountId) {
+      accountId = await createConnectedAccount({ email: user.email, userId: user.id });
+      await db.user.update({ where: { id: user.id }, data: { stripeAccountId: accountId, payoutsReady: false } });
+    }
+    return { accountId, url: demoMode ? null : await onboardingLink(accountId) };
+  };
+  let result: { accountId: string; url: string | null };
+  try {
+    try {
+      result = await start(user.stripeAccountId);
+    } catch (e) {
+      // A saved account that no longer exists (e.g. made in test mode before going live): start a fresh one.
+      if (!user.stripeAccountId || (e as { code?: string }).code !== "resource_missing") throw e;
+      await db.user.update({ where: { id: user.id }, data: { stripeAccountId: null, payoutsReady: false } });
+      result = await start(null);
+    }
+  } catch (e) {
+    console.error("[stripe] connect failed for", user.email, e);
+    const msg = e instanceof Error ? e.message : String(e);
+    return fail(`Stripe couldn't start your setup: ${msg.slice(0, 220)} — please try again in a few minutes, or contact us if it keeps happening.`, "/dashboard/author/payouts");
   }
-  if (demoMode) {
+  if (!result.url) {
     await db.user.update({ where: { id: user.id }, data: { payoutsReady: true } });
     return done("Payouts connected (demo mode)");
   }
-  redirect(await onboardingLink(accountId));
+  redirect(result.url);
 }
 
 /** Re-checks onboarding status with Stripe (also kept in sync by the account.updated webhook). */

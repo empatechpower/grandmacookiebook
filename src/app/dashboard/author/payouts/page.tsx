@@ -14,7 +14,7 @@ export default async function Payouts() {
   let user = await requireUser("AUTHOR");
   // Returning from Stripe (or just visiting): pick up the latest account status without waiting for the webhook.
   if (user.stripeAccountId && !user.payoutsReady) {
-    const status = await syncAuthorStripe(user).catch(() => null);
+    const status = await syncAuthorStripe(user).catch((e) => (console.error("[stripe] status check failed", e), null));
     if (status === "ready" || status === "missing") user = { ...user, payoutsReady: status === "ready", stripeAccountId: status === "missing" ? null : user.stripeAccountId };
   }
   const [e, fees] = await Promise.all([authorEarnings(user.id), getSettings()]);
@@ -107,6 +107,6 @@ export default async function Payouts() {
 async function openStripeDashboard() {
   "use server";
   const user = await requireUser("AUTHOR");
-  const url = user.stripeAccountId ? await expressDashboardLink(user.stripeAccountId) : null;
+  const url = user.stripeAccountId ? await expressDashboardLink(user.stripeAccountId).catch((e) => (console.error("[stripe] dashboard link failed", e), null)) : null;
   redirect(url ?? "/dashboard/author/payouts");
 }
