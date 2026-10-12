@@ -5,10 +5,11 @@ import path from "path";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
- * Image uploads (author photos, book covers).
- * - Production: any S3-compatible bucket (AWS S3, Cloudflare R2, DigitalOcean Spaces…) when S3_BUCKET is set.
- * - Local: ./uploads on disk, served by src/app/uploads/[...path]/route.ts.
- *   (Serverless hosts like Vercel don't keep files written to disk, so set S3_* there.)
+ * Image uploads (author photos, book covers, media).
+ * Stored in any S3-compatible bucket (AWS S3, Cloudflare R2…) when S3_BUCKET is set, otherwise in ./uploads
+ * on disk. Either way they're saved as /uploads/<folder>/<uuid>.<ext> and served by our own
+ * src/app/uploads/[...path]/route.ts — so images never depend on the bucket's public URL settings.
+ * (Serverless hosts like Vercel don't keep files written to disk, so set S3_* there.)
  */
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const LOCAL_UPLOAD_DIR = path.join(process.cwd(), "uploads");
@@ -55,9 +56,6 @@ export async function saveImage(file: File, folder: "avatars" | "covers" | "medi
   const key = `${folder}/${randomUUID()}.${type.ext}`;
 
   if (s3) {
-    const base = publicBaseUrl();
-    // Never save an image under an address nobody can open (e.g. a placeholder S3_PUBLIC_URL).
-    if (!base) return { error: "Photo storage isn't set up correctly yet (S3_PUBLIC_URL). Please contact the site admin." };
     await s3.send(
       new PutObjectCommand({
         Bucket: process.env.S3_BUCKET!,
@@ -67,12 +65,25 @@ export async function saveImage(file: File, folder: "avatars" | "covers" | "medi
         CacheControl: "public, max-age=31536000, immutable",
       }),
     );
-    return { url: `${base}/${key}` };
+    return { url: `/uploads/${key}` };
   }
   const dest = path.join(LOCAL_UPLOAD_DIR, key);
   await mkdir(path.dirname(dest), { recursive: true });
   await writeFile(dest, buf);
   return { url: `/uploads/${key}` };
+}
+
+/** Reads an uploaded image (folder/uuid.ext — already validated by the caller) from the bucket or local disk. */
+export async function readImage(key: string): Promise<Uint8Array | null> {
+  try {
+    if (s3) {
+      const obj = await s3.send(new GetObjectCommand({ Bucket: process.env.S3_BUCKET!, Key: key }));
+      return obj.Body ? await obj.Body.transformToByteArray() : null;
+    }
+    return await readFile(path.join(LOCAL_UPLOAD_DIR, key));
+  } catch {
+    return null;
+  }
 }
 
 // ---------- Private files (booking contracts) ----------

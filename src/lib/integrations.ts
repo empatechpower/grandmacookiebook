@@ -1,5 +1,4 @@
 import "server-only";
-import { publicBaseUrl } from "./storage";
 
 /** Which outside services are configured (never exposes the values themselves). */
 export function integrationStatus() {
@@ -10,12 +9,7 @@ export function integrationStatus() {
     { name: "Stripe payment webhook", ok: !!process.env.STRIPE_WEBHOOK_SECRET, detail: process.env.STRIPE_WEBHOOK_SECRET ? "Set" : "Not set", env: "STRIPE_WEBHOOK_SECRET" },
     { name: "Stripe author-account webhook", ok: !!process.env.STRIPE_CONNECT_WEBHOOK_SECRET, detail: process.env.STRIPE_CONNECT_WEBHOOK_SECRET ? "Set" : "Not set", env: "STRIPE_CONNECT_WEBHOOK_SECRET" },
     { name: "Email delivery", ok: !!process.env.RESEND_API_KEY, detail: process.env.RESEND_API_KEY ? `Sending as ${process.env.EMAIL_FROM ?? "default sender"}` : "Not set — emails only go to the server log", env: "RESEND_API_KEY" },
-    {
-      name: "Photo storage",
-      ok: !!process.env.S3_BUCKET && !!publicBaseUrl(),
-      detail: !process.env.S3_BUCKET ? "Local disk (uploads won't persist on Vercel)" : publicBaseUrl() ? `Cloud storage (${publicBaseUrl()})` : "S3_PUBLIC_URL is missing or not a real address — uploads are blocked until it's fixed",
-      env: publicBaseUrl() || !process.env.S3_BUCKET ? "S3_BUCKET" : "S3_PUBLIC_URL",
-    },
+    { name: "Photo storage", ok: !!process.env.S3_BUCKET, detail: process.env.S3_BUCKET ? "Cloud storage (served from this site at /uploads)" : "Local disk (uploads won't persist on Vercel)", env: "S3_BUCKET" },
     { name: "Continue with Google", ok: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET), detail: process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? "On — shown on log in and sign up" : "Not set — the Google button is hidden", env: "GOOGLE_CLIENT_ID" },
     { name: "Scheduled jobs", ok: !!process.env.CRON_SECRET, detail: process.env.CRON_SECRET ? "Set" : "Not set — held payouts only release when buyers confirm", env: "CRON_SECRET" },
   ];
