@@ -88,6 +88,7 @@ model Book {
   category    String // see CATEGORIES
   price       Int
   stock       Int         @default(0)
+  isbn        String? // ISBN-10 or ISBN-13, digits only (X allowed as the last ISBN-10 check digit)
   coverUrl    String?
   // Platform bulk discounts (tiers set by the admin) apply to this product when on.
   bulkEnabled Boolean     @default(true)

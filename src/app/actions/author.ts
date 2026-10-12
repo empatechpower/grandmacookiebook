@@ -12,12 +12,10 @@ import { hasFile, saveImage } from "@/lib/storage";
 import { redirect } from "next/navigation";
 import { createConnectedAccount, demoMode, fetchAccountReady, onboardingLink } from "@/lib/payments";
 import { toCents } from "@/lib/money";
+import { isbnOk, normalizeIsbn } from "@/lib/validation";
 import { cancelBooking as cancelWithRefund } from "@/lib/refunds";
 import { fromDayKey, todayKey } from "@/lib/dates";
 
-// Our own uploads are stored as relative /uploads/… paths.
-const ownUpload = z.string().regex(/^\/uploads\/(avatars|covers|media)\/[0-9a-f-]{36}\.(jpg|png|webp)$/);
-const url = z.union([z.literal(""), ownUpload, z.string().url("Cover must be a full URL (https://…)")]);
 
 const BookSchema = z.object({
   title: z.string().trim().min(2, "Title is required").max(150, "Title is too long (150 characters max)"),
@@ -25,7 +23,7 @@ const BookSchema = z.object({
   category: z.enum(CATEGORIES.map((c) => c.value) as [string, ...string[]]),
   price: z.number().int().min(100, "Price must be at least 1.00").max(1_000_000, "Price can be at most $10,000"),
   stock: z.number().int().min(0, "Stock can't be negative").max(100_000, "Stock can be at most 100,000"),
-  coverUrl: url,
+  isbn: z.string().refine(isbnOk, "That ISBN doesn't look right — check the 10 or 13 digits on the back cover"),
   bulkEnabled: z.boolean(),
 });
 
@@ -39,11 +37,13 @@ export async function saveBook(fd: FormData) {
     category: str(fd, "category"),
     price: toCents(fd.get("price")),
     stock: Math.trunc(Number(fd.get("stock") || 0)),
-    coverUrl: str(fd, "coverUrl"),
+    isbn: str(fd, "isbn"),
     bulkEnabled: fd.get("bulkEnabled") === "on",
   });
   if (!parsed.success) return fail(parsed.error.issues[0].message);
-  const data = { ...parsed.data, coverUrl: parsed.data.coverUrl || null };
+  const existingCover = id ? (await db.book.findFirst({ where: { id, authorId: user.id }, select: { coverUrl: true } }))?.coverUrl ?? null : null;
+  // The cover only changes when a new file is uploaded.
+  const data = { ...parsed.data, isbn: normalizeIsbn(parsed.data.isbn) || null, coverUrl: existingCover };
   const upload = fd.get("coverFile");
   if (hasFile(upload)) {
     const saved = await saveImage(upload, "covers");
@@ -74,7 +74,7 @@ export async function saveBook(fd: FormData) {
   const existing = await db.book.findFirst({ where: { id, authorId: user.id } });
   if (!existing) return fail("Book not found");
   // Price and stock changes go live immediately; content changes need re-review.
-  const contentChanged = (["title", "description", "category", "coverUrl"] as const).some((k) => existing[k] !== data[k]);
+  const contentChanged = (["title", "description", "category", "coverUrl", "isbn"] as const).some((k) => existing[k] !== data[k]);
   const status = contentChanged || existing.status === "REJECTED" ? "PENDING" : existing.status;
   if (extra.length && (await db.bookImage.count({ where: { bookId: id } })) + extra.length > 8) return fail("Up to 8 extra photos per product");
   await db.book.update({ where: { id }, data: { ...data, status, reviewNote: status === "PENDING" ? null : existing.reviewNote } });
@@ -223,7 +223,7 @@ export async function refreshStripeStatus() {
   await done(ready ? "Stripe connected — you'll be paid automatically" : "Stripe still needs a few details from you");
 }
 
-const optionalUrl = z.union([z.literal(""), ownUpload, z.string().url()]);
+const optionalUrl = z.union([z.literal(""), z.string().url()]);
 
 export async function updateProfile(fd: FormData) {
   const user = await requireUser("AUTHOR", "BUYER");
@@ -236,7 +236,7 @@ export async function updateProfile(fd: FormData) {
     return done("Profile saved");
   }
   const urls = {
-    avatarUrl: str(fd, "avatarUrl"), websiteUrl: str(fd, "websiteUrl"), videoUrl: str(fd, "videoUrl"),
+    avatarUrl: user.avatarUrl ?? "", websiteUrl: str(fd, "websiteUrl"), videoUrl: str(fd, "videoUrl"),
     facebookUrl: str(fd, "facebookUrl"), instagramUrl: str(fd, "instagramUrl"), tiktokUrl: str(fd, "tiktokUrl"),
   };
   const slug = str(fd, "slug").toLowerCase();
@@ -246,6 +246,7 @@ export async function updateProfile(fd: FormData) {
     if (await db.user.findFirst({ where: { slug, id: { not: user.id } } })) return fail("That storefront link is taken — try another");
   }
   for (const [k, v] of Object.entries(urls)) {
+    if (k === "avatarUrl") continue; // set only by uploading a photo
     if (!optionalUrl.safeParse(v).success) return fail(`${k.replace("Url", "")} link must be a full URL (https://…)`);
   }
   const tags = (key: string, allowed: { value: string }[]) => serializeTags(fd.getAll(key).map(String), allowed);

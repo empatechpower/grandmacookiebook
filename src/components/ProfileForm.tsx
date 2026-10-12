@@ -93,10 +93,6 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
             </div>
             <div className="hint">JPEG, PNG or WebP, up to 5 MB. Square photos look best.</div>
           </div>
-          <div className="field">
-            <label htmlFor="avatarUrl">…or photo URL</label>
-            <input id="avatarUrl" name="avatarUrl" defaultValue={user.avatarUrl ?? ""} placeholder="https://" />
-          </div>
           <div className="field-row">
             <div className="field">
               <label htmlFor="websiteUrl">Website</label>

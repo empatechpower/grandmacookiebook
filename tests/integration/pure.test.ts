@@ -47,3 +47,10 @@ test("tags only keep allowed values and match exactly", () => {
 test("slugify makes safe web addresses", () => {
   assert.equal(slugify("  Educator's Favorites: Octóber 2026! "), "educator-s-favorites-october-2026");
 });
+
+test("ISBN check accepts real ISBN-10/13 (any hyphens/spaces) and rejects typos", async () => {
+  const { isbnOk, normalizeIsbn } = await import("../../src/lib/validation");
+  for (const ok of ["", "978-1-4028-9462-6", "9780306406157", "0-306-40615-2", "080442957X", "080442957x"]) assert.equal(isbnOk(ok), true, ok);
+  for (const bad of ["978-1-4028-9462-7", "12345", "0-306-40615-3", "abcdefghij", "97910000000000"]) assert.equal(isbnOk(bad), false, bad);
+  assert.equal(normalizeIsbn("978 1-4028 9462 6"), "9781402894626");
+});

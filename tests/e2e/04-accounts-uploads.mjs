@@ -66,22 +66,35 @@ await au.locator(".toast.on").waitFor(); ok((await au.locator(".toast").innerTex
 await au.goto(B + "/dashboard/author/profile");
 await au.setInputFiles("#avatarFile", `${S}/huge.png`); await au.getByRole("button", { name: "Save profile" }).click();
 await sleep(1500); const hugeToast = await au.locator(".toast").innerText().catch(() => "");
-ok(/5 MB/.test(hugeToast) || !(await au.locator("#avatarUrl").inputValue()).startsWith("/uploads/"), "oversized image rejected");
+ok(/5 MB/.test(hugeToast) || (await au.locator(".field:has(#avatarFile) img").count()) === 0, "oversized image rejected");
 await au.goto(B + "/dashboard/author/profile");
 await au.setInputFiles("#avatarFile", `${S}/avatar.png`); await au.getByRole("button", { name: "Save profile" }).click();
 await au.getByText("Profile saved").waitFor();
-const avatar = await au.locator("#avatarUrl").inputValue();
+const avatar = await au.locator(".field:has(#avatarFile) img").getAttribute("src");
 ok(/^\/uploads\/avatars\/[0-9a-f-]{36}\.png$/.test(avatar), "avatar uploaded: " + avatar);
 const img = await fetch(B + avatar);
 ok(img.status === 200 && img.headers.get("content-type") === "image/png" && img.headers.get("x-content-type-options") === "nosniff", "upload served as image/png with nosniff");
 await au.getByRole("button", { name: "Save profile" }).click(); await au.getByText("Profile saved").waitFor();
-ok((await au.locator("#avatarUrl").inputValue()) === avatar, "re-saving profile keeps uploaded photo");
+ok((await au.locator(".field:has(#avatarFile) img").getAttribute("src")) === avatar && (await au.locator("#avatarUrl").count()) === 0, "re-saving profile keeps uploaded photo (no URL box)");
 await anon.goto(B + "/authors"); ok((await anon.locator(`.author-card img[src="${avatar}"]`).count()) === 1, "photo shows in directory");
 await au.goto(B + "/dashboard/author/books");
 await au.locator("tr", { hasText: "Nature Sketchbook" }).getByRole("link", { name: "Edit" }).click(); await au.waitForURL("**/books/**");
 await au.setInputFiles("#coverFile", `${S}/cover.png`); await au.getByRole("button", { name: "Save changes" }).click();
 await au.waitForURL("**/dashboard/author/books");
 ok((await au.locator("tr", { hasText: "Nature Sketchbook" }).innerText()).includes("Pending"), "new cover sends book back to review");
+// Client's case: open a saved book (with a cover), change only the price, save — must work
+const editBook = async () => { await au.goto(B + "/dashboard/author/books"); await au.locator("tr", { hasText: "Nature Sketchbook" }).getByRole("link", { name: "Edit" }).click(); await au.waitForURL("**/books/**"); };
+await editBook();
+ok((await au.locator("#coverUrl").count()) === 0 && (await au.locator("#isbn").count()) === 1, "book form has an ISBN field instead of the cover URL box");
+const coverBefore = await au.locator(".field:has(#coverFile) img").getAttribute("src");
+await au.fill("#price", "18.50"); await au.getByRole("button", { name: "Save changes" }).click(); await au.waitForURL("**/dashboard/author/books");
+ok((await au.locator("tr", { hasText: "Nature Sketchbook" }).innerText()).includes("$18.50"), "price change saves");
+await editBook();
+ok((await au.locator(".field:has(#coverFile) img").getAttribute("src")) === coverBefore, "cover is kept when no new file is chosen");
+await au.fill("#isbn", "978-1-4028-9462-7"); await au.getByRole("button", { name: "Save changes" }).click();
+ok(await au.locator(".toast.on", { hasText: "ISBN doesn't look right" }).waitFor({ timeout: 10000 }).then(() => true, () => false), "an ISBN with a wrong check digit is rejected");
+await editBook(); await au.fill("#isbn", "978-1-4028-9462-6"); await au.getByRole("button", { name: "Save changes" }).click(); await au.waitForURL("**/dashboard/author/books");
+await editBook(); ok((await au.locator("#isbn").inputValue()) === "9781402894626", "valid ISBN saved (hyphens removed)");
 for (const bad of ["/uploads/..%2F..%2F.env", "/uploads/avatars/..%2F..%2Fpackage.json", "/uploads/other/x.png", "/uploads/avatars/not-a-uuid.png"]) {
   ok((await fetch(B + bad)).status === 404, `blocked ${bad}`);
 }

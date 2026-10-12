@@ -45,8 +45,14 @@ export function BookForm({ book }: { book?: Book }) {
         </div>
         <div className="field">
           <label htmlFor="coverFile">Cover image</label>
-          <input id="coverFile" name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" />
-          <div className="hint">JPEG, PNG or WebP, up to 5 MB.</div>
+          <div className="row" style={{ alignItems: "center", flexWrap: "nowrap" }}>
+            {book?.coverUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={book.coverUrl} alt="Current cover" style={{ width: 48, height: 48, borderRadius: 8, objectFit: "cover", flex: "none" }} />
+            )}
+            <input id="coverFile" name="coverFile" type="file" accept="image/jpeg,image/png,image/webp" style={{ minWidth: 0 }} />
+          </div>
+          <div className="hint">{book?.coverUrl ? "Choose a file only to replace the current cover. " : ""}JPEG, PNG or WebP, up to 5 MB.</div>
         </div>
       </div>
       <div className="field">
@@ -61,14 +67,9 @@ export function BookForm({ book }: { book?: Book }) {
         </span>
       </label>
       <div className="field">
-        <label htmlFor="coverUrl">…or cover image URL</label>
-        <div className="row" style={{ alignItems: "center" }}>
-          {book?.coverUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={book.coverUrl} alt="" style={{ width: 56, height: 42, borderRadius: 8, objectFit: "cover" }} />
-          )}
-          <input id="coverUrl" name="coverUrl" defaultValue={book?.coverUrl ?? ""} placeholder="https://" style={{ flex: 1 }} />
-        </div>
+        <label htmlFor="isbn">ISBN <span className="muted">(optional)</span></label>
+        <input id="isbn" name="isbn" defaultValue={book?.isbn ?? ""} placeholder="e.g. 978-1-4028-9462-6" inputMode="numeric" maxLength={20} pattern="[0-9Xx\- ]{10,20}" title="10 or 13 digits; hyphens and spaces are fine" />
+        <div className="hint">The 10- or 13-digit number on the back cover, above the barcode.</div>
       </div>
       <div className="row">
         <SubmitButton className="btn btn-terra">{book ? "Save changes" : "Submit for review"}</SubmitButton>

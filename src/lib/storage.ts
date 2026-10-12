@@ -28,6 +28,18 @@ const s3 = process.env.S3_BUCKET
     })
   : null;
 
+/** S3_PUBLIC_URL must be the bucket's real public address, e.g. https://pub-abc123.r2.dev (not a placeholder). */
+export function publicBaseUrl(): string | null {
+  const raw = (process.env.S3_PUBLIC_URL ?? "").trim().replace(/\/$/, "");
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:" || u.hostname.includes("..") || !/^[a-z0-9.-]+$/i.test(u.hostname) || u.hostname.startsWith("pub-.")) return null;
+    return raw;
+  } catch {
+    return null;
+  }
+}
+
 /** A file input value that actually contains a file (empty inputs submit a 0-byte File). */
 export const hasFile = (v: FormDataEntryValue | null): v is File => typeof v === "object" && v !== null && v.size > 0;
 
@@ -43,6 +55,9 @@ export async function saveImage(file: File, folder: "avatars" | "covers" | "medi
   const key = `${folder}/${randomUUID()}.${type.ext}`;
 
   if (s3) {
+    const base = publicBaseUrl();
+    // Never save an image under an address nobody can open (e.g. a placeholder S3_PUBLIC_URL).
+    if (!base) return { error: "Photo storage isn't set up correctly yet (S3_PUBLIC_URL). Please contact the site admin." };
     await s3.send(
       new PutObjectCommand({
         Bucket: process.env.S3_BUCKET!,
@@ -52,7 +67,7 @@ export async function saveImage(file: File, folder: "avatars" | "covers" | "medi
         CacheControl: "public, max-age=31536000, immutable",
       }),
     );
-    return { url: `${process.env.S3_PUBLIC_URL!.replace(/\/$/, "")}/${key}` };
+    return { url: `${base}/${key}` };
   }
   const dest = path.join(LOCAL_UPLOAD_DIR, key);
   await mkdir(path.dirname(dest), { recursive: true });

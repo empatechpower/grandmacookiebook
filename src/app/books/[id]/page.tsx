@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { liveWhere } from "@/lib/catalog";
 import { categoryLabel } from "@/lib/constants";
+import { formatIsbn } from "@/lib/validation";
 import { money } from "@/lib/money";
 import { addToCart } from "@/app/actions/shop";
 import { Initials } from "@/components/ui";
@@ -36,6 +37,7 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             </div>
           </Link>
           <p>{book.description}</p>
+          {book.isbn && <p className="muted" style={{ fontSize: ".9rem" }}>ISBN {formatIsbn(book.isbn)}</p>}
           <div className="panel stack">
             <div className="split">
               <div className="price-lg">{money(book.price)}</div>
