@@ -81,7 +81,7 @@ await au.goto(B + "/dashboard/author/books");
 await au.locator("tr", { hasText: "Nature Sketchbook" }).getByRole("link", { name: "Edit" }).click(); await au.waitForURL("**/books/**");
 await au.setInputFiles("#coverFile", `${S}/cover.png`); await au.getByRole("button", { name: "Save changes" }).click();
 await au.waitForURL("**/dashboard/author/books");
-ok((await au.locator("tr", { hasText: "Nature Sketchbook" }).innerText()).includes("Pending"), "new cover sends book back to review");
+ok((await au.locator("tr", { hasText: "Nature Sketchbook" }).innerText()).includes("Live"), "a new cover goes live straight away (no re-review)");
 // Client's case: open a saved book (with a cover), change only the price, save — must work
 const editBook = async () => { await au.goto(B + "/dashboard/author/books"); await au.locator("tr", { hasText: "Nature Sketchbook" }).getByRole("link", { name: "Edit" }).click(); await au.waitForURL("**/books/**"); };
 await editBook();

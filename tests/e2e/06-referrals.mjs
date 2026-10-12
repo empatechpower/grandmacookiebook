@@ -76,9 +76,7 @@ await admin.locator("tr", { hasText: "Ngozi Writes" }).getByRole("button", { nam
 await nu.goto(B + "/dashboard/author/payouts"); await nu.getByRole("button", { name: "Connect Stripe" }).click(); await nu.getByText("Stripe connected").waitFor();
 await nu.goto(B + "/dashboard/author/books/new");
 await nu.fill("#title", "Referral Tales " + stamp); await nu.fill("#description", "A book to test referral rewards."); await nu.fill("#price", "40"); await nu.fill("#stock", "10");
-await nu.click("text=Submit for review"); await nu.waitForURL("**/dashboard/author/books");
-await admin.goto(B + "/dashboard/admin/listings");
-await admin.locator("tr", { hasText: "Referral Tales " + stamp }).getByRole("button", { name: "Approve" }).click(); await admin.waitForLoadState("networkidle");
+await nu.click("text=Publish book"); await nu.waitForURL("**/dashboard/author/books");
 
 // Buyer buys 2 copies ($80) and marks received -> released -> Chike earns 2% = $1.60
 const buyer = await ctx(); await login(buyer, "buyer@atelier.test");

@@ -65,22 +65,24 @@ export async function saveBook(fd: FormData) {
     await db.bookImage.createMany({ data: extra.map((url, i) => ({ bookId, url, position: count + i + 1 })) });
   };
 
+  // Books go live as soon as they're saved — no admin approval (client request). They show in the
+  // catalog once the author's account is approved and Stripe is connected (see catalog.liveWhere).
+  const visible = user.status === "ACTIVE" && user.payoutsReady;
+  const liveMsg = visible ? "it's now live in the catalog" : "it will appear in the catalog once your account is approved and Stripe is connected";
   if (!id) {
-    const created = await db.book.create({ data: { ...data, authorId: user.id } });
+    const created = await db.book.create({ data: { ...data, status: "APPROVED", authorId: user.id } });
     await addImages(created.id);
-    await notify.listingSubmitted("book", data.title, user.name);
-    return done("Book submitted for admin review", "/dashboard/author/books");
+    await notify.bookPublished(created.id);
+    return done(`Book published — ${liveMsg}`, "/dashboard/author/books");
   }
   const existing = await db.book.findFirst({ where: { id, authorId: user.id } });
   if (!existing) return fail("Book not found");
-  // Price and stock changes go live immediately; content changes need re-review.
-  const contentChanged = (["title", "description", "category", "coverUrl", "isbn"] as const).some((k) => existing[k] !== data[k]);
-  const status = contentChanged || existing.status === "REJECTED" ? "PENDING" : existing.status;
+  // Every change goes live immediately. Archived books stay archived until restored.
+  const status = existing.status === "ARCHIVED" ? "ARCHIVED" : "APPROVED";
   if (extra.length && (await db.bookImage.count({ where: { bookId: id } })) + extra.length > 8) return fail("Up to 8 extra photos per product");
-  await db.book.update({ where: { id }, data: { ...data, status, reviewNote: status === "PENDING" ? null : existing.reviewNote } });
+  await db.book.update({ where: { id }, data: { ...data, status, reviewNote: null } });
   await addImages(id);
-  if (status === "PENDING" && existing.status !== "PENDING") await notify.listingSubmitted("book", data.title, user.name);
-  await done(status === "PENDING" && existing.status !== "PENDING" ? "Saved — resubmitted for review" : "Book saved", "/dashboard/author/books");
+  await done(status === "ARCHIVED" ? "Book saved (still archived — restore it to show it again)" : "Book saved — changes are live", "/dashboard/author/books");
 }
 
 const PackageSchema = z.object({
@@ -131,11 +133,13 @@ export async function toggleArchive(fd: FormData) {
       ? await db.book.findFirst({ where, select: { status: true, title: true } })
       : await db.visitPackage.findFirst({ where, select: { status: true, title: true } });
   if (!item) return fail("Not found");
-  const status = item.status === "ARCHIVED" ? "PENDING" : "ARCHIVED";
-  if (str(fd, "kind") === "book") await db.book.update({ where, data: { status } });
+  const isBook = str(fd, "kind") === "book";
+  // Restored books go straight back live; visit packages are re-reviewed.
+  const status = item.status !== "ARCHIVED" ? "ARCHIVED" : isBook ? "APPROVED" : "PENDING";
+  if (isBook) await db.book.update({ where, data: { status } });
   else await db.visitPackage.update({ where, data: { status } });
-  if (status === "PENDING") await notify.listingSubmitted(str(fd, "kind") === "book" ? "book" : "package", item.title, user.name);
-  await done(status === "ARCHIVED" ? "Archived — hidden from the catalog" : "Restored and sent for review");
+  if (status === "PENDING") await notify.listingSubmitted("package", item.title, user.name);
+  await done(status === "ARCHIVED" ? "Archived — hidden from the catalog" : isBook ? "Restored — the book is live again" : "Restored and sent for review");
 }
 
 /**

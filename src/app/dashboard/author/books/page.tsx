@@ -12,7 +12,7 @@ export default async function AuthorBooks() {
   const books = await db.book.findMany({ where: { authorId: user.id }, orderBy: [{ featured: "desc" }, { createdAt: "desc" }] });
   return (
     <>
-      <PageHead title="Products" sub="Books and merchandise you sell. Approved products appear on your storefront — featured ones first." action={<Link className="btn btn-terra" href="/dashboard/author/books/new">+ Add product</Link>} />
+      <PageHead title="Products" sub="Books and merchandise you sell. They go live as soon as you add them — featured ones show first on your storefront." action={<Link className="btn btn-terra" href="/dashboard/author/books/new">+ Add product</Link>} />
       <Table heads={["Product", "Category", "Price", "Inventory", "Bulk discounts", "Status", ""]} empty="No products yet — add your first book or item.">
         {books.map((b) => (
           <tr key={b.id}>
@@ -32,7 +32,7 @@ export default async function AuthorBooks() {
                 </SubmitButton>
               </form>
             </td>
-            <td><Badge status={b.status} /></td>
+            <td>{b.status === "APPROVED" ? <span className="badge b-ok">Live</span> : <Badge status={b.status} />}</td>
             <td>
               <div className="row">
                 <Link className="btn btn-line btn-sm" href={`/dashboard/author/books/${b.id}`}>Edit</Link>

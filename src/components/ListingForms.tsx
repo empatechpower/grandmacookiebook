@@ -6,17 +6,21 @@ import { SubmitButton } from "./SubmitButton";
 
 const dollars = (cents?: number) => (cents != null ? (cents / 100).toFixed(2).replace(/\.00$/, "") : "");
 
-function ReviewNote({ status, note }: { status?: string; note?: string | null }) {
+function ReviewNote({ status, note, instant = false }: { status?: string; note?: string | null; instant?: boolean }) {
   if (status === "REJECTED" && note) return <div className="alert alert-err">Admin feedback: {note}</div>;
   if (status === "APPROVED")
-    return <div className="alert alert-ok">Live. Changing title, description, category or cover sends it back for review; price and stock update instantly.</div>;
+    return (
+      <div className="alert alert-ok">
+        {instant ? "Live. Your changes go live as soon as you save." : "Live. Changing title, description, category or cover sends it back for review; price and stock update instantly."}
+      </div>
+    );
   return null;
 }
 
 export function BookForm({ book }: { book?: Book }) {
   return (
     <form action={saveBook} className="panel" style={{ maxWidth: 720 }}>
-      <ReviewNote status={book?.status} note={book?.reviewNote} />
+      <ReviewNote status={book?.status} note={book?.reviewNote} instant />
       {book && <input type="hidden" name="id" value={book.id} />}
       <div className="field">
         <label htmlFor="title">Title</label>
@@ -72,7 +76,7 @@ export function BookForm({ book }: { book?: Book }) {
         <div className="hint">The 10- or 13-digit number on the back cover, above the barcode.</div>
       </div>
       <div className="row">
-        <SubmitButton className="btn btn-terra">{book ? "Save changes" : "Submit for review"}</SubmitButton>
+        <SubmitButton className="btn btn-terra" pendingText="Saving…">{book ? "Save changes" : "Publish book"}</SubmitButton>
         <Link className="btn btn-ghost" href="/dashboard/author/books">Cancel</Link>
       </div>
     </form>

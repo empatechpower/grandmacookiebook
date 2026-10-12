@@ -44,6 +44,18 @@ export async function authorApproved(author: { name: string; email: string; payo
   });
 }
 
+/** FYI to admins when an author publishes a book (books go live without review; admins can still archive or reject). */
+export async function bookPublished(bookId: string) {
+  const b = await db.book.findUniqueOrThrow({ where: { id: bookId }, include: { author: { select: { name: true } } } });
+  const base = await appUrl();
+  await toAdmins((to) => ({
+    to,
+    subject: `New book listed: ${b.title}`,
+    lines: [`${b.author.name} published “${b.title}” (${money(b.price)}). It's live — no action needed. You can hide it from Admin → Listings if anything's wrong.`],
+    cta: { label: "View the book", url: `${base}/books/${b.id}` },
+  }));
+}
+
 export async function listingSubmitted(kind: "book" | "package", title: string, authorName: string) {
   const url = `${await appUrl()}/dashboard/admin/listings`;
   await toAdmins((to) => ({

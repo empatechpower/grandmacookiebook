@@ -36,12 +36,12 @@ ok((await text(author)).includes("awaiting admin approval"), "new author sees pe
 await confirmEmail(author, `ta${stamp}@x.test`); await settle(author);
 await author.goto(B + "/dashboard/author/books/new");
 await author.fill("#title", "Rainforest " + stamp); await author.fill("#description", "A long description of the rainforest."); await author.fill("#price", "25"); await author.fill("#stock", "5");
-await author.click("text=Submit for review"); await author.waitForURL("**/dashboard/author/books"); await settle(author);
-ok((await text(author)).includes("Rainforest " + stamp), "author book created");
+await author.click("text=Publish book"); await author.waitForURL("**/dashboard/author/books"); await settle(author);
+ok((await text(author)).includes("Rainforest " + stamp) && (await author.locator("tr", { hasText: "Rainforest " + stamp }).innerText()).includes("Live"), "author book published straight away (no approval)");
 await author.goto(B + "/dashboard/author/visits/new");
 await author.fill("#title", "Rainforest talk " + stamp); await author.fill("#description", "Talk about trees and rivers."); await author.fill("#fee", "300");
 await author.click("text=Submit for review"); await author.waitForURL("**/dashboard/author/visits"); await settle(author);
-await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "pending book hidden from catalog");
+await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "a new author's book stays hidden until their account is approved");
 
 // 3. Admin approves author + listings
 const admin = await ctx();
@@ -55,11 +55,10 @@ await admin.screenshot({ path: `${S}/03-listings.png`, fullPage: true });
 // reject without note should fail
 await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).getByRole("button", { name: "Reject" }).click(); await settle(admin);
 ok((await admin.locator("#toast, .toast").innerText()).includes("note"), "reject requires note");
-for (const t of ["Rainforest " + stamp, "Rainforest talk " + stamp]) {
-  await admin.goto(B + "/dashboard/admin/listings");
-  await admin.locator("tr", { hasText: t }).first().getByRole("button", { name: "Approve" }).click(); await settle(admin);
-}
-await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "approved book still hidden until author connects Stripe");
+await admin.goto(B + "/dashboard/admin/listings");
+await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).first().getByRole("button", { name: "Approve" }).click(); await settle(admin);
+await admin.goto(B + "/dashboard/admin/listings"); ok((await admin.locator("tr", { hasText: "Rainforest " + stamp }).filter({ hasNotText: "talk" }).count()) === 0, "books don't appear in the review queue");
+await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "book still hidden until author connects Stripe");
 await author.goto(B + "/dashboard/author"); ok((await text(author)).includes("Connect Stripe so you can be paid"), "author sees connect-Stripe banner");
 await author.goto(B + "/dashboard/author/payouts"); await author.getByRole("button", { name: "Connect Stripe" }).click(); await author.getByText("Stripe connected").waitFor();
 ok((await text(author)).includes("Stripe connected"), "author connected Stripe (demo)");
