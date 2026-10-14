@@ -28,7 +28,8 @@ export async function login(_: FormState, fd: FormData): Promise<FormState> {
   const password = String(fd.get("password") ?? "");
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) return { error: "Email or password is incorrect." };
-  if (user.status === "SUSPENDED") return { error: "This account is suspended. Contact support." };
+  if (user.status === "SUSPENDED") return { error: "This account is deactivated. Contact support." };
+  if (user.status === "REMOVED") return { error: "This account has been removed. Contact support." };
   await createSession(user.id, user.sessionVersion);
   await flash(`Welcome back, ${user.name.split(" ")[0]}`);
   redirect(safeNext(fd.get("next")) ?? dashboardPath(user.role));
@@ -132,7 +133,7 @@ export async function requestPasswordReset(_: ResetState, fd: FormData): Promise
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   if (!z.string().email().safeParse(email).success) return { error: "Enter a valid email" };
   const user = await db.user.findUnique({ where: { email } });
-  if (user && user.status !== "SUSPENDED") {
+  if (user && !["SUSPENDED", "REMOVED"].includes(user.status)) {
     // At most 3 links per hour per account.
     const recent = await db.passwordResetToken.count({ where: { userId: user.id, createdAt: { gte: new Date(Date.now() - 3600_000) } } });
     if (recent < 3) {
@@ -152,7 +153,7 @@ export async function resetPassword(_: FormState, fd: FormData): Promise<FormSta
   if (!password.success) return { error: password.error.issues[0].message };
   if (fd.get("password") !== fd.get("confirm")) return { error: "Passwords don't match" };
   const row = await db.passwordResetToken.findUnique({ where: { tokenHash: hashToken(token) }, include: { user: true } });
-  if (!row || row.usedAt || row.expiresAt < new Date() || row.user.status === "SUSPENDED")
+  if (!row || row.usedAt || row.expiresAt < new Date() || ["SUSPENDED", "REMOVED"].includes(row.user.status))
     return { error: "This reset link is invalid or has expired. Request a new one." };
 
   const [, , user] = await db.$transaction([

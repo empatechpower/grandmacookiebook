@@ -14,9 +14,9 @@ export const DEFAULT_SETTINGS = {
   bulkTier1Pct: 20,
   bulkTier2Min: 25,
   bulkTier2Pct: 30,
-  // 50–99 copies 50% off; 100+ copies go through a custom quote (0 = no limit).
+  // Optional third tier (off: 0%, per client); 100+ copies go through a custom quote (0 = no limit).
   bulkTier3Min: 50,
-  bulkTier3Pct: 50,
+  bulkTier3Pct: 0,
   bulkQuoteMin: 100,
   // Purchase orders: invoices are due this many days after the PO is approved (Net 30).
   poTermsDays: 30,

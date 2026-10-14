@@ -23,7 +23,7 @@ export default async function AuthorPackages() {
             <td>{formatLabel(p.format)}</td>
             <td>{p.durationMins} min</td>
             <td>{money(p.fee)}</td>
-            <td><Badge status={p.status} /></td>
+            <td>{p.status === "APPROVED" ? <span className="badge b-ok">Live</span> : <Badge status={p.status} />}</td>
             <td>
               <div className="row">
                 <Link className="btn btn-line btn-sm" href={`/dashboard/author/visits/${p.id}`}>Edit</Link>

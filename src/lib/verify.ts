@@ -51,7 +51,7 @@ export async function confirmEmail(token: string) {
     const { payload } = await jwtVerify(token, key());
     if (payload.purpose !== "verify-email" || !payload.sub) return null;
     const user = await db.user.findUnique({ where: { id: payload.sub } });
-    if (!user || user.email !== payload.email || user.status === "SUSPENDED") return null;
+    if (!user || user.email !== payload.email || ["SUSPENDED", "REMOVED"].includes(user.status)) return null;
     if (!user.emailVerifiedAt) return db.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() } });
     return user;
   } catch {

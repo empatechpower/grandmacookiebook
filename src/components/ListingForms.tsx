@@ -104,7 +104,7 @@ export function BookForm({ book, tiers }: { book?: Book & { images?: BookImage[]
 export function PackageForm({ pkg }: { pkg?: VisitPackage }) {
   return (
     <form action={savePackage} className="panel" style={{ maxWidth: 720 }}>
-      <ReviewNote status={pkg?.status} note={pkg?.reviewNote} />
+      <ReviewNote status={pkg?.status} note={pkg?.reviewNote} instant />
       {pkg && <input type="hidden" name="id" value={pkg.id} />}
       <div className="field">
         <label htmlFor="title">Package name</label>
@@ -137,7 +137,7 @@ export function PackageForm({ pkg }: { pkg?: VisitPackage }) {
         </div>
       </div>
       <div className="row">
-        <SubmitButton className="btn btn-terra">{pkg ? "Save changes" : "Submit for review"}</SubmitButton>
+        <SubmitButton className="btn btn-terra" pendingText="Saving…">{pkg ? "Save changes" : "Publish listing"}</SubmitButton>
         <Link className="btn btn-ghost" href="/dashboard/author/visits">Cancel</Link>
       </div>
     </form>

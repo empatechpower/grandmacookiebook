@@ -41,7 +41,7 @@ ok((await db.contactMessage.count({ where: { topic: "Book fair request", body: {
 // Bulk pricing
 const buyer = await ctx(); await login(buyer, "buyer@atelier.test");
 await buyer.goto(B + "/books?q=Empathy"); await buyer.locator(".card").first().getByRole("link").first().click(); await buyer.waitForURL("**/books/**");
-{ const t = await text(buyer); ok(["10–24 copies", "25–49 copies", "50–99 copies", "100+ copies", "Contact for custom quote"].every((x) => t.includes(x)), "book page shows the bulk discount tiers"); }
+{ const t = await text(buyer); ok(["10–24 copies", "25–99 copies", "100+ copies", "Contact for custom quote"].every((x) => t.includes(x)), "book page shows the bulk discount tiers"); }
 await buyer.fill("input[name=qty]", "30"); await buyer.click("text=Add to cart"); await buyer.waitForURL("**/cart");
 ok((await text(buyer)).includes("$336") && (await text(buyer)).includes("Bulk 30% off"), "cart applies 30% off: $11.20 × 30 = $336");
 await buyer.fill("#address", "1 Test Road"); await buyer.getByRole("button", { name: /Pay \$336/ }).click(); await buyer.waitForURL("**/dashboard/buyer/orders");

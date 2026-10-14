@@ -16,13 +16,25 @@ export async function setUserStatus(fd: FormData) {
   const admin = await requireUser("ADMIN");
   const id = str(fd, "id");
   const status = str(fd, "status");
-  if (!["ACTIVE", "SUSPENDED"].includes(status)) return fail("Invalid status");
-  if (id === admin.id) return fail("You can't change your own status");
+  if (!["ACTIVE", "SUSPENDED", "REMOVED"].includes(status)) return fail("Invalid status");
+  if (id === admin.id) return fail("You can't change your own account");
   const before = await db.user.findUnique({ where: { id }, select: { status: true } });
-  const u = await db.user.update({ where: { id }, data: { status } });
-  if (u.role === "AUTHOR") await ensureAuthorSlug(u);
-  if (u.role === "AUTHOR" && before?.status === "PENDING" && status === "ACTIVE") await notify.authorApproved(u);
-  await done(status === "SUSPENDED" ? `${u.name} suspended` : `${u.name} is active`);
+  if (!before) return fail("User not found");
+  // Deactivating or removing signs them out everywhere straight away.
+  const signOut = status !== "ACTIVE" ? { sessionVersion: { increment: 1 } } : {};
+  const u = await db.user.update({ where: { id }, data: { status, ...signOut } });
+  if (status === "REMOVED") {
+    // Hide everything they listed. Orders, bookings and invoices are kept for the records.
+    await db.book.updateMany({ where: { authorId: id, status: { not: "ARCHIVED" } }, data: { status: "ARCHIVED" } });
+    await db.visitPackage.updateMany({ where: { authorId: id, status: { not: "ARCHIVED" } }, data: { status: "ARCHIVED" } });
+  }
+  if (u.role === "AUTHOR" && status === "ACTIVE") await ensureAuthorSlug(u);
+  if (u.role === "AUTHOR" && before.status === "PENDING" && status === "ACTIVE") await notify.authorApproved(u);
+  await done(
+    status === "SUSPENDED" ? `${u.name} deactivated — signed out and hidden from the site` :
+    status === "REMOVED" ? `${u.name} removed — signed out and all their listings hidden` :
+    before.status === "REMOVED" ? `${u.name} reactivated — their listings stay hidden until they restore them` : `${u.name} is active`,
+  );
 }
 
 export async function reviewListing(fd: FormData) {

@@ -30,7 +30,7 @@ ok(true, "a guest who picks the author tab still lands in their own dashboard");
 // Bulk tiers at checkout + invoice
 const buyer = anon;
 await buyer.goto(B + "/books?q=Night"); await buyer.locator(".card").first().getByRole("link").first().click(); await buyer.waitForURL("**/books/**");
-{ const t = await text(buyer); ok(t.includes("1–9 copies") && t.includes("50–99 copies") && t.includes("50% off") && t.includes("Contact for custom quote"), "product page shows the tier table (with 50% off and custom quote)"); }
+{ const t = await text(buyer); ok(t.includes("1–9 copies") && t.includes("25–99 copies") && !t.includes("50% off") && t.includes("Contact for custom quote"), "product page shows the tier table (20% / 30% / custom quote)"); }
 const bookUrl = buyer.url();
 await buyer.fill("input[name=qty]", "100"); await buyer.locator("input[name=qty]").evaluate((el) => el.removeAttribute("max")); await buyer.click("text=Add to cart");
 ok(await sees(buyer, "custom quote"), "100+ copies are sent to a custom quote instead of the cart");

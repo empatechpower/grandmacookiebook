@@ -14,7 +14,8 @@ const FILTERS = [
   ["AUTHOR", "Authors"],
   ["BUYER", "Buyers"],
   ["ADMIN", "Admins"],
-  ["suspended", "Suspended"],
+  ["suspended", "Deactivated"],
+  ["removed", "Removed"],
 ] as const;
 
 export default async function Users({ searchParams }: { searchParams: Promise<{ filter?: string; q?: string }> }) {
@@ -24,6 +25,7 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
   const where = {
     ...(filter === "pending" ? { status: "PENDING" } : {}),
     ...(filter === "suspended" ? { status: "SUSPENDED" } : {}),
+    ...(filter === "removed" ? { status: "REMOVED" } : { ...(filter === "all" ? { status: { not: "REMOVED" } } : {}) }),
     ...(["AUTHOR", "BUYER", "ADMIN"].includes(filter) ? { role: filter } : {}),
     ...(q ? { OR: [{ name: { contains: q, mode: "insensitive" as const } }, { email: { contains: q, mode: "insensitive" as const } }] } : {}),
   };
@@ -90,16 +92,27 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
               {u.role === "BUYER" && `${u._count.orders} orders · ${u._count.bookingsMade} bookings`}
             </td>
             <td>{fmtDate(u.createdAt)}</td>
-            <td><Badge status={u.status} /></td>
+            <td>{u.status === "SUSPENDED" ? <span className="badge b-off">Deactivated</span> : <Badge status={u.status} />}</td>
             <td>
               {u.id !== me.id && (
-                <form action={setUserStatus}>
+                <form action={setUserStatus} className="row" style={{ gap: 6 }}>
                   <input type="hidden" name="id" value={u.id} />
-                  {u.status === "PENDING" && <SubmitButton name="status" value="ACTIVE" className="btn btn-sage btn-sm">Approve</SubmitButton>}
-                  {u.status === "SUSPENDED" && <SubmitButton name="status" value="ACTIVE" className="btn btn-line btn-sm">Reactivate</SubmitButton>}
-                  {u.status !== "SUSPENDED" && (
-                    <SubmitButton name="status" value="SUSPENDED" className="btn btn-danger btn-sm" confirm={`Suspend ${u.name}?`} style={{ marginLeft: 6 }}>
-                      Suspend
+                  {u.status !== "ACTIVE" && (
+                    <SubmitButton name="status" value="ACTIVE" className="btn btn-sage btn-sm" pendingText="…"
+                      confirm={u.status === "REMOVED" ? `Reactivate ${u.name}? They can sign in again; their listings stay hidden until they restore them.` : undefined}>
+                      {u.status === "PENDING" ? "Approve" : "Activate"}
+                    </SubmitButton>
+                  )}
+                  {u.status === "ACTIVE" && (
+                    <SubmitButton name="status" value="SUSPENDED" className="btn btn-line btn-sm" pendingText="…"
+                      confirm={`Deactivate ${u.name}? They're signed out and hidden from the site until you activate them again.`}>
+                      Deactivate
+                    </SubmitButton>
+                  )}
+                  {u.status !== "REMOVED" && (
+                    <SubmitButton name="status" value="REMOVED" className="btn btn-danger btn-sm" pendingText="…"
+                      confirm={`Remove ${u.name}? They're signed out, can't sign in, and all their books and visit listings are hidden. Past orders, bookings and invoices are kept for your records. You can reactivate them later from the "Removed" tab.`}>
+                      Remove
                     </SubmitButton>
                   )}
                 </form>

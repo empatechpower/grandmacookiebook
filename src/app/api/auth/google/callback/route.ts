@@ -17,7 +17,7 @@ export async function GET(req: Request) {
   const { profile, flow } = result;
   const user = await findUserForGoogle(profile);
   if (user) {
-    if (user.status === "SUSPENDED") {
+    if (["SUSPENDED", "REMOVED"].includes(user.status)) {
       await flash("This account is suspended. Contact support.");
       return go("/login");
     }

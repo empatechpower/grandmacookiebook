@@ -110,18 +110,20 @@ export async function savePackage(fd: FormData) {
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const data = { ...parsed.data, region: parsed.data.region || null };
 
+  // Visit listings go live as soon as they're saved — no admin approval (client request), like books.
+  // They show publicly once the author's account is approved and Stripe is connected.
+  const visible = user.status === "ACTIVE" && user.payoutsReady;
+  const liveMsg = visible ? "it's now live" : "it will appear once your account is approved and Stripe is connected";
   if (!id) {
-    await db.visitPackage.create({ data: { ...data, authorId: user.id } });
-    await notify.listingSubmitted("package", data.title, user.name);
-    return done("Visit package submitted for admin review", "/dashboard/author/visits");
+    const created = await db.visitPackage.create({ data: { ...data, status: "APPROVED", authorId: user.id } });
+    await notify.packagePublished(created.id);
+    return done(`Visit listing published — ${liveMsg}`, "/dashboard/author/visits");
   }
   const existing = await db.visitPackage.findFirst({ where: { id, authorId: user.id } });
   if (!existing) return fail("Package not found");
-  const contentChanged = (["title", "description", "format"] as const).some((k) => existing[k] !== data[k]);
-  const status = contentChanged || existing.status === "REJECTED" ? "PENDING" : existing.status;
-  await db.visitPackage.update({ where: { id }, data: { ...data, status, reviewNote: status === "PENDING" ? null : existing.reviewNote } });
-  if (status === "PENDING" && existing.status !== "PENDING") await notify.listingSubmitted("package", data.title, user.name);
-  await done("Package saved", "/dashboard/author/visits");
+  const status = existing.status === "ARCHIVED" ? "ARCHIVED" : "APPROVED";
+  await db.visitPackage.update({ where: { id }, data: { ...data, status, reviewNote: null } });
+  await done(status === "ARCHIVED" ? "Listing saved (still archived — restore it to show it again)" : "Listing saved — changes are live", "/dashboard/author/visits");
 }
 
 /** Archive hides a listing from the catalog without deleting sales history. Restoring goes back through review. */
@@ -135,12 +137,11 @@ export async function toggleArchive(fd: FormData) {
       : await db.visitPackage.findFirst({ where, select: { status: true, title: true } });
   if (!item) return fail("Not found");
   const isBook = str(fd, "kind") === "book";
-  // Restored books go straight back live; visit packages are re-reviewed.
-  const status = item.status !== "ARCHIVED" ? "ARCHIVED" : isBook ? "APPROVED" : "PENDING";
+  // Restored listings go straight back live.
+  const status = item.status !== "ARCHIVED" ? "ARCHIVED" : "APPROVED";
   if (isBook) await db.book.update({ where, data: { status } });
   else await db.visitPackage.update({ where, data: { status } });
-  if (status === "PENDING") await notify.listingSubmitted("package", item.title, user.name);
-  await done(status === "ARCHIVED" ? "Archived — hidden from the catalog" : isBook ? "Restored — the book is live again" : "Restored and sent for review");
+  await done(status === "ARCHIVED" ? "Archived — hidden from the catalog" : "Restored — it's live again");
 }
 
 /**

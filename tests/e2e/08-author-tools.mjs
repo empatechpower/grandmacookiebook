@@ -109,10 +109,10 @@ ok((await dir.locator(".author-card", { hasText: "Miriam Bejerano" }).innerText(
 await dir.goto(B + "/authors?budget=500"); ok((await dir.locator(".author-card", { hasText: "Miriam Bejerano" }).count()) === 1, "the budget filter includes it");
 // Book form: price label, corrected checkbox text and live tier preview
 await au.goto(B + "/dashboard/author/books/new");
-ok((await text(au)).includes("Price per book ($)") && (await text(au)).includes("50–99 copies: 50% off"), "book form shows the price label and the new tiers");
+ok((await text(au)).includes("Price per book ($)") && (await text(au)).includes("25–99 copies: 30% off") && !(await text(au)).includes("50% off"), "book form shows the price label and the tiers (no 50% tier)");
 await au.fill("#price", "20"); await sleep(200);
 const table = await au.locator(".tier-table").innerText();
-ok(table.includes("$20.00 each") && table.includes("$16.00 each") && table.includes("$14.00 each") && table.includes("$10.00 each") && table.includes("Contact for custom quote"), "live preview follows the price as it's typed");
+ok(table.includes("$20.00 each") && table.includes("$16.00 each") && table.includes("$14.00 each") && !table.includes("$10.00") && table.includes("Contact for custom quote"), "live preview follows the price as it's typed");
 await au.locator("#bulkEnabled").uncheck(); ok((await text(au)).includes("Bulk discounts are off"), "turning discounts off updates the preview");
 
 ok(errors.length === 0, "no page errors" + (errors.length ? ": " + errors[0] : ""));

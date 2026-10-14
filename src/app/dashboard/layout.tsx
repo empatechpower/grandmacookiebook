@@ -52,7 +52,7 @@ const NAV: Record<string, { label: string; links: NavLink[] }> = {
       ["/dashboard/admin", "Overview"],
       ["#marketplace", "Marketplace"],
       ["/dashboard/admin/users", "Users & authors"],
-      ["/dashboard/admin/listings", "Listings review"],
+      ["/dashboard/admin/listings", "Listings"],
       ["/dashboard/admin/orders", "Orders"],
       ["/dashboard/admin/bookings", "Bookings"],
       ["/dashboard/admin/issues", "Problem reports"],

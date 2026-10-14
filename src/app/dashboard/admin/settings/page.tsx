@@ -46,7 +46,7 @@ export default async function Settings() {
             </div>
             <div className="field-row">
               <div className="field"><label htmlFor="t3m">Tier 3 from (copies)</label><input id="t3m" name="bulkTier3Min" type="number" min={4} max={1000} defaultValue={s.bulkTier3Min} /></div>
-              <div className="field"><label htmlFor="t3p">Tier 3 discount %</label><input id="t3p" name="bulkTier3Pct" type="number" min={0} max={90} defaultValue={s.bulkTier3Pct} /></div>
+              <div className="field"><label htmlFor="t3p">Tier 3 discount % (0 = off)</label><input id="t3p" name="bulkTier3Pct" type="number" min={0} max={90} defaultValue={s.bulkTier3Pct} /></div>
             </div>
             <div className="field">
               <label htmlFor="tq">Custom quote from (copies)</label>

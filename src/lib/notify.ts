@@ -56,6 +56,18 @@ export async function bookPublished(bookId: string) {
   }));
 }
 
+/** FYI to admins when an author publishes a visit listing (no review needed; admins can still archive or reject it). */
+export async function packagePublished(packageId: string) {
+  const p = await db.visitPackage.findUniqueOrThrow({ where: { id: packageId }, include: { author: { select: { name: true } } } });
+  const base = await appUrl();
+  await toAdmins((to) => ({
+    to,
+    subject: `New author visit listed: ${p.title}`,
+    lines: [`${p.author.name} published “${p.title}” (${money(p.fee)}). It's live — no action needed. You can hide it from Admin → Listings if anything's wrong.`],
+    cta: { label: "View the listing", url: `${base}/visits/${p.id}` },
+  }));
+}
+
 export async function listingSubmitted(kind: "book" | "package", title: string, authorName: string) {
   const url = `${await appUrl()}/dashboard/admin/listings`;
   await toAdmins((to) => ({

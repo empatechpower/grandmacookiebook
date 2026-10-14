@@ -7,7 +7,7 @@ import { Badge, PageHead, Table, fmtDate } from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function Listings({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  const { status = "PENDING" } = await searchParams;
+  const { status = "APPROVED" } = await searchParams;
   const where = status === "ALL" ? {} : { status };
   const include = { author: { select: { id: true, name: true, status: true } } };
   const [books, pkgs] = await Promise.all([
@@ -21,11 +21,11 @@ export default async function Listings({ searchParams }: { searchParams: Promise
 
   return (
     <>
-      <PageHead title="Listings review" sub="Nothing goes public until this desk says so. Rejections need a note for the author." />
+      <PageHead title="Listings" sub="Books and visit listings go live as soon as authors publish them. Unpublish one here to hide it (a note to the author is required)." />
       <div className="filters">
-        {["PENDING", "APPROVED", "REJECTED", "ARCHIVED", "ALL"].map((s) => (
+        {["APPROVED", "REJECTED", "ARCHIVED", "ALL"].map((s) => (
           <Link key={s} className={`filter${status === s ? " active" : ""}`} href={`?status=${s}`}>
-            {s.charAt(0) + s.slice(1).toLowerCase()}
+            {s === "APPROVED" ? "Live" : s.charAt(0) + s.slice(1).toLowerCase()}
           </Link>
         ))}
       </div>

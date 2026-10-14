@@ -10,7 +10,7 @@ export const currentUser = cache(async () => {
   const session = await readSession();
   if (!session) return null;
   const user = await db.user.findUnique({ where: { id: session.id } });
-  if (!user || user.status === "SUSPENDED" || user.sessionVersion !== session.v) return null;
+  if (!user || ["SUSPENDED", "REMOVED"].includes(user.status) || user.sessionVersion !== session.v) return null;
   return user;
 });
 

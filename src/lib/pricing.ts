@@ -1,6 +1,7 @@
 /**
  * Bulk book discounts: platform-wide tiers set by the admin. Default (client):
- *   1–9 copies full price · 10–24 copies 20% off · 25–49 copies 30% off · 50–99 copies 50% off · 100+ copies: custom quote.
+ *   1–9 copies full price · 10–24 copies 20% off · 25–99 copies 30% off · 100+ copies: custom quote
+ * (an optional third tier can be switched on in Admin → Settings).
  * Each product can switch discounts off (Book.bulkEnabled). Commission is charged on the discounted price.
  */
 export type BulkTiers = { min1: number; pct1: number; min2: number; pct2: number; min3: number; pct3: number; quoteMin: number };

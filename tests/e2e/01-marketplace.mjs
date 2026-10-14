@@ -1,6 +1,11 @@
 // Run via `npm run test:e2e` (scripts/e2e.sh), which builds, starts the app and reseeds before each suite.
 import { chromium } from "playwright-core";
 import { readFileSync } from "fs";
+import { createRequire } from "module";
+const requireCjs = createRequire(new URL("../../package.json", import.meta.url));
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+const { PrismaClient } = requireCjs("@prisma/client");
+const db = new PrismaClient();
 const B = process.env.BASE_URL ?? "http://localhost:3917", S = process.env.E2E_ARTIFACTS ?? "tests/e2e/.artifacts";
 // New accounts confirm their email by clicking the link we send (read from the server log).
 const confirmEmail = async (page, email) => {
@@ -40,7 +45,8 @@ await author.click("text=Publish book"); await author.waitForURL("**/dashboard/a
 ok((await text(author)).includes("Rainforest " + stamp) && (await author.locator("tr", { hasText: "Rainforest " + stamp }).innerText()).includes("Live"), "author book published straight away (no approval)");
 await author.goto(B + "/dashboard/author/visits/new");
 await author.fill("#title", "Rainforest talk " + stamp); await author.fill("#description", "Talk about trees and rivers."); await author.fill("#fee", "300");
-await author.click("text=Submit for review"); await author.waitForURL("**/dashboard/author/visits"); await settle(author);
+await author.click("text=Publish listing"); await author.waitForURL("**/dashboard/author/visits"); await settle(author);
+ok((await author.locator("tr", { hasText: "Rainforest talk " + stamp }).innerText()).includes("Live"), "visit listing published straight away (no approval)");
 await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "a new author's book stays hidden until their account is approved");
 
 // 3. Admin approves author + listings
@@ -52,12 +58,10 @@ await admin.goto(B + "/dashboard/admin/users?filter=pending");
 await admin.locator("tr", { hasText: "Test Author " + stamp }).getByRole("button", { name: "Approve" }).click(); await settle(admin);
 await admin.goto(B + "/dashboard/admin/listings");
 await admin.screenshot({ path: `${S}/03-listings.png`, fullPage: true });
-// reject without note should fail
-await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).getByRole("button", { name: "Reject" }).click(); await settle(admin);
-ok((await admin.locator("#toast, .toast").innerText()).includes("note"), "reject requires note");
-await admin.goto(B + "/dashboard/admin/listings");
-await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).first().getByRole("button", { name: "Approve" }).click(); await settle(admin);
-await admin.goto(B + "/dashboard/admin/listings"); ok((await admin.locator("tr", { hasText: "Rainforest " + stamp }).filter({ hasNotText: "talk" }).count()) === 0, "books don't appear in the review queue");
+ok((await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).count()) === 1, "admin listings shows live listings (to hide one if needed)");
+// hiding (unpublishing) a live listing requires a note
+await admin.locator("tr", { hasText: "Rainforest talk " + stamp }).getByRole("button", { name: "Unpublish" }).click(); await settle(admin);
+ok((await admin.locator("#toast, .toast").innerText()).includes("note"), "unpublishing a live listing requires a note");
 await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "book still hidden until author connects Stripe");
 await author.goto(B + "/dashboard/author"); ok((await text(author)).includes("Connect Stripe so you can be paid"), "author sees connect-Stripe banner");
 await author.goto(B + "/dashboard/author/payouts"); await author.getByRole("button", { name: "Connect Stripe" }).click(); await author.getByText("Stripe connected").waitFor();
@@ -125,9 +129,22 @@ await admin.screenshot({ path: `${S}/10-admin-orders.png`, fullPage: true });
 await author.goto(B + "/dashboard/author/payouts");
 ok((await author.locator("tr", { hasText: "Rainforest " + stamp }).innerText()).includes("Refunded"), "author sees share reversed");
 await admin.goto(B + "/dashboard/admin/users?filter=AUTHOR");
-await admin.locator("tr", { hasText: "Test Author " + stamp }).getByRole("button", { name: "Suspend" }).click(); await settle(admin);
-await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "suspended author's books hidden");
-await author.goto(B + "/dashboard/author"); ok(author.url().includes("/login"), "suspended author logged out");
+await admin.locator("tr", { hasText: "Test Author " + stamp }).getByRole("button", { name: "Deactivate" }).click(); await settle(admin);
+await anon.goto(B + "/books"); ok(!(await text(anon)).includes("Rainforest " + stamp), "deactivated author's books hidden");
+await author.goto(B + "/dashboard/author"); ok(author.url().includes("/login"), "deactivated author logged out");
+// Activate again, then Remove: signed out, can't log in, listings archived, history kept, can be reactivated
+await admin.goto(B + "/dashboard/admin/users?filter=suspended");
+await admin.locator("tr", { hasText: "Test Author " + stamp }).getByRole("button", { name: "Activate" }).click(); await settle(admin);
+ok((await db.user.findUnique({ where: { email: `ta${stamp}@x.test` } })).status === "ACTIVE", "admin re-activated the author");
+await admin.goto(B + "/dashboard/admin/users?filter=AUTHOR");
+await admin.locator("tr", { hasText: "Test Author " + stamp }).getByRole("button", { name: "Remove" }).click(); await settle(admin);
+const removed = await db.user.findUnique({ where: { email: `ta${stamp}@x.test` }, include: { books: true, packages: true, soldItems: true } });
+ok(removed.status === "REMOVED" && removed.books.every((b) => b.status === "ARCHIVED") && removed.packages.every((p) => p.status === "ARCHIVED"), "removed author's listings are all hidden");
+ok(removed.soldItems.length > 0, "their order history is kept");
+await admin.goto(B + "/dashboard/admin/users"); ok((await admin.locator("tr", { hasText: "Test Author " + stamp }).count()) === 0, "removed accounts leave the main list");
+await admin.goto(B + "/dashboard/admin/users?filter=removed"); ok((await admin.locator("tr", { hasText: "Test Author " + stamp }).count()) === 1, "and appear under Removed");
+const relog = await (await browser.newContext()).newPage(); await relog.goto(B + "/login"); await relog.fill("#email", `ta${stamp}@x.test`); await relog.fill("#password", "password123"); await relog.click("button[type=submit]");
+ok(await relog.getByText("This account has been removed").waitFor({ timeout: 15000 }).then(() => true, () => false) && relog.url().includes("/login"), "a removed author can't log in");
 
 // mobile
 const m = await browser.newContext({ viewport: { width: 390, height: 844 } }); const mp = await m.newPage();
@@ -135,4 +152,4 @@ await mp.goto(B); ok(await mp.evaluate(() => document.documentElement.scrollWidt
 await mp.screenshot({ path: `${S}/08-mobile.png`, fullPage: false });
 
 ok(errors.length === 0, "no browser console errors" + (errors.length ? ": " + errors.slice(0, 3).join(" | ") : ""));
-await browser.close();
+await browser.close(); await db.$disconnect();
