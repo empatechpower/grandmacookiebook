@@ -10,7 +10,8 @@ import { addToCart } from "@/app/actions/shop";
 import { Initials } from "@/components/ui";
 import { ProductGallery } from "@/components/ProductGallery";
 import { getSettings } from "@/lib/settings";
-import { tiersFrom, tiersLabel, unitPriceFor } from "@/lib/pricing";
+import { maxCartQty, tiersFrom, tiersLabel } from "@/lib/pricing";
+import { BulkTierTable } from "@/components/BulkTierTable";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function BookPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,15 +46,15 @@ export default async function BookPage({ params }: { params: Promise<{ id: strin
             </div>
             <form action={addToCart} className="row">
               <input type="hidden" name="bookId" value={book.id} />
-              <input className="qty" type="number" name="qty" min={1} max={book.stock} defaultValue={1} aria-label="Quantity" />
+              <input className="qty" type="number" name="qty" min={1} max={maxCartQty(book, tiers)} defaultValue={1} aria-label="Quantity" />
               <SubmitButton className="btn btn-terra" disabled={book.stock < 1} pendingText="Adding…">
                 Add to cart
               </SubmitButton>
             </form>
             {book.bulkEnabled && tiersLabel(tiers) ? (
               <div className="alert alert-ok" style={{ margin: 0 }}>
-                <b>Classroom-set discounts:</b> {tiersLabel(tiers)} — applied automatically at checkout
-                {" "}({money(unitPriceFor(book, tiers.min1, tiers))} and {money(unitPriceFor(book, tiers.min2, tiers))} per copy).
+                <b>Classroom-set discounts</b> — applied automatically at checkout:
+                <BulkTierTable tiers={tiers} price={book.price} compact />
               </div>
             ) : (
               <p className="muted" style={{ fontSize: ".85rem" }}>Ordering a classroom set? Set the quantity — the author ships directly.</p>

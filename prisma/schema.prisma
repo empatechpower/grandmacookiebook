@@ -38,6 +38,8 @@ model User {
   identities      String   @default("")
   websiteUrl      String?
   videoUrl        String?
+  // "Author visit fee (starting at)", shown on the author card even before they list a visit package.
+  visitFeeFrom    Int?
   // Storefront: editable public link (/authors/<slug>) and social profiles.
   slug            String?  @unique
   facebookUrl     String?

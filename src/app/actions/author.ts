@@ -271,6 +271,9 @@ export async function updateProfile(fd: FormData) {
     if (k === "avatarUrl") continue; // set only by uploading a photo
     if (!optionalUrl.safeParse(v).success) return fail(`${k.replace("Url", "")} link must be a full URL (https://…)`);
   }
+  const feeRaw = str(fd, "visitFeeFrom");
+  const visitFee = feeRaw ? toCents(feeRaw) : null;
+  if (visitFee !== null && !(visitFee >= 0 && visitFee <= 10_000_000)) return fail("Visit fee must be between $0 and $100,000");
   const tags = (key: string, allowed: { value: string }[]) => serializeTags(fd.getAll(key).map(String), allowed);
   const photo = fd.get("avatarFile");
   if (hasFile(photo)) {
@@ -283,6 +286,7 @@ export async function updateProfile(fd: FormData) {
     data: {
       ...base,
       headline: str(fd, "headline").slice(0, 120) || null,
+      visitFeeFrom: visitFee,
       bio: str(fd, "bio") || null,
       avatarUrl: urls.avatarUrl || null,
       websiteUrl: urls.websiteUrl || null,

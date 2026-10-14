@@ -85,9 +85,16 @@ export async function saveFees(fd: FormData) {
   if (referralMonths < 1 || referralMonths > 60) return fail("Referral window must be 1–60 months");
   const cancelNoticeDays = int(fd, "cancelNoticeDays");
   if (cancelNoticeDays < 0 || cancelNoticeDays > 60) return fail("Cancellation notice must be 0–60 days");
-  const tiers = { bulkTier1Min: int(fd, "bulkTier1Min"), bulkTier1Pct: int(fd, "bulkTier1Pct"), bulkTier2Min: int(fd, "bulkTier2Min"), bulkTier2Pct: int(fd, "bulkTier2Pct") };
-  if (tiers.bulkTier1Min < 2 || tiers.bulkTier2Min <= tiers.bulkTier1Min) return fail("Tier 2 must start at more copies than tier 1 (and tier 1 at 2 or more)");
-  if ([tiers.bulkTier1Pct, tiers.bulkTier2Pct].some((p) => p < 0 || p > 90)) return fail("Discounts must be between 0 and 90%");
+  const tiers = {
+    bulkTier1Min: int(fd, "bulkTier1Min"), bulkTier1Pct: int(fd, "bulkTier1Pct"),
+    bulkTier2Min: int(fd, "bulkTier2Min"), bulkTier2Pct: int(fd, "bulkTier2Pct"),
+    bulkTier3Min: int(fd, "bulkTier3Min"), bulkTier3Pct: int(fd, "bulkTier3Pct"),
+    bulkQuoteMin: int(fd, "bulkQuoteMin"),
+  };
+  if (tiers.bulkTier1Min < 2 || tiers.bulkTier2Min <= tiers.bulkTier1Min || tiers.bulkTier3Min <= tiers.bulkTier2Min)
+    return fail("Each tier must start at more copies than the one before (and tier 1 at 2 or more)");
+  if (tiers.bulkQuoteMin && tiers.bulkQuoteMin <= tiers.bulkTier3Min) return fail("The custom-quote amount must be above tier 3 (or 0 for no limit)");
+  if ([tiers.bulkTier1Pct, tiers.bulkTier2Pct, tiers.bulkTier3Pct].some((p) => p < 0 || p > 90)) return fail("Discounts must be between 0 and 90%");
   const poTermsDays = int(fd, "poTermsDays");
   if (poTermsDays < 0 || poTermsDays > 120) return fail("Purchase order terms must be 0–120 days");
   await saveSettings({ bookCommissionPct: book, visitCommissionPct: visit, referralPct, referralMonths, cancelNoticeDays, ...tiers, poTermsDays });

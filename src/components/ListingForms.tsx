@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { BulkTierTable } from "./BulkTierTable";
+import { tiersLabel, type BulkTiers } from "@/lib/pricing";
 import { ImageInput } from "./ImageInput";
 import type { Book, BookImage, VisitPackage } from "@prisma/client";
 import { removeBookImage, saveBook, savePackage } from "@/app/actions/author";
@@ -18,7 +20,7 @@ function ReviewNote({ status, note, instant = false }: { status?: string; note?:
   return null;
 }
 
-export function BookForm({ book }: { book?: Book & { images?: BookImage[] } }) {
+export function BookForm({ book, tiers }: { book?: Book & { images?: BookImage[] }; tiers: BulkTiers }) {
   const saved = book?.images ?? [];
   return (
     <form action={saveBook} className="panel" style={{ maxWidth: 720 }}>
@@ -40,7 +42,7 @@ export function BookForm({ book }: { book?: Book & { images?: BookImage[] } }) {
           </select>
         </div>
         <div className="field">
-          <label htmlFor="price">Price (USD)</label>
+          <label htmlFor="price">Price per book ($)</label>
           <input id="price" name="price" type="number" step="0.01" min="1" required defaultValue={dollars(book?.price) || "18"} max={10000} />
         </div>
       </div>
@@ -77,11 +79,15 @@ export function BookForm({ book }: { book?: Book & { images?: BookImage[] } }) {
         </div>
       </div>
       <label className="check-line">
-        <input type="checkbox" name="bulkEnabled" defaultChecked={book?.bulkEnabled ?? true} />
+        <input type="checkbox" id="bulkEnabled" name="bulkEnabled" defaultChecked={book?.bulkEnabled ?? true} />
         <span>
-          <b>Bulk discounts</b> — apply the platform's classroom-set discounts (e.g. 10–24 copies 20% off, 25+ copies 30% off) to this product
+          <b>Bulk discounts</b> — apply the classroom-set discounts to this book ({tiersLabel(tiers)})
         </span>
       </label>
+      <div className="field" style={{ marginTop: -4 }}>
+        <div className="hint">What schools pay per copy at your price — updates as you type:</div>
+        <BulkTierTable tiers={tiers} price={book?.price ?? 1800} priceInputId="price" toggleInputId="bulkEnabled" />
+      </div>
       <div className="field">
         <label htmlFor="isbn">ISBN <span className="muted">(optional)</span></label>
         <input id="isbn" name="isbn" defaultValue={book?.isbn ?? ""} placeholder="e.g. 978-1-4028-9462-6" inputMode="numeric" maxLength={20} pattern="[0-9Xx\- ]{10,20}" title="10 or 13 digits; hyphens and spaces are fine" />

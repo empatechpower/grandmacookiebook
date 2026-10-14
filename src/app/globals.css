@@ -941,3 +941,9 @@ button[data-pending], .btn[data-pending] { cursor: wait; }
 .image-previews figcaption { font-size: .72rem; color: var(--mute); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .saved-photos figure { gap: 6px; }
 .saved-photos .btn { justify-content: center; }
+.tier-table { width: 100%; max-width: 460px; border-collapse: collapse; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: .88rem; margin-top: 8px; }
+.tier-table td { padding: 7px 12px; border-bottom: 1px solid var(--line); }
+.tier-table tr:last-child td { border-bottom: 0; }
+.tier-table td:last-child { text-align: right; }
+.tier-table.compact { font-size: .82rem; }
+.tier-table.compact td { padding: 5px 10px; }

@@ -44,6 +44,15 @@ export default async function Settings() {
               <div className="field"><label htmlFor="t2m">Tier 2 from (copies)</label><input id="t2m" name="bulkTier2Min" type="number" min={3} defaultValue={s.bulkTier2Min} max={1000} /></div>
               <div className="field"><label htmlFor="t2p">Tier 2 discount %</label><input id="t2p" name="bulkTier2Pct" type="number" min={0} max={90} defaultValue={s.bulkTier2Pct} /></div>
             </div>
+            <div className="field-row">
+              <div className="field"><label htmlFor="t3m">Tier 3 from (copies)</label><input id="t3m" name="bulkTier3Min" type="number" min={4} max={1000} defaultValue={s.bulkTier3Min} /></div>
+              <div className="field"><label htmlFor="t3p">Tier 3 discount %</label><input id="t3p" name="bulkTier3Pct" type="number" min={0} max={90} defaultValue={s.bulkTier3Pct} /></div>
+            </div>
+            <div className="field">
+              <label htmlFor="tq">Custom quote from (copies)</label>
+              <input id="tq" name="bulkQuoteMin" type="number" min={0} max={10000} defaultValue={s.bulkQuoteMin} />
+              <div className="hint">Orders of this many copies or more ask the customer to contact you for a quote (0 = no limit).</div>
+            </div>
           </fieldset>
           <div className="field">
             <label htmlFor="cn">Late cancellation window (days)</label>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { money } from "@/lib/money";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -68,6 +69,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
             <div className="eyebrow" style={{ marginBottom: 6 }}>Author{author.location ? ` · ${author.location}` : ""}</div>
             <h1 className="serif" style={{ fontSize: "clamp(2rem,4vw,3rem)", letterSpacing: "-.03em", lineHeight: 1.05 }}>{author.name}</h1>
             {author.headline && <p style={{ fontSize: "1.1rem", marginTop: 6 }}>{author.headline}</p>}
+            {author.visitFeeFrom != null && <p className="price-lg" style={{ fontSize: "1.3rem", marginTop: 6 }}>Author visits from {money(author.visitFeeFrom)}</p>}
             {author.ratingCount > 0 && (
               <a href="#reviews" style={{ display: "inline-block", marginTop: 6 }}>
                 <Stars avg={author.ratingAvg} count={author.ratingCount} />
@@ -106,7 +108,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ id: str
             {author.packages.map((p) => <VisitCard key={p.id} v={{ ...p, author: ref }} />)}
           </div>
         ) : (
-          <div className="empty">No visit packages listed yet.</div>
+          <div className="empty">{author.visitFeeFrom != null ? `Author visits from ${money(author.visitFeeFrom)} — message ${author.name.split(" ")[0]} to book.` : "No visit packages listed yet."}</div>
         )}
 
         {author.media.length > 0 && (

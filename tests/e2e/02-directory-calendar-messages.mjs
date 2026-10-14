@@ -34,6 +34,7 @@ await anon.goto(B + "/books"); ok((await anon.locator("body").innerText()).inclu
 ok((await anon.locator(".topbar").getByRole("link", { name: "Author Visit" }).count()) === 1, "top menu says Author Visit");
 await anon.goto(B + "/authors?sort=price-asc"); ok((await anon.locator(".author-card h3").first().innerText()) === "Susan Friedland", "sort by price low→high");
 await anon.goto(B + "/books?q=night"); ok((await anon.locator(".card").count()) === 1, "book keyword search");
+await anon.goto(B + "/visits"); ok((await anon.locator(".filters .filter", { hasText: "Virtual" }).count()) === 0 && (await anon.locator(".filters .filter", { hasText: "In person" }).count()) === 1, "Author Visit page has no Virtual filter button");
 await anon.goto(B + "/visits?format=VIRTUAL"); ok((await anon.locator(".card").count()) === 3, "virtual filter includes hybrid packages");
 
 // Author profile edit shows publicly

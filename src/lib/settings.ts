@@ -9,11 +9,15 @@ export const DEFAULT_SETTINGS = {
   // Paid bookings canceled by the buyer less than this many days before the event are not
   // refunded and the author is paid ("guaranteed payment for last-minute cancellations").
   cancelNoticeDays: 7,
-  // Bulk book discounts (products can opt out): 10–24 copies 20% off, 25+ copies 30% off.
+  // Bulk book discounts (products can opt out): 10–24 copies 20% off, 25–49 copies 30% off.
   bulkTier1Min: 10,
   bulkTier1Pct: 20,
   bulkTier2Min: 25,
   bulkTier2Pct: 30,
+  // 50–99 copies 50% off; 100+ copies go through a custom quote (0 = no limit).
+  bulkTier3Min: 50,
+  bulkTier3Pct: 50,
+  bulkQuoteMin: 100,
   // Purchase orders: invoices are due this many days after the PO is approved (Net 30).
   poTermsDays: 30,
 };

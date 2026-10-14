@@ -16,8 +16,9 @@ test("money formats cents and computes author share", () => {
   assert.equal(net(30000, 15), 25500);
 });
 
-test("bulk tiers: 1–9 regular, 10–24 20% off, 25+ 30% off; products can opt out", () => {
-  const tiers = { min1: 10, pct1: 20, min2: 25, pct2: 30 };
+test("bulk tiers: 1–9 regular, 10–24 20%, 25–49 30%, 50–99 50%, 100+ quote; products can opt out", async () => {
+  const { needsQuote, maxCartQty } = await import("../../src/lib/pricing");
+  const tiers = { min1: 10, pct1: 20, min2: 25, pct2: 30, min3: 50, pct3: 50, quoteMin: 100 };
   const book = { price: 1600, bulkEnabled: true };
   assert.equal(unitPriceFor(book, 9, tiers), 1600);
   assert.equal(unitPriceFor(book, 10, tiers), 1280);
@@ -25,7 +26,14 @@ test("bulk tiers: 1–9 regular, 10–24 20% off, 25+ 30% off; products can opt 
   assert.equal(unitPriceFor(book, 25, tiers), 1120);
   assert.equal(bulkDiscountPct({ bulkEnabled: false }, 100, tiers), 0);
   assert.equal(unitPriceFor({ price: 1999, bulkEnabled: true }, 10, tiers), 1599, "rounds to the cent");
-  assert.equal(tiersLabel(tiers), "10–24 copies: 20% off · 25+ copies: 30% off");
+  assert.equal(unitPriceFor(book, 49, tiers), 1120);
+  assert.equal(unitPriceFor(book, 50, tiers), 800);
+  assert.equal(unitPriceFor(book, 99, tiers), 800);
+  assert.equal(needsQuote(book, 99, tiers), false);
+  assert.equal(needsQuote(book, 100, tiers), true);
+  assert.equal(needsQuote({ bulkEnabled: false }, 500, tiers), false, "no quote rule when discounts are off");
+  assert.equal(maxCartQty({ bulkEnabled: true, stock: 600 }, tiers), 99);
+  assert.equal(tiersLabel(tiers), "10–24 copies: 20% off · 25–49 copies: 30% off · 50–99 copies: 50% off · 100+ copies: custom quote");
 });
 
 test("late cancellation is measured in whole days before the event", () => {

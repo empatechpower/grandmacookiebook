@@ -11,7 +11,7 @@ import { cancelBooking as cancelPaidBooking } from "@/lib/refunds";
 import { isLateCancellation } from "@/lib/dates";
 import * as notify from "@/lib/notify";
 import { liveWhere } from "@/lib/catalog";
-import { tiersFrom, unitPriceFor } from "@/lib/pricing";
+import { maxCartQty, needsQuote, tiersFrom, unitPriceFor } from "@/lib/pricing";
 import { fromDayKey, isDayKey, isTime, todayKey } from "@/lib/dates";
 import { canUsePo, cancelPoFor } from "@/lib/purchaseOrders";
 import { hasFile, savePrivatePdf } from "@/lib/storage";
@@ -61,7 +61,10 @@ export async function addToCart(fd: FormData) {
   const book = await db.book.findFirst({ where: { id: bookId, ...liveWhere } });
   if (!book) return fail("That book is no longer available");
   const existing = await db.cartItem.findUnique({ where: { userId_bookId: { userId: user.id, bookId } } });
-  const newQty = Math.min(book.stock, (existing?.qty ?? 0) + qty);
+  const tiers = tiersFrom(await getSettings());
+  const wanted = (existing?.qty ?? 0) + qty;
+  if (needsQuote(book, wanted, tiers)) return fail(`For ${tiers.quoteMin} or more copies, please contact us for a custom quote.`, "/contact");
+  const newQty = Math.min(maxCartQty(book, tiers), wanted);
   if (newQty < 1) return fail("Sold out");
   await db.cartItem.upsert({
     where: { userId_bookId: { userId: user.id, bookId } },
@@ -77,8 +80,10 @@ export async function updateCartItem(fd: FormData) {
   const qty = int(fd, "qty");
   const item = await db.cartItem.findFirst({ where: { id, userId: user.id }, include: { book: true } });
   if (!item) return;
+  const tiers = tiersFrom(await getSettings());
+  if (qty >= 1 && needsQuote(item.book, qty, tiers)) return fail(`For ${tiers.quoteMin} or more copies, please contact us for a custom quote.`, "/cart");
   if (qty < 1) await db.cartItem.delete({ where: { id } });
-  else await db.cartItem.update({ where: { id }, data: { qty: Math.min(qty, item.book.stock) } });
+  else await db.cartItem.update({ where: { id }, data: { qty: Math.min(qty, maxCartQty(item.book, tiers)) } });
   await done(qty < 1 ? "Removed from cart" : "Cart updated");
 }
 
@@ -97,6 +102,7 @@ export async function checkout(fd: FormData) {
   for (const c of cart) {
     if (c.book.status !== "APPROVED") return fail(`“${c.book.title}” is no longer available — remove it to continue`, "/cart");
     if (c.book.stock < c.qty) return fail(`Only ${c.book.stock} left of “${c.book.title}”`, "/cart");
+    if (needsQuote(c.book, c.qty, tiersFrom(await getSettings()))) return fail(`“${c.book.title}”: orders of this size need a custom quote — please contact us`, "/cart");
   }
   const settings = await getSettings();
   const { bookCommissionPct } = settings;

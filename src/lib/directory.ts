@@ -57,7 +57,9 @@ export async function searchAuthors(f: DirectoryFilters) {
   if (language) and.push({ languages: hasTag(language) });
   if (identity) and.push({ identities: hasTag(identity) });
   if (location) and.push({ OR: [{ location: text(location) }, { packages: { some: { status: "APPROVED", region: text(location) } } }] });
-  if (format || budget) and.push(livePackage(budget ? { fee: { lte: budget } } : {}));
+  if (format) and.push(livePackage(budget ? { fee: { lte: budget } } : {}));
+  // Budget also matches an author's "visit fee — starting at" on their profile.
+  else if (budget) and.push({ OR: [livePackage({ fee: { lte: budget } }), { visitFeeFrom: { lte: budget } }] });
   if (date) {
     and.push({ availability: { some: { date } } });
     // ...and not already booked that day.
@@ -78,6 +80,7 @@ export async function searchAuthors(f: DirectoryFilters) {
       ratingAvg: true,
       ratingCount: true,
       createdAt: true,
+      visitFeeFrom: true,
       packages: { where: { status: "APPROVED" }, select: { fee: true, format: true } },
       _count: { select: { books: { where: { status: "APPROVED" } } } },
     },
@@ -86,7 +89,7 @@ export async function searchAuthors(f: DirectoryFilters) {
 
   const withPrice = authors.map((a) => ({
     ...a,
-    fromFee: a.packages.length ? Math.min(...a.packages.map((p) => p.fee)) : null,
+    fromFee: [...a.packages.map((p) => p.fee), ...(a.visitFeeFrom ? [a.visitFeeFrom] : [])].reduce<number | null>((m, f) => (m === null || f < m ? f : m), null),
     formats: [...new Set(a.packages.map((p) => p.format))],
   }));
   const byFee = (x: number | null) => x ?? Number.MAX_SAFE_INTEGER;

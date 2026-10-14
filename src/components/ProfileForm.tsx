@@ -58,6 +58,13 @@ export function ProfileForm({ user, showBio }: { user: CurrentUser; showBio: boo
           <input id="headline" name="headline" maxLength={120} defaultValue={user.headline ?? ""} placeholder="Children's author & SEL speaker" />
         </div>
       )}
+      {showBio && (
+        <div className="field">
+          <label htmlFor="visitFeeFrom">Author visit fee — starting at ($) <span className="muted">(optional)</span></label>
+          <input id="visitFeeFrom" name="visitFeeFrom" type="number" min={0} max={100000} step="1" inputMode="decimal" defaultValue={user.visitFeeFrom != null ? user.visitFeeFrom / 100 : ""} placeholder="e.g. 350" />
+          <div className="hint">Shown on your card in Find Authors as “From $…”. Your visit listings can still set exact fees.</div>
+        </div>
+      )}
       {!showBio && (
         <div className="field-row">
           <div className="field">

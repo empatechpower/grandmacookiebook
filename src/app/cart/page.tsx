@@ -4,7 +4,7 @@ import { PHONE_PATTERN } from "@/lib/validation";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { money } from "@/lib/money";
-import { bulkDiscountPct, tiersFrom, unitPriceFor } from "@/lib/pricing";
+import { bulkDiscountPct, maxCartQty, nextTierHint, tiersFrom, unitPriceFor } from "@/lib/pricing";
 import { getSettings } from "@/lib/settings";
 import { checkout, updateCartItem } from "@/app/actions/shop";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -53,16 +53,14 @@ export default async function Cart() {
                     {bulkDiscountPct(i.book, i.qty, tiers) > 0 && <div className="muted" style={{ textDecoration: "line-through", fontSize: ".8rem" }}>{money(i.book.price)}</div>}
                     {money(unitPriceFor(i.book, i.qty, tiers))}
                     {bulkDiscountPct(i.book, i.qty, tiers) > 0 && <div><span className="badge b-ok">Bulk {bulkDiscountPct(i.book, i.qty, tiers)}% off</span></div>}
-                    {i.book.bulkEnabled && i.qty < tiers.min2 && (
-                      <div className="muted" style={{ fontSize: ".75rem" }}>
-                        {i.qty < tiers.min1 ? `Order ${tiers.min1 - i.qty} more for ${tiers.pct1}% off` : `Order ${tiers.min2 - i.qty} more for ${tiers.pct2}% off`}
-                      </div>
+                    {nextTierHint(i.book, i.qty, tiers) && (
+                      <div className="muted" style={{ fontSize: ".75rem" }}>{nextTierHint(i.book, i.qty, tiers)}</div>
                     )}
                   </td>
                   <td>
                     <form action={updateCartItem} className="inline-form">
                       <input type="hidden" name="id" value={i.id} />
-                      <input className="qty" type="number" name="qty" min={0} max={i.book.stock} defaultValue={i.qty} aria-label="Quantity" />
+                      <input className="qty" type="number" name="qty" min={0} max={maxCartQty(i.book, tiers)} defaultValue={i.qty} aria-label="Quantity" />
                       <SubmitButton className="btn btn-ghost btn-sm" pendingText="…">Update</SubmitButton>
                     </form>
                   </td>

@@ -101,5 +101,19 @@ ok(last?.phone === "(956) 555-0123", "checkout phone saved on the order");
 await au.goto(B + "/dashboard/author/settings");
 ok((await text(au)).includes("Change password") && (await text(au)).includes("Payouts"), "settings has account, payouts and password");
 
+// Author visit fee on the profile → shown on the Find Authors card (Miriam has books but no visit packages)
+const mir = await ctx(); await login(mir, "miriam@atelier.test");
+await mir.goto(B + "/dashboard/author/profile"); await mir.fill("#visitFeeFrom", "350"); await mir.getByRole("button", { name: "Save profile" }).click(); await mir.getByText("Profile saved").waitFor();
+const dir = await ctx(); await dir.goto(B + "/authors");
+ok((await dir.locator(".author-card", { hasText: "Miriam Bejerano" }).innerText()).includes("From $350"), "the profile's visit fee shows on the author card");
+await dir.goto(B + "/authors?budget=500"); ok((await dir.locator(".author-card", { hasText: "Miriam Bejerano" }).count()) === 1, "the budget filter includes it");
+// Book form: price label, corrected checkbox text and live tier preview
+await au.goto(B + "/dashboard/author/books/new");
+ok((await text(au)).includes("Price per book ($)") && (await text(au)).includes("50–99 copies: 50% off"), "book form shows the price label and the new tiers");
+await au.fill("#price", "20"); await sleep(200);
+const table = await au.locator(".tier-table").innerText();
+ok(table.includes("$20.00 each") && table.includes("$16.00 each") && table.includes("$14.00 each") && table.includes("$10.00 each") && table.includes("Contact for custom quote"), "live preview follows the price as it's typed");
+await au.locator("#bulkEnabled").uncheck(); ok((await text(au)).includes("Bulk discounts are off"), "turning discounts off updates the preview");
+
 ok(errors.length === 0, "no page errors" + (errors.length ? ": " + errors[0] : ""));
 await browser.close(); await db.$disconnect();

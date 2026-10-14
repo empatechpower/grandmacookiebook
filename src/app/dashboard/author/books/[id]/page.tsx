@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { getSettings } from "@/lib/settings";
+import { tiersFrom } from "@/lib/pricing";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { PageHead } from "@/components/ui";
@@ -11,7 +13,7 @@ export default async function EditBook({ params }: { params: Promise<{ id: strin
   return (
     <>
       <PageHead title={`Edit “${book.title}”`} />
-      <BookForm book={book} />
+      <BookForm book={book} tiers={tiersFrom(await getSettings())} />
     </>
   );
 }

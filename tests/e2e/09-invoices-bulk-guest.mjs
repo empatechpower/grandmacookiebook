@@ -30,7 +30,11 @@ ok(true, "a guest who picks the author tab still lands in their own dashboard");
 // Bulk tiers at checkout + invoice
 const buyer = anon;
 await buyer.goto(B + "/books?q=Night"); await buyer.locator(".card").first().getByRole("link").first().click(); await buyer.waitForURL("**/books/**");
-ok((await text(buyer)).includes("10–24 copies: 20% off · 25+ copies: 30% off"), "product page shows the tiers");
+{ const t = await text(buyer); ok(t.includes("1–9 copies") && t.includes("50–99 copies") && t.includes("50% off") && t.includes("Contact for custom quote"), "product page shows the tier table (with 50% off and custom quote)"); }
+const bookUrl = buyer.url();
+await buyer.fill("input[name=qty]", "100"); await buyer.locator("input[name=qty]").evaluate((el) => el.removeAttribute("max")); await buyer.click("text=Add to cart");
+ok(await sees(buyer, "custom quote"), "100+ copies are sent to a custom quote instead of the cart");
+await buyer.goto(bookUrl);
 await buyer.fill("input[name=qty]", "9"); await buyer.click("text=Add to cart"); await buyer.waitForURL("**/cart");
 ok((await text(buyer)).includes("$189") && (await text(buyer)).includes("Order 1 more for 20% off"), "9 copies: regular price, with a nudge to the next tier");
 await buyer.locator("input[name=qty]").fill("10"); await buyer.getByRole("button", { name: "Update" }).click(); await sees(buyer, "Cart updated");
@@ -77,7 +81,7 @@ ok(!(await text(buyer)).includes("Classroom-set discounts"), "product page no lo
 await admin.goto(B + "/dashboard/admin/settings");
 await admin.fill("#t1p", "25"); await admin.getByRole("button", { name: "Save schedule" }).click(); await sees(admin, "Fee schedule saved");
 await buyer.goto(B + "/books?q=Night"); await buyer.locator(".card").first().getByRole("link").first().click(); await buyer.waitForURL("**/books/**");
-ok((await text(buyer)).includes("10–24 copies: 25% off"), "tier change applies immediately");
+ok(/10–24 copies\s+25% off/.test(await buyer.locator(".tier-table").innerText()), "tier change applies immediately");
 
 ok(errors.length === 0, "no page errors" + (errors.length ? ": " + errors[0] : ""));
 await browser.close(); await db.$disconnect();

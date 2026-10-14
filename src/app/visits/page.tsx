@@ -29,7 +29,7 @@ export default async function Visits({ searchParams }: { searchParams: Promise<{
           <Link className={`filter${!active ? " active" : ""}`} href="/visits">
             All
           </Link>
-          {FORMATS.filter((f) => f.value !== "HYBRID").map((f) => (
+          {FORMATS.filter((f) => f.value === "IN_PERSON").map((f) => (
             <Link key={f.value} className={`filter${active === f.value ? " active" : ""}`} href={`/visits?format=${f.value}`}>
               {f.label}
             </Link>
